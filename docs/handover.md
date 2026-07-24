@@ -2,11 +2,11 @@
 
 ## Current state
 
-Repository audit and the full authority stack are complete. Work continues on `codex/devpost-foundation`. Read `docs/ARCHITECTURE_AND_FOLDER_STRUCTURE.md`, `docs/DELIVERY_PLAN.md`, and `docs/DEVPOST_READINESS.md`.
+Repository audit and the full authority stack are complete. Work continues on `codex/devpost-foundation`. The API-backed incident list/create/detail flow and durable simulated-call task persistence are integrated. Read `docs/ARCHITECTURE_AND_FOLDER_STRUCTURE.md`, `docs/DELIVERY_PLAN.md`, and `docs/DEVPOST_READINESS.md`.
 
 ## Highest-priority task
 
-Add persistence-backed idempotency and the incident vertical slice, then connect the UI to the API behind the existing ports. Keep the build runnable and all calls explicitly simulated until credentials and an authorized number are supplied.
+Implement the call queue/detail frontend against `GET /api/v1/calls` and `GET /api/v1/calls/:callTaskId`, including an unmistakable simulated label and an `outcome_unknown` reconciliation state. Add browser coverage without enabling real calls.
 
 ## Known blockers/risks
 
@@ -15,4 +15,5 @@ Add persistence-backed idempotency and the incident vertical slice, then connect
 - Global Angular CLI is absent; use pinned workspace tooling.
 - Local Node 22.9 is below Vite 7's supported 22.x floor; upgrade to Node >=22.12 before release work.
 - The production frontend build succeeds but its initial JavaScript chunk is 1.21 MB; reduce it before the performance gate.
-- Mission Control is intentionally the only implemented operations route. Planned routes and incident creation are visibly disabled, not placeholders.
+- Call queue/detail UI, provider callbacks, stale-reservation reconciliation, production authentication/RBAC, and incident lifecycle mutation are not implemented yet.
+- Claude Code authentication works, but the account reached its monthly spend limit during the call-persistence task; Codex completed and verified the bounded slice locally.

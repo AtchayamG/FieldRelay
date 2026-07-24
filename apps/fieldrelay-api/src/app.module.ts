@@ -4,6 +4,8 @@ import { CallEController, HealthController } from './interfaces/call-e.controlle
 import { IncidentController } from './interfaces/incident.controller';
 import { ApiExceptionFilter } from './interfaces/api-exception.filter';
 import { StartCallUseCase } from './application/start-call.use-case';
+import { ListCallsUseCase } from './application/list-calls.use-case';
+import { GetCallUseCase } from './application/get-call.use-case';
 import { CreateIncidentUseCase } from './application/create-incident.use-case';
 import { ListIncidentsUseCase } from './application/list-incidents.use-case';
 import { GetIncidentUseCase } from './application/get-incident.use-case';
@@ -49,6 +51,16 @@ import {
         transactions: TransactionPort
       ) => new StartCallUseCase(callE, contacts, transactions),
       inject: [CALL_E_PORT, CONTACT_AUTH_PORT, TRANSACTION_PORT]
+    },
+    {
+      provide: ListCallsUseCase,
+      useFactory: (transactions: TransactionPort) => new ListCallsUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: GetCallUseCase,
+      useFactory: (transactions: TransactionPort) => new GetCallUseCase(transactions),
+      inject: [TRANSACTION_PORT]
     },
     {
       provide: CreateIncidentUseCase,

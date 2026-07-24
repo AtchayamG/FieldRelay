@@ -5,6 +5,7 @@ import {
   PgTransactionManager
 } from '../infrastructure/persistence/pg/pg-unit-of-work';
 import { Incident } from '../domain/incident.entity';
+import { CallTask } from '../domain/call-task.entity';
 
 // Exercises the real SQL. Opt-in: set DATABASE_URL (see docker-compose.yml and
 // .env.example) to run it, otherwise it is skipped so the default test run
@@ -42,6 +43,11 @@ describeIfDatabase('PgTransactionManager (integration)', () => {
   afterAll(async () => {
     // audit_events is append-only by trigger, so only the incidents and the
     // idempotency records this run created are removed.
+    await pool.query(
+      `DELETE FROM call_tasks
+       WHERE incident_id IN (SELECT id FROM incidents WHERE property_id = $1)`,
+      [propertyId]
+    );
     await pool.query('DELETE FROM incidents WHERE property_id = $1', [propertyId]);
     await pool.query('DELETE FROM operation_idempotency WHERE idempotency_key LIKE $1', [
       `${propertyId}%`
@@ -112,6 +118,62 @@ describeIfDatabase('PgTransactionManager (integration)', () => {
     expect(second.items).toHaveLength(1);
     expect(second.items[0].id).toBe(created[0].id);
     expect(second.nextCursor).toBeNull();
+  });
+
+  it('round-trips, updates and filters a durable call task', async () => {
+    const incident = newIncident(new Date('2042-04-01T11:00:00.000Z'));
+    const task = CallTask.create({
+      id: randomUUID(),
+      displayId: `CALL-TEST-${randomUUID().slice(0, 8)}`,
+      incidentId: incident.id,
+      provider: 'call-e',
+      purpose: 'vendor_availability',
+      authorizedContactId: 'CNS-4491',
+      simulated: true,
+      timeoutSeconds: 300,
+      retries: 0,
+      createdAt: new Date('2042-04-01T11:01:00.000Z')
+    });
+    await transactions.withTransaction(async (uow) => {
+      await uow.incidents.insert(incident);
+      await uow.calls.insert(task);
+    });
+
+    const queued = await transactions.withTransaction((uow) => uow.calls.findById(task.id));
+    expect(queued?.toProps()).toEqual(task.toProps());
+
+    task.recordProviderResult({
+      providerTaskId: 'demo_pg_task',
+      status: 'completed',
+      simulated: true,
+      at: new Date('2042-04-01T11:02:00.000Z')
+    });
+    await transactions.withTransaction((uow) => uow.calls.update(task));
+
+    const page = await transactions.withTransaction((uow) =>
+      uow.calls.list({ limit: 10, incidentId: incident.id, status: 'completed' })
+    );
+    expect(page.items).toHaveLength(1);
+    expect(page.items[0].toProps()).toEqual(task.toProps());
+  });
+
+  it('enforces the call-task incident foreign key', async () => {
+    const orphan = CallTask.create({
+      id: randomUUID(),
+      displayId: `CALL-TEST-${randomUUID().slice(0, 8)}`,
+      incidentId: randomUUID(),
+      provider: 'call-e',
+      purpose: 'status_update',
+      authorizedContactId: 'CNS-4491',
+      simulated: true,
+      timeoutSeconds: 300,
+      retries: 0,
+      createdAt: new Date('2042-04-01T12:00:00.000Z')
+    });
+
+    await expect(
+      transactions.withTransaction((uow) => uow.calls.insert(orphan))
+    ).rejects.toMatchObject({ code: '23503' });
   });
 
   it('appends an audit event that cannot then be rewritten', async () => {

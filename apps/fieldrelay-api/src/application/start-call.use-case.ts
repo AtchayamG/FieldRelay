@@ -32,6 +32,7 @@ export interface StartCallInput {
 
 export interface StartCallResult {
   callTaskId: string;
+  displayId: string;
   providerTaskId: string;
   status: CallEResult['status'];
   simulated: boolean;
@@ -102,50 +103,84 @@ export class StartCallUseCase {
 
     const correlationId = input.correlationId ?? randomUUID();
 
-    // --- Phase 1: claim the key in its own committed transaction. The
+    // --- Phase 1: atomically claim the key and persist the queued task. The
     // provider call is external I/O and must not run inside an open
-    // transaction, so the reservation is committed before dialling.
+    // transaction, so both records are committed before dialling.
     //
     // ponytail: a crash between phase 1 and phase 3 leaves the key claimed and
     // later retries get 409 until it is cleared. That is the safe direction —
     // the alternative double-dials a real person. Add a reaper over
     // operation_idempotency (state, created_at) when unattended recovery is
     // needed. ---
-    const reservation = await this.transactions.withTransaction((uow) =>
-      uow.idempotency.reserve('call.start', idempotencyKey, requestHash)
-    );
+    const phaseOne = await this.transactions.withTransaction(async (uow) => {
+      const reservation = await uow.idempotency.reserve(
+        'call.start',
+        idempotencyKey,
+        requestHash
+      );
+      if (reservation.outcome !== 'reserved') {
+        return { reservation, task: null };
+      }
+
+      const createdAt = new Date();
+      const task = CallTask.create({
+        id: randomUUID(),
+        displayId: await uow.calls.nextDisplayId(),
+        incidentId: input.incidentId,
+        provider: 'call-e',
+        authorizedContactId: input.authorizedContactId,
+        purpose: input.purpose as CallPurpose,
+        simulated: true,
+        timeoutSeconds,
+        retries,
+        createdAt
+      });
+      await uow.calls.insert(task);
+      await uow.audit.append({
+        actorType: 'system',
+        actorId: 'fieldrelay-api',
+        action: 'call.start.queued',
+        entityType: 'call_task',
+        entityId: task.id,
+        correlationId,
+        metadata: {
+          incidentId: input.incidentId,
+          authorizedContactId: input.authorizedContactId,
+          purpose: input.purpose,
+          simulated: true,
+          requestHash
+        }
+      });
+      return { reservation, task };
+    });
+    const reservation = phaseOne.reservation;
 
     if (reservation.outcome === 'mismatch') {
-      await this.recordSuppressed(input, idempotencyKey, correlationId, 'request_mismatch');
+      await this.recordSuppressed(input, correlationId, 'request_mismatch');
       throw new IdempotencyConflictError(
         'Idempotency-Key was already used for a different call request'
       );
     }
     if (reservation.outcome === 'in_progress') {
-      // An earlier request already reached the provider with this key. Placing
-      // a second call would dial the contact twice.
-      await this.recordSuppressed(input, idempotencyKey, correlationId, 'already_in_progress');
+      // An earlier request owns a durable queued task and may have reached the
+      // provider. Placing a second call could dial the contact twice.
+      await this.recordSuppressed(input, correlationId, 'already_in_progress');
       throw new OperationInProgressError(
         'A call with this Idempotency-Key is already in progress'
       );
     }
     if (reservation.outcome === 'completed') {
       const result = reservation.result as StartCallResult;
-      await this.recordSuppressed(input, idempotencyKey, correlationId, 'already_completed');
+      await this.recordSuppressed(input, correlationId, 'already_completed');
       return { ...result, replayed: true };
     }
 
-    // --- Phase 2: the reservation is ours; place exactly one call. ---
-    const callTask = CallTask.create({
-      id: `CALL-E-${randomUUID()}`,
-      incidentId: input.incidentId,
-      authorizedContactId: input.authorizedContactId,
-      purpose: input.purpose as CallPurpose,
-      idempotencyKey,
-      timeoutSeconds,
-      retries
-    });
-    callTask.queue();
+    // --- Phase 2: the reservation and queued task are durable; place exactly
+    // one call with no database transaction held open. ---
+    const callTask = phaseOne.task;
+    if (!callTask) {
+      throw new Error('Reserved call did not produce a durable call task');
+    }
 
     let providerResult: CallEResult;
     try {
@@ -154,8 +189,10 @@ export class StartCallUseCase {
       // A transport error cannot prove that the provider did not accept the
       // task. Keep the reservation in progress so a retry cannot place a
       // duplicate call; reconciliation must resolve the ambiguous outcome.
-      await this.transactions.withTransaction((uow) =>
-        uow.audit.append({
+      callTask.markOutcomeUnknown(new Date());
+      await this.transactions.withTransaction(async (uow) => {
+        await uow.calls.update(callTask);
+        await uow.audit.append({
           actorType: 'system',
           actorId: 'fieldrelay-api',
           action: 'call.start.outcome_unknown',
@@ -169,13 +206,16 @@ export class StartCallUseCase {
             requestHash,
             reason: error instanceof Error ? error.message : 'unknown provider failure'
           }
-        })
-      );
+        });
+      });
       throw error;
     }
 
+    callTask.recordProviderResult({ ...providerResult, at: new Date() });
+
     const result: StartCallResult = {
       callTaskId: callTask.id,
+      displayId: callTask.displayId,
       providerTaskId: providerResult.providerTaskId,
       status: providerResult.status,
       simulated: providerResult.simulated
@@ -183,6 +223,7 @@ export class StartCallUseCase {
 
     // --- Phase 3: record the outcome so replays of this key never dial. ---
     await this.transactions.withTransaction(async (uow) => {
+      await uow.calls.update(callTask);
       await uow.idempotency.complete('call.start', idempotencyKey, result);
       await uow.audit.append({
         actorType: 'system',
@@ -210,7 +251,6 @@ export class StartCallUseCase {
   // was requested and not placed matters as much as the call itself.
   private async recordSuppressed(
     input: StartCallInput,
-    idempotencyKey: string,
     correlationId: string,
     reason: string
   ): Promise<void> {

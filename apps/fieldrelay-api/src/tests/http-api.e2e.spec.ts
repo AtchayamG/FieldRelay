@@ -7,6 +7,8 @@ import { ContactAuthorizationPort } from '../application/contact-authorization.p
 import { CreateIncidentUseCase } from '../application/create-incident.use-case';
 import { GetIncidentUseCase } from '../application/get-incident.use-case';
 import { ListIncidentsUseCase } from '../application/list-incidents.use-case';
+import { ListCallsUseCase } from '../application/list-calls.use-case';
+import { GetCallUseCase } from '../application/get-call.use-case';
 import { StartCallUseCase } from '../application/start-call.use-case';
 import {
   InMemoryDatabase,
@@ -60,6 +62,14 @@ describe('FieldRelay HTTP API', () => {
         {
           provide: StartCallUseCase,
           useValue: new StartCallUseCase(provider, contacts, transactions)
+        },
+        {
+          provide: ListCallsUseCase,
+          useValue: new ListCallsUseCase(transactions)
+        },
+        {
+          provide: GetCallUseCase,
+          useValue: new GetCallUseCase(transactions)
         },
         {
           provide: CheckHealthUseCase,
@@ -149,6 +159,27 @@ describe('FieldRelay HTTP API', () => {
     expect(replay.response.headers.get('idempotency-replayed')).toBe('true');
     expect(replay.body.data.callTaskId).toBe(first.body.data.callTaskId);
     expect(provider.startCall).toHaveBeenCalledTimes(1);
+
+    const list = await getJson<{
+      data: { items: Array<{ id: string; incidentId: string; simulated: boolean }> };
+    }>(`/api/v1/calls?incidentId=${created.body.data.id}&status=queued`);
+    expect(list.response.status).toBe(200);
+    expect(list.body.data.items).toEqual([
+      expect.objectContaining({
+        id: first.body.data.callTaskId,
+        incidentId: created.body.data.id,
+        simulated: true
+      })
+    ]);
+
+    const detail = await getJson<{ data: { id: string; providerTaskId: string } }>(
+      `/api/v1/calls/${first.body.data.callTaskId}`
+    );
+    expect(detail.response.status).toBe(200);
+    expect(detail.body.data).toMatchObject({
+      id: first.body.data.callTaskId,
+      providerTaskId: 'demo_provider_task'
+    });
   });
 
   it('returns stable errors and a database-backed health response', async () => {

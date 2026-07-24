@@ -6,18 +6,34 @@ import {
   HttpCode,
   HttpStatus,
   Get,
+  Param,
+  Query,
   Req,
   Res
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { StartCallUseCase } from '../application/start-call.use-case';
-import { StartCallRequestDto, CallStatusResponseDto, ApiResponse } from '@fieldrelay/contracts';
+import { GetCallUseCase } from '../application/get-call.use-case';
+import { ListCallsUseCase } from '../application/list-calls.use-case';
+import {
+  StartCallRequestDto,
+  CallStatusResponseDto,
+  CallListDto,
+  CallTaskResponseDto,
+  ApiResponse
+} from '@fieldrelay/contracts';
 import { requestIdOf } from './request-context';
 import { CheckHealthUseCase } from '../application/check-health.use-case';
+import { CallValidationError } from '../application/errors';
+import type { CallTask } from '../domain/call-task.entity';
 
 @Controller('api/v1/calls')
 export class CallEController {
-  constructor(private readonly startCallUseCase: StartCallUseCase) {}
+  constructor(
+    private readonly startCallUseCase: StartCallUseCase,
+    private readonly listCallsUseCase: ListCallsUseCase,
+    private readonly getCallUseCase: GetCallUseCase
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
@@ -47,6 +63,7 @@ export class CallEController {
     return {
       data: {
         callTaskId: result.callTaskId,
+        displayId: result.displayId,
         providerTaskId: result.providerTaskId,
         status: result.status,
         simulated: result.simulated
@@ -56,6 +73,35 @@ export class CallEController {
         timestamp: new Date().toISOString()
       }
     };
+  }
+
+  @Get()
+  async list(
+    @Req() request: Request,
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+    @Query('status') status?: string,
+    @Query('incidentId') incidentId?: string
+  ): Promise<ApiResponse<CallListDto>> {
+    const page = await this.listCallsUseCase.execute({
+      limit: parseLimit(limit),
+      cursor: cursor || undefined,
+      status: status || undefined,
+      incidentId: incidentId || undefined
+    });
+    return envelope(
+      { items: page.items.map(toCallTaskDto), nextCursor: page.nextCursor },
+      requestIdOf(request)
+    );
+  }
+
+  @Get(':callTaskId')
+  async getById(
+    @Req() request: Request,
+    @Param('callTaskId') callTaskId: string
+  ): Promise<ApiResponse<CallTaskResponseDto>> {
+    const task = await this.getCallUseCase.execute(callTaskId);
+    return envelope(toCallTaskDto(task), requestIdOf(request));
   }
 }
 
@@ -67,4 +113,34 @@ export class HealthController {
   async check(): Promise<{ status: 'ok' }> {
     return this.checkHealth.execute();
   }
+}
+
+function parseLimit(raw: string | undefined): number | undefined {
+  if (raw === undefined || raw === '') return undefined;
+  if (!/^\d+$/.test(raw)) {
+    throw new CallValidationError('limit must be a positive integer');
+  }
+  return Number(raw);
+}
+
+function toCallTaskDto(task: CallTask): CallTaskResponseDto {
+  return {
+    id: task.id,
+    displayId: task.displayId,
+    incidentId: task.incidentId,
+    providerTaskId: task.providerTaskId,
+    purpose: task.purpose,
+    authorizedContactId: task.authorizedContactId,
+    status: task.status,
+    simulated: task.simulated,
+    timeoutSeconds: task.timeoutSeconds,
+    retries: task.retries,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+    version: task.version
+  };
+}
+
+function envelope<T>(data: T, requestId: string): ApiResponse<T> {
+  return { data, meta: { requestId, timestamp: new Date().toISOString() } };
 }

@@ -4,18 +4,28 @@ import {
   decodeIncidentCursor,
   encodeIncidentCursor
 } from '../../../application/incident-cursor';
+import { decodeCallCursor, encodeCallCursor } from '../../../application/call-cursor';
 import {
   AuditEventInput,
   AuditEventPort,
+  CallTaskPage,
+  CallTaskRepositoryPort,
   IdempotencyReservation,
   IdempotencyStorePort,
   IdempotentOperation,
   IncidentPage,
   IncidentRepositoryPort,
+  ListCallTasksQuery,
   ListIncidentsQuery,
   TransactionPort,
   UnitOfWork
 } from '../../../application/persistence.port';
+import {
+  CallFailureCode,
+  CallPurpose,
+  CallStatus,
+  CallTask
+} from '../../../domain/call-task.entity';
 import {
   Incident,
   IncidentPriority,
@@ -59,6 +69,7 @@ export class PgTransactionManager implements TransactionPort {
       await client.query('BEGIN');
       const result = await work({
         incidents: new PgIncidentRepository(client),
+        calls: new PgCallTaskRepository(client),
         audit: new PgAuditEventRepository(client),
         idempotency: new PgIdempotencyStore(client)
       });
@@ -70,6 +81,151 @@ export class PgTransactionManager implements TransactionPort {
     } finally {
       client.release();
     }
+  }
+}
+
+interface CallTaskRow {
+  id: string;
+  display_id: string;
+  incident_id: string;
+  provider: string;
+  provider_task_id: string | null;
+  purpose: string;
+  authorized_contact_id: string;
+  status: string;
+  simulated: boolean;
+  failure_code: string | null;
+  timeout_seconds: number;
+  retries: number;
+  created_at: Date;
+  updated_at: Date;
+  version: number;
+}
+
+const CALL_TASK_COLUMNS = `id, display_id, incident_id, provider, provider_task_id,
+       purpose, authorized_contact_id, status, simulated, failure_code,
+       timeout_seconds, retries, created_at, updated_at, version`;
+
+function toCallTask(row: CallTaskRow): CallTask {
+  return CallTask.rehydrate({
+    id: row.id,
+    displayId: row.display_id,
+    incidentId: row.incident_id,
+    provider: row.provider,
+    providerTaskId: row.provider_task_id,
+    purpose: row.purpose as CallPurpose,
+    authorizedContactId: row.authorized_contact_id,
+    status: row.status as CallStatus,
+    simulated: row.simulated,
+    failureCode: row.failure_code as CallFailureCode | null,
+    timeoutSeconds: row.timeout_seconds,
+    retries: row.retries,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    version: row.version
+  });
+}
+
+class PgCallTaskRepository implements CallTaskRepositoryPort {
+  constructor(private readonly client: PoolClient) {}
+
+  public async nextDisplayId(): Promise<string> {
+    const { rows } = await this.client.query<{ display_id: string }>(
+      `SELECT 'CALL-2042-' || lpad(nextval('call_task_display_seq')::text, 4, '0') AS display_id`
+    );
+    return rows[0].display_id;
+  }
+
+  public async insert(task: CallTask): Promise<void> {
+    const props = task.toProps();
+    await this.client.query(
+      `INSERT INTO call_tasks (${CALL_TASK_COLUMNS})
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+      [
+        props.id,
+        props.displayId,
+        props.incidentId,
+        props.provider,
+        props.providerTaskId,
+        props.purpose,
+        props.authorizedContactId,
+        props.status,
+        props.simulated,
+        props.failureCode,
+        props.timeoutSeconds,
+        props.retries,
+        props.createdAt,
+        props.updatedAt,
+        props.version
+      ]
+    );
+  }
+
+  public async update(task: CallTask): Promise<void> {
+    const props = task.toProps();
+    const updated = await this.client.query(
+      `UPDATE call_tasks
+          SET provider_task_id = $2, status = $3, simulated = $4, failure_code = $5,
+              updated_at = $6, version = $7
+        WHERE id = $1 AND version = $8`,
+      [
+        props.id,
+        props.providerTaskId,
+        props.status,
+        props.simulated,
+        props.failureCode,
+        props.updatedAt,
+        props.version,
+        props.version - 1
+      ]
+    );
+    if (updated.rowCount !== 1) {
+      throw new Error(`Call task ${props.id} was concurrently modified or not found`);
+    }
+  }
+
+  public async findById(id: string): Promise<CallTask | null> {
+    const { rows } = await this.client.query<CallTaskRow>(
+      `SELECT ${CALL_TASK_COLUMNS} FROM call_tasks WHERE id = $1`,
+      [id]
+    );
+    return rows.length > 0 ? toCallTask(rows[0]) : null;
+  }
+
+  public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    if (query.status) {
+      params.push(query.status);
+      conditions.push(`status = $${params.length}`);
+    }
+    if (query.incidentId) {
+      params.push(query.incidentId);
+      conditions.push(`incident_id = $${params.length}::uuid`);
+    }
+    if (query.cursor) {
+      const cursor = decodeCallCursor(query.cursor);
+      params.push(cursor.createdAt, cursor.id);
+      conditions.push(
+        `(created_at, id) < ($${params.length - 1}::timestamptz, $${params.length}::uuid)`
+      );
+    }
+    params.push(query.limit + 1);
+    const { rows } = await this.client.query<CallTaskRow>(
+      `SELECT ${CALL_TASK_COLUMNS} FROM call_tasks
+       ${conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''}
+       ORDER BY created_at DESC, id DESC
+       LIMIT $${params.length}`,
+      params
+    );
+    const hasMore = rows.length > query.limit;
+    const items = rows.slice(0, query.limit).map(toCallTask);
+    const last = items[items.length - 1];
+    return {
+      items,
+      nextCursor:
+        hasMore && last ? encodeCallCursor({ createdAt: last.createdAt, id: last.id }) : null
+    };
   }
 }
 

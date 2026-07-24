@@ -24,3 +24,22 @@ Known warnings:
 
 - Local Node 22.9 is below Vite 7's supported 22.x patch floor; repository engines require Node >=22.12.
 - Initial minified frontend chunk is 1.21 MB (292 KB gzip).
+
+## 2026-07-24 — Incident UI and durable call tasks
+
+Environment: Node 22.9.0, pnpm 10.34.4, PostgreSQL 17, Windows.
+
+| Check | Result |
+|---|---|
+| `pnpm install --force --frozen-lockfile` | PASS — restored the locked Windows native optional binding |
+| `pnpm lint` | PASS |
+| `pnpm typecheck` | PASS |
+| `pnpm test` with PostgreSQL | PASS — 121 tests total: API 85, app 34, tokens 2 |
+| `pnpm build` | PASS — Node patch and 1.23 MB initial-chunk warnings remain |
+| `pnpm audit --prod` | PASS — no known vulnerabilities |
+| fresh Compose initialization | PASS — `0001_incidents`, `0002_call_tasks`, 3 deterministic seed incidents |
+| Playwright runtime flow | PASS — create, detail, list, search, status-filter empty state, light/dark, 430 px mobile |
+
+Call safety coverage now proves the queued task and idempotency reservation commit before provider I/O, success is persisted and replayable, mismatches/in-progress duplicates do not create another task, ambiguous failure persists `outcome_unknown` without enabling redial, and PostgreSQL enforces the incident foreign key.
+
+Still not covered: production CALL-E adapter/callbacks, production authentication/RBAC, automated accessibility scanning, image-diff regression, offline PWA behavior, and Capacitor native builds.

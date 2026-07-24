@@ -4,16 +4,16 @@ export type CallPurpose = 'vendor_availability' | 'appointment_confirmation' | '
 
 // Strict lifecycle union shared by the domain, the provider port and the API.
 export type CallStatus =
-  | 'draft'
   | 'queued'
   | 'ringing'
   | 'connected'
   | 'completed'
   | 'failed'
-  | 'no_answer';
+  | 'no_answer'
+  | 'outcome_unknown';
 
 // Statuses a provider (real or demo) may report back after startCall.
-export type ProviderCallStatus = Exclude<CallStatus, 'draft'>;
+export type ProviderCallStatus = Exclude<CallStatus, 'outcome_unknown'>;
 
 export interface StartCallRequestDto {
   incidentId: string;
@@ -27,11 +27,33 @@ export interface StartCallRequestDto {
 
 export interface CallStatusResponseDto {
   callTaskId: string;
+  displayId: string;
   providerTaskId: string;
   status: ProviderCallStatus;
   // true when produced by the demo adapter rather than a live call.
   simulated: boolean;
   startedAt?: string;
+}
+
+export interface CallTaskResponseDto {
+  id: string;
+  displayId: string;
+  incidentId: string;
+  providerTaskId: string | null;
+  purpose: CallPurpose;
+  authorizedContactId: string;
+  status: CallStatus;
+  simulated: boolean;
+  timeoutSeconds: number;
+  retries: number;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+}
+
+export interface CallListDto {
+  items: CallTaskResponseDto[];
+  nextCursor: string | null;
 }
 
 // --- Incidents -------------------------------------------------------------

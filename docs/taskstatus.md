@@ -11,11 +11,12 @@
 - External agents: Claude Code 2.1.207, Antigravity 1.1.4, Hermes 0.18.0 available
 - Architecture/folder structure: selected
 - Delivery/evidence plan: created
-- Application implementation: backend and responsive frontend foundations integrated on `codex/devpost-foundation`
-- Frontend: Ionic Angular 20 sign-in, responsive shell, design-token package, and Mission Control demo route
-- Verification: frozen install, lint, strict typecheck, 32 tests, build, dependency audit, and browser smoke checks pass
-- Browser coverage: dark/light themes, demo sign-in/sign-out, state controls, approval action, desktop, and 430 px mobile
-- Backend security boundary: authorized contact IDs only; bounded inputs; explicit simulated adapter
+- Application implementation: persisted incident vertical slice and durable simulated-call task slice integrated on `codex/devpost-foundation`
+- Frontend: Ionic Angular 20 sign-in, responsive shell, Mission Control, and API-backed incident list/create/detail routes
+- Verification: frozen install, lint, strict typecheck, 121 tests, production build, dependency audit, PostgreSQL 17 integration, and browser runtime checks pass
+- Browser coverage: incident create/detail/search/filter, empty state, dark/light themes, desktop and 430 px mobile, no horizontal page overflow, and clean console
+- Backend security boundary: authorized contact IDs only; bounded inputs; atomic call reservation/task persistence; explicit simulated adapter; ambiguous outcomes are non-redialable
+- Call read APIs: `GET /api/v1/calls` and `GET /api/v1/calls/:callTaskId` with bounded filters and cursor pagination
 - Frontend safety boundary: demo-only credentials, explicit simulated labeling, unavailable routes/actions disabled rather than faked
 - CALL-E real-call proof: BLOCKED on credentials and authorized test number; safe demo adapter remains in scope
-- Release risks: Node must be upgraded from 22.9 to >=22.12; initial frontend chunk is 1.21 MB
+- Release risks: Node must be upgraded from 22.9 to >=22.12; initial frontend chunk is 1.23 MB

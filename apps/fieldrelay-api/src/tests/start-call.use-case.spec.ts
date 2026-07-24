@@ -85,11 +85,37 @@ describe('StartCallUseCase', () => {
     expect(result.providerTaskId).toBe('mock_task_123');
     expect(result.simulated).toBe(true);
     expect(result.replayed).toBe(false);
-    expect(result.callTaskId).toMatch(/^CALL-E-/);
+    expect(result.callTaskId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    );
+    expect(result.displayId).toMatch(/^CALL-2042-/);
     expect(mockPort.startCall).toHaveBeenCalledTimes(1);
     const task = mockPort.startCall.mock.calls[0][0] as CallTask;
     expect(task.status).toBe('queued');
-    expect(task.idempotencyKey).toBe('idemp_test_1');
+    expect(db.callTasks).toEqual([
+      expect.objectContaining({
+        id: task.id,
+        status: 'queued',
+        providerTaskId: 'mock_task_123',
+        version: 2
+      })
+    ]);
+  });
+
+  it('commits the queued task before invoking the provider', async () => {
+    mockPort.startCall.mockImplementation(async (task) => {
+      expect(db.callTasks).toEqual([
+        expect.objectContaining({ id: task.id, status: 'queued', providerTaskId: null })
+      ]);
+      expect(db.idempotency.get('call.start::idemp_test_1')).toMatchObject({
+        state: 'in_progress'
+      });
+      return { providerTaskId: 'mock_task_123', status: 'queued', simulated: true };
+    });
+
+    await useCase.execute(validInput());
+
+    expect(mockPort.startCall).toHaveBeenCalledTimes(1);
   });
 
   // Every guard below must reject BEFORE the provider is invoked.
@@ -160,8 +186,14 @@ describe('StartCallUseCase', () => {
         state: 'completed',
         result: { providerTaskId: 'mock_task_123', callTaskId: result.callTaskId }
       });
-      expect(db.auditEvents).toHaveLength(1);
-      expect(db.auditEvents[0]).toMatchObject({
+      expect(db.callTasks).toHaveLength(1);
+      expect(db.callTasks[0]).toMatchObject({
+        id: result.callTaskId,
+        status: 'queued',
+        providerTaskId: 'mock_task_123'
+      });
+      expect(db.auditEvents).toHaveLength(2);
+      expect(db.auditEvents[1]).toMatchObject({
         action: 'call.start.completed',
         entityType: 'call_task',
         entityId: result.callTaskId
@@ -275,6 +307,11 @@ describe('StartCallUseCase', () => {
       expect(db.auditEvents.map((event) => event.action)).toContain(
         'call.start.outcome_unknown'
       );
+      expect(db.callTasks).toHaveLength(1);
+      expect(db.callTasks[0]).toMatchObject({
+        status: 'outcome_unknown',
+        failureCode: 'provider_unavailable'
+      });
 
       providerSucceeds('mock_task_retry');
       await expect(useCase.execute(validInput())).rejects.toBeInstanceOf(

@@ -1,4 +1,5 @@
 import type { Incident, IncidentStatus } from '../domain/incident.entity';
+import type { CallStatus, CallTask } from '../domain/call-task.entity';
 
 export const TRANSACTION_PORT = Symbol('TRANSACTION_PORT');
 
@@ -22,6 +23,28 @@ export interface IncidentRepositoryPort {
   insert(incident: Incident): Promise<void>;
   findById(id: string): Promise<Incident | null>;
   list(query: ListIncidentsQuery): Promise<IncidentPage>;
+}
+
+// --- Calls -----------------------------------------------------------------
+
+export interface CallTaskPage {
+  items: CallTask[];
+  nextCursor: string | null;
+}
+
+export interface ListCallTasksQuery {
+  limit: number;
+  cursor?: string;
+  status?: CallStatus;
+  incidentId?: string;
+}
+
+export interface CallTaskRepositoryPort {
+  nextDisplayId(): Promise<string>;
+  insert(task: CallTask): Promise<void>;
+  update(task: CallTask): Promise<void>;
+  findById(id: string): Promise<CallTask | null>;
+  list(query: ListCallTasksQuery): Promise<CallTaskPage>;
 }
 
 // --- Audit -----------------------------------------------------------------
@@ -71,6 +94,7 @@ export interface IdempotencyStorePort {
 
 export interface UnitOfWork {
   incidents: IncidentRepositoryPort;
+  calls: CallTaskRepositoryPort;
   audit: AuditEventPort;
   idempotency: IdempotencyStorePort;
 }
