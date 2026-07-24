@@ -1,0 +1,25 @@
+{
+  "name": "fieldrelay-workspace",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm --filter fieldrelay-api... build",
+    "test": "pnpm --filter fieldrelay-api... test",
+    "lint": "eslint .",
+    "typecheck": "pnpm --filter fieldrelay-api... typecheck"
+  },
+  "pnpm": {
+    "overrides": {
+      "qs": ">=6.15.2"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
+    "eslint": "^10.7.0",
+    "typescript": "^5.5.4"
+  }
+}
