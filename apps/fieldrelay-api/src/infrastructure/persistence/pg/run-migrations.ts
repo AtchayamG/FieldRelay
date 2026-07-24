@@ -19,7 +19,7 @@ export async function runMigrations(directory = MIGRATIONS_DIR): Promise<string[
        )`
     );
     const { rows } = await pool.query<{ version: string }>('SELECT version FROM schema_migrations');
-    const done = new Set(rows.map((row) => row.version));
+    const done = new Set(rows.map((row: { version: string }) => row.version));
 
     const files = (await readdir(directory)).filter((f) => f.endsWith('.sql')).sort();
     for (const file of files) {
