@@ -10,7 +10,13 @@ export default defineConfig({
   ],
   server: {
     port: 4200,
-    host: true
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true
+      }
+    }
   },
   test: {
     globals: true,

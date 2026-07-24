@@ -26,6 +26,27 @@ export const routes: Routes = [
           import(
             './features/mission-control/presentation/mission-control.component'
           ).then((m) => m.MissionControlComponent)
+      },
+      {
+        path: 'incidents',
+        loadComponent: () =>
+          import(
+            './features/incidents/presentation/incident-list/incident-list.component'
+          ).then((m) => m.IncidentListComponent)
+      },
+      {
+        path: 'incidents/new',
+        loadComponent: () =>
+          import(
+            './features/incidents/presentation/incident-create/incident-create.component'
+          ).then((m) => m.IncidentCreateComponent)
+      },
+      {
+        path: 'incidents/:incidentId',
+        loadComponent: () =>
+          import(
+            './features/incidents/presentation/incident-detail/incident-detail.component'
+          ).then((m) => m.IncidentDetailComponent)
       }
     ]
   },

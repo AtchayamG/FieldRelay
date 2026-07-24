@@ -6,6 +6,7 @@ import { MissionControlData, PendingApproval, SystemStateMode } from '../domain/
 import { MetricCardComponent } from '../../../shared/components/metric-card/metric-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { StatusSwitchComponent } from '../../../shared/components/status-switch/status-switch.component';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -35,9 +36,7 @@ import { Observable } from 'rxjs';
             <button
               type="button"
               class="action-btn primary-btn"
-              disabled
-              aria-disabled="true"
-              title="Incident creation is planned for the next delivery milestone"
+              (click)="onNewIncident()"
             >
               ⚡ New Incident Alert
             </button>
@@ -877,10 +876,15 @@ import { Observable } from 'rxjs';
 })
 export class MissionControlComponent implements OnInit {
   private port = inject(MissionControlPort);
+  private router = inject(Router, { optional: true });
   data$!: Observable<MissionControlData>;
 
   ngOnInit(): void {
     this.data$ = this.port.getMissionControlState();
+  }
+
+  onNewIncident(): void {
+    this.router?.navigate(['/incidents/new']);
   }
 
   onStateModeChange(mode: SystemStateMode): void {

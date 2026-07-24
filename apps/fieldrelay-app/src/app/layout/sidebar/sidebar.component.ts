@@ -21,7 +21,7 @@ export interface NavItem {
         <nav class="nav-list">
           <ng-container *ngFor="let item of primaryNav">
             <a
-              *ngIf="item.path === '/mission-control'; else plannedPrimary"
+              *ngIf="item.path === '/mission-control' || item.path === '/incidents'; else plannedPrimary"
               [routerLink]="item.path"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
@@ -179,7 +179,7 @@ export interface NavItem {
 export class SidebarComponent {
   primaryNav: NavItem[] = [
     { path: '/mission-control', label: 'Mission Control', icon: '🎯', badge: 'LIVE', exact: true },
-    { path: '/incidents', label: 'Incidents', icon: '🚨', badge: '14' },
+    { path: '/incidents', label: 'Incidents', icon: '🚨' },
     { path: '/calls', label: 'Calls & AI Ops', icon: '📞', badge: '3' },
     { path: '/dispatch', label: 'Dispatch Board', icon: '🗺️' },
     { path: '/approvals', label: 'Approvals', icon: '⚖️', badge: '2' }

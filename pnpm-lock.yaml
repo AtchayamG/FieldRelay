@@ -143,6 +143,9 @@ importers:
       '@capacitor/status-bar':
         specifier: ^6.0.2
         version: 6.0.3(@capacitor/core@6.2.1)
+      '@fieldrelay/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@fieldrelay/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens

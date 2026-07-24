@@ -56,7 +56,8 @@ import { CommonModule } from '@angular/common';
       color: var(--fr-color-cyan);
     }
     .status-badge[data-variant="approval"],
-    .status-badge[data-variant="AWAITING APPROVAL"] {
+    .status-badge[data-variant="AWAITING APPROVAL"],
+    .status-badge[data-variant="awaiting_approval"] {
       background: var(--fr-color-primary-soft);
       color: var(--fr-color-primary-bright);
     }
@@ -64,6 +65,23 @@ import { CommonModule } from '@angular/common';
     .status-badge[data-variant="DISPATCHED"] {
       background: var(--fr-color-success-soft, var(--fr-color-cyan-soft));
       color: var(--fr-color-success);
+    }
+    .status-badge[data-variant="intake"],
+    .status-badge[data-variant="triage"] {
+      background: var(--fr-color-info-soft);
+      color: var(--fr-color-info);
+    }
+    .status-badge[data-variant="calling"] {
+      background: var(--fr-color-cyan-soft);
+      color: var(--fr-color-cyan);
+    }
+    .status-badge[data-variant="resolved"] {
+      background: var(--fr-color-success-soft);
+      color: var(--fr-color-success);
+    }
+    .status-badge[data-variant="cancelled"] {
+      background: var(--fr-color-muted-soft);
+      color: var(--fr-color-muted);
     }
   `]
 })
