@@ -4,6 +4,7 @@
 !.env.example
 node_modules/
 dist/
+build/
 coverage/
 .angular/
 .ionic/
@@ -16,6 +17,14 @@ Thumbs.db
 
 # Generated local render files
 .render_html/
+.tmp/
+.temp/
+artifacts/temp/
+test-results/
+playwright-report/
+screenshots/current/
+screenshots/diff/
+*.log
 
 # Do not commit judge or personal data
 private/
