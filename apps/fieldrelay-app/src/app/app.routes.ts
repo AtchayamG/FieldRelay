@@ -47,6 +47,20 @@ export const routes: Routes = [
           import(
             './features/incidents/presentation/incident-detail/incident-detail.component'
           ).then((m) => m.IncidentDetailComponent)
+      },
+      {
+        path: 'calls',
+        loadComponent: () =>
+          import(
+            './features/calls/presentation/call-queue/call-queue.component'
+          ).then((m) => m.CallQueueComponent)
+      },
+      {
+        path: 'calls/:callTaskId',
+        loadComponent: () =>
+          import(
+            './features/calls/presentation/call-detail/call-detail.component'
+          ).then((m) => m.CallDetailComponent)
       }
     ]
   },

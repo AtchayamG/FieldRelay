@@ -16,10 +16,10 @@ import { RouterModule } from '@angular/router';
         <span class="nav-icon">🚨</span>
         <span class="nav-label">Incidents</span>
       </a>
-      <span class="bottom-nav-item unavailable" aria-disabled="true" title="Calls — planned">
+      <a routerLink="/calls" routerLinkActive="active" class="bottom-nav-item">
         <span class="nav-icon">📞</span>
         <span class="nav-label">Calls</span>
-      </span>
+      </a>
       <span class="bottom-nav-item unavailable" aria-disabled="true" title="Dispatch — planned">
         <span class="nav-icon">🗺️</span>
         <span class="nav-label">Dispatch</span>

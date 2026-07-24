@@ -79,9 +79,34 @@ import { CommonModule } from '@angular/common';
       background: var(--fr-color-success-soft);
       color: var(--fr-color-success);
     }
-    .status-badge[data-variant="cancelled"] {
+    .status-badge[data-variant="cancelled"],
+    .status-badge[data-variant="queued"] {
       background: var(--fr-color-muted-soft);
       color: var(--fr-color-muted);
+    }
+    .status-badge[data-variant="ringing"] {
+      background: var(--fr-color-info-soft);
+      color: var(--fr-color-info);
+    }
+    .status-badge[data-variant="connected"] {
+      background: var(--fr-color-cyan-soft);
+      color: var(--fr-color-cyan);
+    }
+    .status-badge[data-variant="completed"] {
+      background: var(--fr-color-success-soft);
+      color: var(--fr-color-success);
+    }
+    .status-badge[data-variant="failed"] {
+      background: var(--fr-color-danger-soft);
+      color: var(--fr-color-danger);
+    }
+    .status-badge[data-variant="no_answer"] {
+      background: var(--fr-color-warning-soft);
+      color: var(--fr-color-warning);
+    }
+    .status-badge[data-variant="outcome_unknown"] {
+      background: var(--fr-color-danger-soft);
+      color: var(--fr-color-danger);
     }
   `]
 })
