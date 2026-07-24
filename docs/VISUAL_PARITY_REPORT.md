@@ -36,3 +36,13 @@ Reference: `mockup_specs/mission-control.md` and the dark desktop/mobile Mission
 - Search, status-filter empty state, full date/time labels, disabled in-flight submission, and horizontally scrollable detail tabs were verified.
 - Document width equals viewport width at 430 px; the detail tab strip scrolls locally without causing page overflow.
 - Browser console contains no errors or warnings after adding an explicit favicon.
+
+## 2026-07-24 simulated call operations slice
+
+- The call queue follows the approved desktop table hierarchy and becomes a compact linked card at 430 x 932.
+- Call detail presents workflow identity, provider lifecycle, and audit metadata without exposing a raw phone number, transcript, idempotency key, or provider payload.
+- A high-contrast `SIMULATED CALL TASK` banner states that no real-world phone network action occurred.
+- Dark and light themes retain readable status, filter, card, and banner contrast.
+- Status-filter empty state and invalid incident UUID validation replace stale results visibly.
+- Document width equals viewport width at 430 px; the internally scrolling content remains reachable above the fixed bottom navigation.
+- List/detail API requests returned `200`, and the browser console contained zero errors and zero warnings.

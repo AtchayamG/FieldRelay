@@ -29,3 +29,12 @@
 - Persisted provider success and ambiguous `outcome_unknown` results while keeping provider I/O outside database transactions.
 - Added bounded cursor-based call list/detail APIs without exposing idempotency keys, raw numbers, transcripts, or raw provider payloads.
 - Verified 121 workspace tests, production build, clean dependency audit, fresh Compose initialization, and the real local incident browser flow.
+
+## 2026-07-24 — Simulated call operations UI
+
+- Added Clean Architecture call domain/application/data layers to the Ionic Angular client.
+- Added API-backed call queue and detail routes with status/incident filtering, bounded pagination, loading, empty, validation, permission, degraded, and error states.
+- Added responsive desktop tables and mobile cards, dark/light parity, status badge variants, and direct links between calls and incidents.
+- Added unmistakable simulated-call disclosure and `outcome_unknown` reconciliation guidance without start, retry, or redial controls.
+- Removed a fictional static navigation count and clarified retry/timeout semantics discovered during browser QA.
+- Verified 139 workspace tests, strict typecheck, lint, production build, clean dependency audit, PostgreSQL integration, and desktop/mobile browser flows.

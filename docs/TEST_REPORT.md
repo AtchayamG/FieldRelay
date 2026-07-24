@@ -43,3 +43,19 @@ Environment: Node 22.9.0, pnpm 10.34.4, PostgreSQL 17, Windows.
 Call safety coverage now proves the queued task and idempotency reservation commit before provider I/O, success is persisted and replayable, mismatches/in-progress duplicates do not create another task, ambiguous failure persists `outcome_unknown` without enabling redial, and PostgreSQL enforces the incident foreign key.
 
 Still not covered: production CALL-E adapter/callbacks, production authentication/RBAC, automated accessibility scanning, image-diff regression, offline PWA behavior, and Capacitor native builds.
+
+## 2026-07-24 — Simulated call operations UI
+
+Environment: Node 22.9.0, pnpm 10.34.4, PostgreSQL 17, Windows.
+
+| Check | Result |
+|---|---|
+| `pnpm lint` | PASS |
+| `pnpm typecheck` | PASS |
+| `pnpm test` with PostgreSQL | PASS — 139 tests total: API 85, app 52, tokens 2 |
+| `pnpm build` | PASS — Node patch and 1.23 MB initial-chunk warnings remain |
+| `pnpm audit --prod` | PASS — no known vulnerabilities |
+| Playwright runtime flow | PASS — API-backed queue/detail, status empty state, invalid UUID validation, light/dark, desktop and 430 px mobile |
+| Runtime network/console | PASS — list/detail GET requests `200`; zero errors and zero warnings |
+
+Call UI coverage proves bounded query mapping, status/incident filters, replacement-request stale-data clearing, pagination retry behavior, simulated/non-simulated disclosure, `outcome_unknown` no-redial guidance, and detail error/permission states. Browser checks confirmed no page-level horizontal overflow and no controls that can start, retry, or redial a call.
