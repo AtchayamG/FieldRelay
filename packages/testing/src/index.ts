@@ -3,7 +3,7 @@ import type { CallPurpose } from '@fieldrelay/contracts';
 
 export const createMockIdempotencyKey = (): string => `idemp_${randomUUID()}`;
 
-export const MOCK_INCIDENT_ID = 'INC-2042-0891';
+export const MOCK_INCIDENT_ID = '11111111-1111-4111-8111-111111111191';
 export const MOCK_CONTACT_ID = 'CNS-4491';
 export const MOCK_PURPOSE: CallPurpose = 'vendor_availability';
 

@@ -2,7 +2,13 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    // The workspace default emits ESM, which Node cannot load from this
+    // CommonJS package: `node dist/main.js` failed with ERR_MODULE_NOT_FOUND.
+    // NestJS also needs CommonJS for emitDecoratorMetadata to resolve.
+    "module": "commonjs",
+    "moduleResolution": "node"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/tests/**/*"]
 }

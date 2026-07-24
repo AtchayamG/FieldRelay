@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import {
   Controller,
   Post,
@@ -7,12 +6,14 @@ import {
   HttpCode,
   HttpStatus,
   Get,
-  BadRequestException,
-  ForbiddenException
+  Req,
+  Res
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { StartCallUseCase } from '../application/start-call.use-case';
-import { CallAuthorizationError, CallValidationError } from '../application/errors';
 import { StartCallRequestDto, CallStatusResponseDto, ApiResponse } from '@fieldrelay/contracts';
+import { requestIdOf } from './request-context';
+import { CheckHealthUseCase } from '../application/check-health.use-case';
 
 @Controller('api/v1/calls')
 export class CallEController {
@@ -21,43 +22,49 @@ export class CallEController {
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
   async startCall(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
     @Body() dto: StartCallRequestDto,
     @Headers('idempotency-key') idempotencyKey?: string
   ): Promise<ApiResponse<CallStatusResponseDto>> {
-    try {
-      const result = await this.startCallUseCase.execute({
-        incidentId: dto.incidentId,
-        authorizedContactId: dto.authorizedContactId,
-        purpose: dto.purpose,
-        timeoutSeconds: dto.timeoutSeconds,
-        retries: dto.retries,
-        idempotencyKey: idempotencyKey ?? ''
-      });
+    const requestId = requestIdOf(request);
+    // Application errors are translated centrally by ApiExceptionFilter so
+    // every endpoint returns the same error envelope.
+    const result = await this.startCallUseCase.execute({
+      incidentId: dto?.incidentId,
+      authorizedContactId: dto?.authorizedContactId,
+      purpose: dto?.purpose,
+      timeoutSeconds: dto?.timeoutSeconds,
+      retries: dto?.retries,
+      idempotencyKey: idempotencyKey ?? '',
+      correlationId: requestId
+    });
 
-      return {
-        data: {
-          callTaskId: result.callTaskId,
-          providerTaskId: result.providerTaskId,
-          status: result.status,
-          simulated: result.simulated
-        },
-        meta: {
-          requestId: `req_${randomUUID()}`,
-          timestamp: new Date().toISOString()
-        }
-      };
-    } catch (err) {
-      if (err instanceof CallAuthorizationError) throw new ForbiddenException(err.message);
-      if (err instanceof CallValidationError) throw new BadRequestException(err.message);
-      throw err;
-    }
+    // The recorded call result is replayed while request metadata is fresh.
+    // This header makes it explicit that no second call was placed.
+    if (result.replayed) response.setHeader('Idempotency-Replayed', 'true');
+
+    return {
+      data: {
+        callTaskId: result.callTaskId,
+        providerTaskId: result.providerTaskId,
+        status: result.status,
+        simulated: result.simulated
+      },
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString()
+      }
+    };
   }
 }
 
 @Controller('health')
 export class HealthController {
+  constructor(private readonly checkHealth: CheckHealthUseCase) {}
+
   @Get()
-  check(): { status: 'ok' } {
-    return { status: 'ok' };
+  async check(): Promise<{ status: 'ok' }> {
+    return this.checkHealth.execute();
   }
 }

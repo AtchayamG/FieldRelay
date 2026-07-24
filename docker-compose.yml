@@ -1,0 +1,36 @@
+# Local development PostgreSQL for FieldRelay.
+#
+# Not a production deployment: it binds to localhost only and uses the local
+# credentials from .env.example. Real environments supply DATABASE_URL from
+# their own secret store.
+#
+#   cp .env.example .env
+#   docker compose up -d postgres
+#   pnpm --filter fieldrelay-api db:migrate   # no-op on a freshly initialised volume
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fieldrelay}
+      POSTGRES_USER: ${POSTGRES_USER:-fieldrelay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fieldrelay_local_dev}
+    ports:
+      # Loopback only, so the development database is never exposed on a LAN.
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - fieldrelay-postgres-data:/var/lib/postgresql/data
+      # Run once, on first initialisation of an empty data volume. The
+      # migration records itself in schema_migrations, so `db:migrate` agrees
+      # that it has already been applied.
+      - ./infra/database/migrations/0001_incidents.sql:/docker-entrypoint-initdb.d/10_0001_incidents.sql:ro
+      - ./infra/database/seed/0001_demo_incidents.sql:/docker-entrypoint-initdb.d/20_demo_incidents.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-fieldrelay} -d ${POSTGRES_DB:-fieldrelay}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  fieldrelay-postgres-data:
