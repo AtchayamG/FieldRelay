@@ -1,0 +1,56 @@
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
+@import '@fieldrelay/design-tokens/tokens.css';
+
+/* Global Reset & Core Styling */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--fr-font-primary);
+  background-color: var(--fr-color-bg);
+  color: var(--fr-color-text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre, .font-mono {
+  font-family: var(--fr-font-technical);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Accessible focus visible rings */
+:focus-visible {
+  outline: 2px solid var(--fr-color-primary-bright);
+  outline-offset: 2px;
+}
+
+/* Responsive Hide/Show Helpers */
+@media (max-width: 767px) {
+  .hide-mobile { display: none !important; }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .hide-tablet { display: none !important; }
+}
+
+@media (min-width: 1280px) {
+  .hide-desktop { display: none !important; }
+}

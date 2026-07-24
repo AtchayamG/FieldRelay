@@ -1,0 +1,112 @@
+/* Centralized FieldRelay Design Tokens */
+:root, [data-theme='light'] {
+  --fr-font-primary: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --fr-font-technical: 'JetBrains Mono', monospace;
+
+  --fr-radius-sm: 10px;
+  --fr-radius-md: 12px;
+  --fr-radius-lg: 18px;
+  --fr-radius-xl: 22px;
+  --fr-radius-pill: 999px;
+
+  --fr-space-2xs: 4px;
+  --fr-space-xs: 8px;
+  --fr-space-sm: 12px;
+  --fr-space-md: 16px;
+  --fr-space-lg: 24px;
+  --fr-space-xl: 32px;
+  --fr-space-2xl: 48px;
+
+  --fr-motion-fast: 140ms;
+  --fr-motion-normal: 200ms;
+  --fr-motion-workflow: 280ms;
+
+  --fr-shell-desktop-sidebar: 270px;
+  --fr-shell-tablet-rail: 86px;
+  --fr-shell-topbar: 86px;
+  --fr-shell-mobile-topbar: 72px;
+  --fr-shell-mobile-bottom-nav: 66px;
+
+  /* Colors - Light Theme */
+  --fr-color-bg: #F4F7FC;
+  --fr-color-surface: #FFFFFF;
+  --fr-color-surface2: #F9FBFF;
+  --fr-color-surface3: #F1F5FB;
+  --fr-color-border: #DCE5F2;
+  --fr-color-text: #111827;
+  --fr-color-muted: #5E6B82;
+  --fr-color-primary: #6D28D9;
+  --fr-color-primary-bright: #8B5CF6;
+  --fr-color-cyan: #0891B2;
+  --fr-color-success: #0F9F8E;
+  --fr-color-warning: #D97706;
+  --fr-color-danger: #E11D48;
+  --fr-color-info: #2563EB;
+  --fr-color-on-accent: #FFFFFF;
+
+  /* Semantic Mapping */
+  --fr-semantic-healthy: var(--fr-color-success);
+  --fr-semantic-waiting: var(--fr-color-warning);
+  --fr-semantic-critical: var(--fr-color-danger);
+  --fr-semantic-ai-action: var(--fr-color-primary);
+  --fr-semantic-live-comm: var(--fr-color-cyan);
+  --fr-semantic-in-progress: var(--fr-color-info);
+  --fr-color-danger-soft: color-mix(in srgb, var(--fr-color-danger) 15%, transparent);
+  --fr-color-warning-soft: color-mix(in srgb, var(--fr-color-warning) 15%, transparent);
+  --fr-color-info-soft: color-mix(in srgb, var(--fr-color-info) 15%, transparent);
+  --fr-color-muted-soft: color-mix(in srgb, var(--fr-color-muted) 15%, transparent);
+  --fr-color-cyan-soft: color-mix(in srgb, var(--fr-color-cyan) 12%, transparent);
+  --fr-color-cyan-border: color-mix(in srgb, var(--fr-color-cyan) 30%, transparent);
+  --fr-color-primary-soft: color-mix(in srgb, var(--fr-color-primary) 15%, transparent);
+  --fr-color-success-soft: color-mix(in srgb, var(--fr-color-success) 15%, transparent);
+  --fr-shadow-card: 0 2px 8px color-mix(in srgb, #000000 4%, transparent);
+  --fr-shadow-elevated: 0 12px 32px color-mix(in srgb, #000000 15%, transparent);
+  --fr-shadow-bottom-nav: 0 -4px 12px color-mix(in srgb, #000000 8%, transparent);
+  --fr-shadow-primary: 0 4px 12px color-mix(in srgb, var(--fr-color-primary) 30%, transparent);
+
+  /* Ionic Overrides */
+  --ion-background-color: var(--fr-color-bg);
+  --ion-text-color: var(--fr-color-text);
+  --ion-font-family: var(--fr-font-primary);
+  --ion-color-primary: var(--fr-color-primary);
+  --ion-item-background: var(--fr-color-surface);
+  --ion-card-background: var(--fr-color-surface);
+  --ion-toolbar-background: var(--fr-color-surface);
+  --ion-border-color: var(--fr-color-border);
+}
+
+[data-theme='dark'] {
+  /* Colors - Dark Theme */
+  --fr-color-bg: #070A13;
+  --fr-color-surface: #0E1422;
+  --fr-color-surface2: #111A2A;
+  --fr-color-surface3: #151F32;
+  --fr-color-border: #24324D;
+  --fr-color-text: #F7F9FF;
+  --fr-color-muted: #91A0B8;
+  --fr-color-primary: #7C3AED;
+  --fr-color-primary-bright: #A855F7;
+  --fr-color-cyan: #06B6D4;
+  --fr-color-success: #14B8A6;
+  --fr-color-warning: #F59E0B;
+  --fr-color-danger: #F43F5E;
+  --fr-color-info: #3B82F6;
+
+  /* Semantic Mapping */
+  --fr-semantic-healthy: var(--fr-color-success);
+  --fr-semantic-waiting: var(--fr-color-warning);
+  --fr-semantic-critical: var(--fr-color-danger);
+  --fr-semantic-ai-action: var(--fr-color-primary);
+  --fr-semantic-live-comm: var(--fr-color-cyan);
+  --fr-semantic-in-progress: var(--fr-color-info);
+
+  /* Ionic Overrides */
+  --ion-background-color: var(--fr-color-bg);
+  --ion-text-color: var(--fr-color-text);
+  --ion-font-family: var(--fr-font-primary);
+  --ion-color-primary: var(--fr-color-primary);
+  --ion-item-background: var(--fr-color-surface);
+  --ion-card-background: var(--fr-color-surface);
+  --ion-toolbar-background: var(--fr-color-surface);
+  --ion-border-color: var(--fr-color-border);
+}

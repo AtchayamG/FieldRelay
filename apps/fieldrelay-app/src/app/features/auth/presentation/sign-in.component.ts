@@ -1,0 +1,366 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
+
+@Component({
+  selector: 'app-sign-in',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="auth-page">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="brand-badge">
+            <span class="icon">⚡</span>
+            <span class="text">FIELDRELAY OPS</span>
+          </div>
+          <h1 class="auth-title">Secure Sign In</h1>
+          <p class="auth-subtitle">
+            Autonomous Property Dispatch & Emergency AI Voice Operations
+          </p>
+        </div>
+
+        <!-- Working Demo Quick Access Banner -->
+        <div class="demo-access-banner">
+          <div class="banner-text">
+            <strong>Evaluator / Demo Session:</strong> Access full Mission Control with pre-configured operational state.
+          </div>
+          <button
+            type="button"
+            class="demo-btn"
+            (click)="onQuickDemoSignIn()"
+            [disabled]="authService.isLoading()"
+            id="demo-login-btn"
+          >
+            ⚡ Continue as Demo Ops Manager
+          </button>
+        </div>
+
+        <div class="divider">
+          <span>OR SIGN IN WITH CREDENTIALS</span>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+          <div class="form-group">
+            <label for="email" class="form-label">Organization Email</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              class="form-input"
+              placeholder="ops.manager@fieldrelay.io"
+              autocomplete="email"
+              [class.is-invalid]="emailControl?.invalid && emailControl?.touched"
+            />
+            <div class="error-msg" *ngIf="emailControl?.invalid && emailControl?.touched">
+              <span *ngIf="emailControl?.errors?.['required']">Email is required.</span>
+              <span *ngIf="emailControl?.errors?.['email']">Please enter a valid email address.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label-row">
+              <label for="password" class="form-label">Password</label>
+              <button
+                type="button"
+                class="forgot-link"
+                disabled
+                title="Password recovery is unavailable in the demo environment"
+              >
+                Forgot password?
+              </button>
+            </div>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              class="form-input"
+              placeholder="••••••••••••"
+              autocomplete="current-password"
+              [class.is-invalid]="passwordControl?.invalid && passwordControl?.touched"
+            />
+            <div class="error-msg" *ngIf="passwordControl?.invalid && passwordControl?.touched">
+              <span *ngIf="passwordControl?.errors?.['required']">Password is required.</span>
+              <span *ngIf="passwordControl?.errors?.['minlength']">Password must be at least 6 characters.</span>
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="rememberMe" />
+              <span>Remember this browser session</span>
+            </label>
+          </div>
+
+          <div class="auth-error-banner" *ngIf="authService.authError() as err" role="alert">
+            ⚠️ {{ err }}
+          </div>
+
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="loginForm.invalid || authService.isLoading()"
+          >
+            <span *ngIf="!authService.isLoading()">Sign In to Mission Control</span>
+            <span *ngIf="authService.isLoading()" class="spinner">Verifying Session...</span>
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p class="security-note">
+            🔒 Simulated Demo Environment • No real calls are placed
+          </p>
+          <div class="theme-switch-row">
+            <span>Theme Mode:</span>
+            <button
+              type="button"
+              class="theme-btn"
+              (click)="themeService.toggleTheme()"
+            >
+              {{ themeService.currentTheme() === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--fr-color-bg);
+      padding: var(--fr-space-lg);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 460px;
+      background: var(--fr-color-surface);
+      border: 1px solid var(--fr-color-border);
+      border-radius: var(--fr-radius-xl);
+      padding: var(--fr-space-xl);
+      box-shadow: var(--fr-shadow-elevated);
+      display: flex;
+      flex-direction: column;
+      gap: var(--fr-space-lg);
+    }
+    .auth-header {
+      text-align: center;
+    }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: var(--fr-radius-pill);
+      background: var(--fr-color-primary-soft);
+      color: var(--fr-color-primary-bright);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      margin-bottom: var(--fr-space-xs);
+    }
+    .auth-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--fr-color-text);
+      margin-bottom: 6px;
+    }
+    .auth-subtitle {
+      font-size: 13px;
+      color: var(--fr-color-muted);
+      line-height: 1.4;
+    }
+    .demo-access-banner {
+      background: var(--fr-color-surface2);
+      border: 1px solid var(--fr-color-border);
+      border-left: 4px solid var(--fr-color-primary);
+      padding: var(--fr-space-md);
+      border-radius: var(--fr-radius-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--fr-space-sm);
+    }
+    .banner-text {
+      font-size: 12px;
+      color: var(--fr-color-muted);
+      line-height: 1.4;
+    }
+    .demo-btn {
+      width: 100%;
+      background: var(--fr-color-primary);
+      color: var(--fr-color-on-accent);
+      border: none;
+      padding: 10px 16px;
+      border-radius: var(--fr-radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background var(--fr-motion-fast);
+    }
+    .demo-btn:hover:not(:disabled) {
+      background: var(--fr-color-primary-bright);
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--fr-color-muted);
+      letter-spacing: 0.8px;
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--fr-color-border);
+    }
+    .divider span {
+      padding: 0 10px;
+    }
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--fr-space-md);
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--fr-color-text);
+    }
+    .forgot-link {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 11px;
+      color: var(--fr-color-primary-bright);
+      text-decoration: none;
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--fr-color-surface3);
+      border: 1px solid var(--fr-color-border);
+      border-radius: var(--fr-radius-md);
+      padding: 10px 14px;
+      color: var(--fr-color-text);
+      font-size: 13px;
+    }
+    .form-input.is-invalid {
+      border-color: var(--fr-color-danger);
+    }
+    .error-msg {
+      font-size: 11px;
+      color: var(--fr-color-danger);
+    }
+    .form-options {
+      display: flex;
+      align-items: center;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--fr-color-muted);
+      cursor: pointer;
+    }
+    .auth-error-banner {
+      background: var(--fr-color-danger-soft);
+      border: 1px solid var(--fr-color-danger);
+      color: var(--fr-color-danger);
+      padding: 10px;
+      border-radius: var(--fr-radius-md);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .submit-btn {
+      width: 100%;
+      background: var(--fr-color-surface2);
+      border: 1px solid var(--fr-color-border);
+      color: var(--fr-color-text);
+      padding: 12px;
+      border-radius: var(--fr-radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--fr-motion-fast);
+    }
+    .submit-btn:hover:not(:disabled) {
+      border-color: var(--fr-color-primary-bright);
+      color: var(--fr-color-primary-bright);
+    }
+    .auth-footer {
+      border-top: 1px solid var(--fr-color-border);
+      padding-top: var(--fr-space-md);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--fr-space-xs);
+    }
+    .security-note {
+      font-size: 11px;
+      color: var(--fr-color-muted);
+    }
+    .theme-switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--fr-space-xs);
+      font-size: 11px;
+      color: var(--fr-color-muted);
+    }
+    .theme-btn {
+      background: transparent;
+      border: none;
+      color: var(--fr-color-primary-bright);
+      font-weight: 600;
+      cursor: pointer;
+    }
+  `]
+})
+export class SignInComponent {
+  private fb = inject(FormBuilder);
+  authService = inject(AuthService);
+  themeService = inject(ThemeService);
+
+  loginForm = this.fb.group({
+    email: ['ops.demo@fieldrelay.io', [Validators.required, Validators.email]],
+    password: ['DemoOps2026!', [Validators.required, Validators.minLength(6)]],
+    rememberMe: [true]
+  });
+
+  get emailControl() {
+    return this.loginForm.get('email');
+  }
+
+  get passwordControl() {
+    return this.loginForm.get('password');
+  }
+
+  onQuickDemoSignIn(): void {
+    this.authService.signInDemo();
+  }
+
+  onSubmit(): void {
+    if (this.loginForm.valid) {
+      const { email, password, rememberMe } = this.loginForm.value;
+      this.authService.signIn(email!, password!, true, Boolean(rememberMe));
+    }
+  }
+}
