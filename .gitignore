@@ -1,0 +1,27 @@
+# Runtime and secrets
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+.angular/
+.ionic/
+www/
+android/.gradle/
+android/local.properties
+ios/App/Pods/
+.DS_Store
+Thumbs.db
+
+# Generated local render files
+.render_html/
+
+# Do not commit judge or personal data
+private/
+secrets/
+*.key
+*.pem
+
+__pycache__/
+*.pyc

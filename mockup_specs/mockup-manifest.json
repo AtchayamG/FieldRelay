@@ -1,0 +1,103 @@
+{
+  "product": "FieldRelay",
+  "visual_direction": "Neon Ops Enterprise",
+  "themes": [
+    "dark",
+    "light"
+  ],
+  "breakpoints": {
+    "desktop": {
+      "css_viewport": [
+        1920,
+        1080
+      ],
+      "device_scale_factor": 2,
+      "target_px": [
+        3840,
+        2160
+      ]
+    },
+    "tablet": {
+      "css_viewport": [
+        1024,
+        1366
+      ],
+      "device_scale_factor": 2,
+      "target_px": [
+        2048,
+        2732
+      ]
+    },
+    "mobile": {
+      "css_viewport": [
+        430,
+        932
+      ],
+      "device_scale_factor": 3,
+      "target_px_width": 1290,
+      "capture": "full page"
+    }
+  },
+  "pages": [
+    {
+      "slug": "01-login",
+      "title": "Secure Sign In"
+    },
+    {
+      "slug": "02-mission-control",
+      "title": "Mission Control"
+    },
+    {
+      "slug": "03-incidents",
+      "title": "Incidents"
+    },
+    {
+      "slug": "04-incident-detail",
+      "title": "Incident Detail"
+    },
+    {
+      "slug": "05-create-incident",
+      "title": "Create Incident"
+    },
+    {
+      "slug": "06-calls-ai-ops",
+      "title": "Calls & AI Operations"
+    },
+    {
+      "slug": "07-dispatch",
+      "title": "Dispatch Board"
+    },
+    {
+      "slug": "08-technicians",
+      "title": "Technicians"
+    },
+    {
+      "slug": "09-vendor-detail",
+      "title": "Vendor Detail"
+    },
+    {
+      "slug": "10-approvals",
+      "title": "Approvals"
+    },
+    {
+      "slug": "11-customers",
+      "title": "Customers & Properties"
+    },
+    {
+      "slug": "12-analytics",
+      "title": "Analytics"
+    },
+    {
+      "slug": "13-audit-consent",
+      "title": "Audit & Consent"
+    },
+    {
+      "slug": "14-knowledge-base",
+      "title": "Knowledge Base"
+    },
+    {
+      "slug": "15-settings",
+      "title": "Settings"
+    }
+  ]
+}
