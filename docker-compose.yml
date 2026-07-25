@@ -26,6 +26,7 @@ services:
       # that it has already been applied.
       - ./infra/database/migrations/0001_incidents.sql:/docker-entrypoint-initdb.d/10_0001_incidents.sql:ro
       - ./infra/database/migrations/0002_call_tasks.sql:/docker-entrypoint-initdb.d/20_0002_call_tasks.sql:ro
+      - ./infra/database/migrations/0003_call_callbacks.sql:/docker-entrypoint-initdb.d/25_0003_call_callbacks.sql:ro
       - ./infra/database/seed/0001_demo_incidents.sql:/docker-entrypoint-initdb.d/30_demo_incidents.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-fieldrelay} -d ${POSTGRES_DB:-fieldrelay}']

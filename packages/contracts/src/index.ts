@@ -29,7 +29,7 @@ export interface CallStatusResponseDto {
   callTaskId: string;
   displayId: string;
   providerTaskId: string;
-  status: ProviderCallStatus;
+  status: CallStatus;
   // true when produced by the demo adapter rather than a live call.
   simulated: boolean;
   startedAt?: string;
@@ -136,4 +136,19 @@ export interface ApiError {
     details?: Record<string, unknown>;
     requestId: string;
   };
+}
+
+// --- Provider Callbacks ---------------------------------------------------
+
+export type AllowedCallbackStatus = 'ringing' | 'connected' | 'completed' | 'failed' | 'no_answer';
+
+export interface ProviderCallbackRequestDto {
+  eventId: string;
+  providerTaskId: string;
+  status: AllowedCallbackStatus;
+}
+
+export interface ProviderCallbackAcceptedResponseDto {
+  accepted: boolean;
+  eventId: string;
 }

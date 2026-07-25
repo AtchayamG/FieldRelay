@@ -11,6 +11,7 @@ import type { ApiError, ApiErrorCode } from '@fieldrelay/contracts';
 import {
   CallAuthorizationError,
   CallValidationError,
+  CallbackAuthenticationError,
   IdempotencyConflictError,
   NotFoundError,
   OperationInProgressError
@@ -56,6 +57,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     if (exception instanceof CallAuthorizationError) {
       return {
         status: HttpStatus.FORBIDDEN,
+        code: 'NOT_AUTHORIZED',
+        message: exception.message
+      };
+    }
+    if (exception instanceof CallbackAuthenticationError) {
+      return {
+        status: HttpStatus.UNAUTHORIZED,
         code: 'NOT_AUTHORIZED',
         message: exception.message
       };

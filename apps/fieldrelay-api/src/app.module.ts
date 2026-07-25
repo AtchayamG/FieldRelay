@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { CallEController, HealthController } from './interfaces/call-e.controller';
 import { IncidentController } from './interfaces/incident.controller';
+import { ProviderCallbackController } from './interfaces/provider-callback.controller';
 import { ApiExceptionFilter } from './interfaces/api-exception.filter';
 import { StartCallUseCase } from './application/start-call.use-case';
 import { ListCallsUseCase } from './application/list-calls.use-case';
 import { GetCallUseCase } from './application/get-call.use-case';
+import { ProcessProviderCallbackUseCase } from './application/process-provider-callback.use-case';
+import { ReconcileStaleReservationsUseCase } from './application/reconcile-stale-reservations.use-case';
 import { CreateIncidentUseCase } from './application/create-incident.use-case';
 import { ListIncidentsUseCase } from './application/list-incidents.use-case';
 import { GetIncidentUseCase } from './application/get-incident.use-case';
@@ -24,7 +27,7 @@ import {
 } from './infrastructure/persistence/pg/pg-unit-of-work';
 
 @Module({
-  controllers: [CallEController, HealthController, IncidentController],
+  controllers: [CallEController, HealthController, IncidentController, ProviderCallbackController],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
 
@@ -51,6 +54,18 @@ import {
         transactions: TransactionPort
       ) => new StartCallUseCase(callE, contacts, transactions),
       inject: [CALL_E_PORT, CONTACT_AUTH_PORT, TRANSACTION_PORT]
+    },
+    {
+      provide: ProcessProviderCallbackUseCase,
+      useFactory: (transactions: TransactionPort) =>
+        new ProcessProviderCallbackUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: ReconcileStaleReservationsUseCase,
+      useFactory: (transactions: TransactionPort) =>
+        new ReconcileStaleReservationsUseCase(transactions),
+      inject: [TRANSACTION_PORT]
     },
     {
       provide: ListCallsUseCase,

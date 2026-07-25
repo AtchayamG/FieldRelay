@@ -1,5 +1,6 @@
 import type { AddressInfo } from 'node:net';
 import type { INestApplication } from '@nestjs/common';
+import { createHmac } from 'node:crypto';
 import { Test } from '@nestjs/testing';
 import { CallEPort } from '../application/call-e.port';
 import { CheckHealthUseCase } from '../application/check-health.use-case';
@@ -10,6 +11,8 @@ import { ListIncidentsUseCase } from '../application/list-incidents.use-case';
 import { ListCallsUseCase } from '../application/list-calls.use-case';
 import { GetCallUseCase } from '../application/get-call.use-case';
 import { StartCallUseCase } from '../application/start-call.use-case';
+import { ProcessProviderCallbackUseCase } from '../application/process-provider-callback.use-case';
+import { ReconcileStaleReservationsUseCase } from '../application/reconcile-stale-reservations.use-case';
 import {
   InMemoryDatabase,
   InMemoryTransactionManager
@@ -17,6 +20,7 @@ import {
 import { ApiExceptionFilter } from '../interfaces/api-exception.filter';
 import { CallEController, HealthController } from '../interfaces/call-e.controller';
 import { IncidentController } from '../interfaces/incident.controller';
+import { ProviderCallbackController } from '../interfaces/provider-callback.controller';
 
 interface JsonResponse<T> {
   response: Response;
@@ -27,8 +31,10 @@ describe('FieldRelay HTTP API', () => {
   let app: INestApplication;
   let baseUrl: string;
   let provider: jest.Mocked<CallEPort>;
+  const signingSecret = 'e2e_test_signing_secret_123456';
 
   beforeEach(async () => {
+    process.env.CALLBACK_SIGNING_SECRET = signingSecret;
     const transactions = new InMemoryTransactionManager(new InMemoryDatabase());
     provider = { startCall: jest.fn() };
     provider.startCall.mockResolvedValue({
@@ -45,7 +51,12 @@ describe('FieldRelay HTTP API', () => {
     };
 
     const module = await Test.createTestingModule({
-      controllers: [IncidentController, CallEController, HealthController],
+      controllers: [
+        IncidentController,
+        CallEController,
+        HealthController,
+        ProviderCallbackController
+      ],
       providers: [
         {
           provide: CreateIncidentUseCase,
@@ -64,6 +75,14 @@ describe('FieldRelay HTTP API', () => {
           useValue: new StartCallUseCase(provider, contacts, transactions)
         },
         {
+          provide: ProcessProviderCallbackUseCase,
+          useValue: new ProcessProviderCallbackUseCase(transactions)
+        },
+        {
+          provide: ReconcileStaleReservationsUseCase,
+          useValue: new ReconcileStaleReservationsUseCase(transactions)
+        },
+        {
           provide: ListCallsUseCase,
           useValue: new ListCallsUseCase(transactions)
         },
@@ -78,7 +97,7 @@ describe('FieldRelay HTTP API', () => {
       ]
     }).compile();
 
-    app = module.createNestApplication();
+    app = module.createNestApplication({ rawBody: true });
     app.useGlobalFilters(new ApiExceptionFilter());
     await app.listen(0, '127.0.0.1');
     const address = app.getHttpServer().address() as AddressInfo;
@@ -182,6 +201,44 @@ describe('FieldRelay HTTP API', () => {
     });
   });
 
+  it('accepts valid provider callbacks, replays exact delivery, and rejects conflicts & bad signatures', async () => {
+    const bodyObj = {
+      eventId: 'evt_e2e_cb_1',
+      providerTaskId: 'demo_provider_task',
+      status: 'connected'
+    };
+
+    const first = await postCallback(bodyObj);
+    expect(first.response.status).toBe(202);
+    expect(first.body.data).toEqual({ accepted: true, eventId: 'evt_e2e_cb_1' });
+
+    // Exact replay
+    const replay = await postCallback(bodyObj);
+    expect(replay.response.status).toBe(202);
+    expect(replay.response.headers.get('idempotency-replayed')).toBe('true');
+    expect(replay.body.data).toEqual({ accepted: true, eventId: 'evt_e2e_cb_1' });
+
+    // Conflicting reuse of same eventId
+    const conflict = await postCallback({
+      eventId: 'evt_e2e_cb_1',
+      providerTaskId: 'demo_provider_task',
+      status: 'completed'
+    });
+    expect(conflict.response.status).toBe(409);
+
+    // Invalid signature
+    const badSigResponse = await fetch(`${baseUrl}/api/v1/call-e/callbacks`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-fieldrelay-timestamp': String(Math.floor(Date.now() / 1000)),
+        'x-fieldrelay-signature': '0'.repeat(64)
+      },
+      body: JSON.stringify(bodyObj)
+    });
+    expect(badSigResponse.status).toBe(401);
+  });
+
   it('returns stable errors and a database-backed health response', async () => {
     const missing = await getJson<{ error: { code: string; requestId: string } }>(
       '/api/v1/incidents/11111111-1111-4111-8111-111111119999'
@@ -238,6 +295,29 @@ describe('FieldRelay HTTP API', () => {
       headers: {
         'content-type': 'application/json',
         'idempotency-key': idempotencyKey
+      },
+      body: JSON.stringify(body)
+    });
+    return { response, body: (await response.json()) as T };
+  }
+
+  async function postCallback<T = { data: { accepted: boolean; eventId: string } }>(
+    body: object,
+    timestampOffsetSec = 0
+  ): Promise<JsonResponse<T>> {
+    const rawBody = Buffer.from(JSON.stringify(body));
+    const timestampHeader = String(Math.floor(Date.now() / 1000) + timestampOffsetSec);
+    const signatureHeader = createHmac('sha256', signingSecret)
+      .update(`${timestampHeader}.`)
+      .update(rawBody)
+      .digest('hex');
+
+    const response = await fetch(`${baseUrl}/api/v1/call-e/callbacks`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-fieldrelay-timestamp': timestampHeader,
+        'x-fieldrelay-signature': signatureHeader
       },
       body: JSON.stringify(body)
     });

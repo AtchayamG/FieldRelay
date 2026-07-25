@@ -295,5 +295,74 @@ describeIfDatabase('PgTransactionManager (integration)', () => {
 
       await pool.query('DELETE FROM operation_idempotency WHERE idempotency_key = $1', [key]);
     });
+
+    it('persists operation_idempotency with call_task_id foreign key', async () => {
+      const incident = newIncident(new Date('2042-04-01T12:00:00.000Z'));
+      const task = CallTask.create({
+        id: randomUUID(),
+        displayId: `CALL-TEST-${randomUUID().slice(0, 8)}`,
+        incidentId: incident.id,
+        provider: 'call-e',
+        purpose: 'vendor_availability',
+        authorizedContactId: 'CNS-4491',
+        simulated: true,
+        timeoutSeconds: 300,
+        retries: 0,
+        createdAt: new Date('2042-04-01T12:01:00.000Z')
+      });
+
+      const key = `${propertyId}-fk-test`;
+      await transactions.withTransaction(async (uow) => {
+        await uow.incidents.insert(incident);
+        await uow.calls.insert(task);
+        await uow.idempotency.reserve('call.start', key, 'hash-fk', task.id);
+      });
+
+      const stale = await transactions.withTransaction((uow) =>
+        uow.idempotency.findStaleReservations('call.start', new Date(), 10)
+      );
+
+      const match = stale.find((s) => s.key === key);
+      expect(match).toBeDefined();
+      expect(match?.callTaskId).toBe(task.id);
+    });
+
+    it('round-trips provider callbacks through PostgreSQL persistence', async () => {
+      const eventId = `evt_pg_${randomUUID().slice(0, 8)}`;
+      await transactions.withTransaction(async (uow) => {
+        await uow.callbacks.insert({
+          eventId,
+          providerTaskId: 'pt_pg_1',
+          status: 'connected',
+          payloadHash: 'a'.repeat(64),
+          processed: false,
+          processingOutcome: null,
+          receivedAt: new Date(),
+          processedAt: null
+        });
+      });
+
+      const found = await transactions.withTransaction((uow) =>
+        uow.callbacks.findByEventId(eventId)
+      );
+      expect(found).toMatchObject({
+        eventId,
+        providerTaskId: 'pt_pg_1',
+        status: 'connected',
+        processed: false
+      });
+
+      await transactions.withTransaction((uow) =>
+        uow.callbacks.updateProcessingOutcome(eventId, 'processed', new Date())
+      );
+
+      const updated = await transactions.withTransaction((uow) =>
+        uow.callbacks.findByEventId(eventId)
+      );
+      expect(updated?.processed).toBe(true);
+      expect(updated?.processingOutcome).toBe('processed');
+
+      await pool.query('DELETE FROM provider_callbacks WHERE event_id = $1', [eventId]);
+    });
   });
 });

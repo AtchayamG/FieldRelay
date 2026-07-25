@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app.use((_request: Request, response: Response, next: NextFunction) => {
     response.setHeader('Cache-Control', 'no-store');
@@ -24,7 +24,12 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins,
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Idempotency-Key'],
+    allowedHeaders: [
+      'Content-Type',
+      'Idempotency-Key',
+      'x-fieldrelay-timestamp',
+      'x-fieldrelay-signature'
+    ],
     exposedHeaders: ['Idempotency-Replayed'],
     credentials: false,
     maxAge: 600

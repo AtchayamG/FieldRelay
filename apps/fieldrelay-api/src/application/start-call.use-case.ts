@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { CallPurpose, CallTask } from '../domain/call-task.entity';
+import { CallPurpose, CallStatus, CallTask } from '../domain/call-task.entity';
 import { CallEPort, CallEResult } from './call-e.port';
 import { ContactAuthorizationPort } from './contact-authorization.port';
 import {
@@ -34,7 +34,7 @@ export interface StartCallResult {
   callTaskId: string;
   displayId: string;
   providerTaskId: string;
-  status: CallEResult['status'];
+  status: CallStatus;
   simulated: boolean;
 }
 
@@ -106,17 +106,13 @@ export class StartCallUseCase {
     // --- Phase 1: atomically claim the key and persist the queued task. The
     // provider call is external I/O and must not run inside an open
     // transaction, so both records are committed before dialling.
-    //
-    // ponytail: a crash between phase 1 and phase 3 leaves the key claimed and
-    // later retries get 409 until it is cleared. That is the safe direction —
-    // the alternative double-dials a real person. Add a reaper over
-    // operation_idempotency (state, created_at) when unattended recovery is
-    // needed. ---
+    const callTaskId = randomUUID();
     const phaseOne = await this.transactions.withTransaction(async (uow) => {
       const reservation = await uow.idempotency.reserve(
         'call.start',
         idempotencyKey,
-        requestHash
+        requestHash,
+        callTaskId
       );
       if (reservation.outcome !== 'reserved') {
         return { reservation, task: null };
@@ -124,7 +120,7 @@ export class StartCallUseCase {
 
       const createdAt = new Date();
       const task = CallTask.create({
-        id: randomUUID(),
+        id: callTaskId,
         displayId: await uow.calls.nextDisplayId(),
         incidentId: input.incidentId,
         provider: 'call-e',
@@ -162,8 +158,6 @@ export class StartCallUseCase {
       );
     }
     if (reservation.outcome === 'in_progress') {
-      // An earlier request owns a durable queued task and may have reached the
-      // provider. Placing a second call could dial the contact twice.
       await this.recordSuppressed(input, correlationId, 'already_in_progress');
       throw new OperationInProgressError(
         'A call with this Idempotency-Key is already in progress'
@@ -186,9 +180,6 @@ export class StartCallUseCase {
     try {
       providerResult = await this.callEPort.startCall(callTask);
     } catch (error) {
-      // A transport error cannot prove that the provider did not accept the
-      // task. Keep the reservation in progress so a retry cannot place a
-      // duplicate call; reconciliation must resolve the ambiguous outcome.
       callTask.markOutcomeUnknown(new Date());
       await this.transactions.withTransaction(async (uow) => {
         await uow.calls.update(callTask);
@@ -247,8 +238,6 @@ export class StartCallUseCase {
     return { ...result, replayed: false };
   }
 
-  // Every suppressed duplicate is auditable: the evidence that a second call
-  // was requested and not placed matters as much as the call itself.
   private async recordSuppressed(
     input: StartCallInput,
     correlationId: string,

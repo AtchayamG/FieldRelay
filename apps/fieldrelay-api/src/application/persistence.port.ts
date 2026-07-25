@@ -1,5 +1,5 @@
 import type { Incident, IncidentStatus } from '../domain/incident.entity';
-import type { CallStatus, CallTask } from '../domain/call-task.entity';
+import type { CallStatus, ProviderCallStatus, CallTask } from '../domain/call-task.entity';
 
 export const TRANSACTION_PORT = Symbol('TRANSACTION_PORT');
 
@@ -44,7 +44,27 @@ export interface CallTaskRepositoryPort {
   insert(task: CallTask): Promise<void>;
   update(task: CallTask): Promise<void>;
   findById(id: string): Promise<CallTask | null>;
+  findByProviderTaskId(providerTaskId: string): Promise<CallTask | null>;
   list(query: ListCallTasksQuery): Promise<CallTaskPage>;
+}
+
+// --- Provider Callbacks ---------------------------------------------------
+
+export interface ProviderCallbackRecord {
+  eventId: string;
+  providerTaskId: string;
+  status: ProviderCallStatus;
+  payloadHash: string;
+  processed: boolean;
+  processingOutcome: string | null;
+  receivedAt: Date;
+  processedAt: Date | null;
+}
+
+export interface ProviderCallbackRepositoryPort {
+  insert(record: ProviderCallbackRecord): Promise<void>;
+  findByEventId(eventId: string): Promise<ProviderCallbackRecord | null>;
+  updateProcessingOutcome(eventId: string, outcome: string, processedAt: Date): Promise<void>;
 }
 
 // --- Audit -----------------------------------------------------------------
@@ -79,15 +99,29 @@ export type IdempotencyReservation =
   // The key was reused with a different request body.
   | { outcome: 'mismatch' };
 
+export interface StaleReservationRecord {
+  operation: IdempotentOperation;
+  key: string;
+  requestHash: string;
+  callTaskId: string | null;
+  createdAt: Date;
+}
+
 export interface IdempotencyStorePort {
   // Must be atomic and race-aware: concurrent callers with the same key are
   // serialized, and exactly one receives `reserved`.
   reserve(
     operation: IdempotentOperation,
     key: string,
-    requestHash: string
+    requestHash: string,
+    callTaskId?: string
   ): Promise<IdempotencyReservation>;
   complete(operation: IdempotentOperation, key: string, result: unknown): Promise<void>;
+  findStaleReservations(
+    operation: IdempotentOperation,
+    cutoff: Date,
+    limit: number
+  ): Promise<StaleReservationRecord[]>;
 }
 
 // --- Unit of work ----------------------------------------------------------
@@ -95,6 +129,7 @@ export interface IdempotencyStorePort {
 export interface UnitOfWork {
   incidents: IncidentRepositoryPort;
   calls: CallTaskRepositoryPort;
+  callbacks: ProviderCallbackRepositoryPort;
   audit: AuditEventPort;
   idempotency: IdempotencyStorePort;
 }

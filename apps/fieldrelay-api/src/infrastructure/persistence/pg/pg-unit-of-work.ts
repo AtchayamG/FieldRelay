@@ -17,6 +17,9 @@ import {
   IncidentRepositoryPort,
   ListCallTasksQuery,
   ListIncidentsQuery,
+  ProviderCallbackRecord,
+  ProviderCallbackRepositoryPort,
+  StaleReservationRecord,
   TransactionPort,
   UnitOfWork
 } from '../../../application/persistence.port';
@@ -24,6 +27,7 @@ import {
   CallFailureCode,
   CallPurpose,
   CallStatus,
+  ProviderCallStatus,
   CallTask
 } from '../../../domain/call-task.entity';
 import {
@@ -70,6 +74,7 @@ export class PgTransactionManager implements TransactionPort {
       const result = await work({
         incidents: new PgIncidentRepository(client),
         calls: new PgCallTaskRepository(client),
+        callbacks: new PgProviderCallbackRepository(client),
         audit: new PgAuditEventRepository(client),
         idempotency: new PgIdempotencyStore(client)
       });
@@ -192,6 +197,17 @@ class PgCallTaskRepository implements CallTaskRepositoryPort {
     return rows.length > 0 ? toCallTask(rows[0]) : null;
   }
 
+  public async findByProviderTaskId(providerTaskId: string): Promise<CallTask | null> {
+    const { rows } = await this.client.query<CallTaskRow>(
+      `SELECT ${CALL_TASK_COLUMNS} FROM call_tasks
+       WHERE provider_task_id = $1
+       ORDER BY updated_at DESC, version DESC
+       LIMIT 1`,
+      [providerTaskId]
+    );
+    return rows.length > 0 ? toCallTask(rows[0]) : null;
+  }
+
   public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
     const conditions: string[] = [];
     const params: unknown[] = [];
@@ -226,6 +242,72 @@ class PgCallTaskRepository implements CallTaskRepositoryPort {
       nextCursor:
         hasMore && last ? encodeCallCursor({ createdAt: last.createdAt, id: last.id }) : null
     };
+  }
+}
+
+interface ProviderCallbackRow {
+  event_id: string;
+  provider_task_id: string;
+  status: string;
+  payload_hash: string;
+  processed: boolean;
+  processing_outcome: string | null;
+  received_at: Date;
+  processed_at: Date | null;
+}
+
+class PgProviderCallbackRepository implements ProviderCallbackRepositoryPort {
+  constructor(private readonly client: PoolClient) {}
+
+  public async insert(record: ProviderCallbackRecord): Promise<void> {
+    await this.client.query(
+      `INSERT INTO provider_callbacks
+         (event_id, provider_task_id, status, payload_hash, processed, processing_outcome, received_at, processed_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        record.eventId,
+        record.providerTaskId,
+        record.status,
+        record.payloadHash,
+        record.processed,
+        record.processingOutcome,
+        record.receivedAt,
+        record.processedAt
+      ]
+    );
+  }
+
+  public async findByEventId(eventId: string): Promise<ProviderCallbackRecord | null> {
+    const { rows } = await this.client.query<ProviderCallbackRow>(
+      `SELECT event_id, provider_task_id, status, payload_hash, processed, processing_outcome, received_at, processed_at
+       FROM provider_callbacks WHERE event_id = $1`,
+      [eventId]
+    );
+    if (rows.length === 0) return null;
+    const row = rows[0];
+    return {
+      eventId: row.event_id,
+      providerTaskId: row.provider_task_id,
+      status: row.status as ProviderCallStatus,
+      payloadHash: row.payload_hash,
+      processed: row.processed,
+      processingOutcome: row.processing_outcome,
+      receivedAt: row.received_at,
+      processedAt: row.processed_at
+    };
+  }
+
+  public async updateProcessingOutcome(
+    eventId: string,
+    outcome: string,
+    processedAt: Date
+  ): Promise<void> {
+    await this.client.query(
+      `UPDATE provider_callbacks
+          SET processed = true, processing_outcome = $2, processed_at = $3
+        WHERE event_id = $1`,
+      [eventId, outcome, processedAt]
+    );
   }
 }
 
@@ -271,8 +353,6 @@ class PgIncidentRepository implements IncidentRepositoryPort {
 
   public async nextDisplayId(): Promise<string> {
     const { rows } = await this.client.query<{ display_id: string }>(
-      // 2042 marks the identifier as fictional demo data; the sequence keeps it
-      // unique without a read-modify-write in application code.
       `SELECT 'INC-2042-' || lpad(nextval('incident_display_seq')::text, 4, '0') AS display_id`
     );
     return rows[0].display_id;
@@ -319,15 +399,11 @@ class PgIncidentRepository implements IncidentRepositoryPort {
     if (query.cursor) {
       const cursor = decodeIncidentCursor(query.cursor);
       params.push(cursor.createdAt, cursor.id);
-      // Row-value comparison matches the (created_at DESC, id DESC) index. The
-      // casts are explicit so parameter types never depend on inference.
       conditions.push(
         `(created_at, id) < ($${params.length - 1}::timestamptz, $${params.length}::uuid)`
       );
     }
 
-    // Fetch one extra row to learn whether a further page exists without a
-    // second count query.
     params.push(query.limit + 1);
     const { rows } = await this.client.query<IncidentRow>(
       `SELECT ${INCIDENT_COLUMNS} FROM incidents
@@ -381,26 +457,20 @@ class PgIdempotencyStore implements IdempotencyStorePort {
   public async reserve(
     operation: IdempotentOperation,
     key: string,
-    requestHash: string
+    requestHash: string,
+    callTaskId?: string
   ): Promise<IdempotencyReservation> {
-    // Two statements rather than one upsert, so "did I insert it?" is answered
-    // by whether a row came back instead of by inspecting system columns.
-    //
-    // ON CONFLICT DO NOTHING waits for a concurrent uncommitted insert of the
-    // same key before deciding, and inserts if that transaction rolled back.
     const inserted = await this.client.query(
-      `INSERT INTO operation_idempotency (operation, idempotency_key, request_hash, state)
-       VALUES ($1, $2, $3, 'in_progress')
+      `INSERT INTO operation_idempotency (operation, idempotency_key, request_hash, state, call_task_id)
+       VALUES ($1, $2, $3, 'in_progress', $4)
        ON CONFLICT (operation, idempotency_key) DO NOTHING
        RETURNING 1`,
-      [operation, key, requestHash]
+      [operation, key, requestHash, callTaskId ?? null]
     );
     if (inserted.rowCount === 1) {
       return { outcome: 'reserved' };
     }
 
-    // A row already exists. FOR UPDATE serializes us behind whoever holds it,
-    // so by the time this returns the winner's outcome is committed and final.
     const { rows } = await this.client.query<IdempotencyRow>(
       `SELECT request_hash, state, result FROM operation_idempotency
        WHERE operation = $1 AND idempotency_key = $2
@@ -409,9 +479,6 @@ class PgIdempotencyStore implements IdempotencyStorePort {
     );
     const existing = rows[0];
     if (!existing) {
-      // The row vanished between the two statements — only a reaper clearing
-      // an abandoned reservation does that. Report it as still in flight
-      // rather than racing to claim it and risk a duplicate call.
       return { outcome: 'in_progress' };
     }
     if (existing.request_hash !== requestHash) {
@@ -440,4 +507,32 @@ class PgIdempotencyStore implements IdempotencyStorePort {
     }
   }
 
+  public async findStaleReservations(
+    operation: IdempotentOperation,
+    cutoff: Date,
+    limit: number
+  ): Promise<StaleReservationRecord[]> {
+    interface StaleRow {
+      operation: string;
+      idempotency_key: string;
+      request_hash: string;
+      call_task_id: string | null;
+      created_at: Date;
+    }
+    const { rows } = await this.client.query<StaleRow>(
+      `SELECT operation, idempotency_key, request_hash, call_task_id, created_at
+       FROM operation_idempotency
+       WHERE operation = $1 AND state = 'in_progress' AND created_at < $2
+       ORDER BY created_at ASC
+       LIMIT $3`,
+      [operation, cutoff, limit]
+    );
+    return rows.map((r) => ({
+      operation: r.operation as IdempotentOperation,
+      key: r.idempotency_key,
+      requestHash: r.request_hash,
+      callTaskId: r.call_task_id,
+      createdAt: r.created_at
+    }));
+  }
 }

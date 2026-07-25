@@ -2,6 +2,7 @@
 // HTTP status codes so the application/domain layers stay free of Nest.
 export class CallValidationError extends Error {}
 export class CallAuthorizationError extends Error {}
+export class CallbackAuthenticationError extends Error {}
 
 // A requested aggregate does not exist.
 export class NotFoundError extends Error {}

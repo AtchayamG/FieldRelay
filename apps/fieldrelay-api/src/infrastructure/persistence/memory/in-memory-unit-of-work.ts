@@ -15,6 +15,9 @@ import {
   IncidentRepositoryPort,
   ListCallTasksQuery,
   ListIncidentsQuery,
+  ProviderCallbackRecord,
+  ProviderCallbackRepositoryPort,
+  StaleReservationRecord,
   TransactionPort,
   UnitOfWork
 } from '../../../application/persistence.port';
@@ -28,14 +31,19 @@ import { Incident } from '../../../domain/incident.entity';
 // database.
 
 interface StoredIdempotency {
+  operation: IdempotentOperation;
+  key: string;
   requestHash: string;
   state: 'in_progress' | 'completed';
+  callTaskId: string | null;
   result?: unknown;
+  createdAt: Date;
 }
 
 export class InMemoryDatabase {
   public readonly incidents: Incident[] = [];
   public readonly callTasks: CallTask[] = [];
+  public readonly callbacks: ProviderCallbackRecord[] = [];
   public readonly auditEvents: AuditEventInput[] = [];
   public readonly idempotency = new Map<string, StoredIdempotency>();
   public displaySequence = 0;
@@ -70,6 +78,7 @@ class StagedUnitOfWork implements UnitOfWork {
 
   public readonly incidents: IncidentRepositoryPort;
   public readonly calls: CallTaskRepositoryPort;
+  public readonly callbacks: ProviderCallbackRepositoryPort;
   public readonly audit: AuditEventPort;
   public readonly idempotency: IdempotencyStorePort;
 
@@ -79,6 +88,7 @@ class StagedUnitOfWork implements UnitOfWork {
     };
     this.incidents = new InMemoryIncidentRepository(db, stage);
     this.calls = new InMemoryCallTaskRepository(db, stage);
+    this.callbacks = new InMemoryProviderCallbackRepository(db, stage);
     this.audit = new InMemoryAuditRepository(db, stage);
     this.idempotency = new InMemoryIdempotencyStore(db, stage);
   }
@@ -126,6 +136,14 @@ class InMemoryCallTaskRepository implements CallTaskRepositoryPort {
       this.db.callTasks.find((task) => task.id === id) ??
       null
     );
+  }
+
+  public async findByProviderTaskId(providerTaskId: string): Promise<CallTask | null> {
+    const all = [...this.db.callTasks, ...this.inserted, ...this.updated.values()];
+    const matches = all.filter((task) => task.providerTaskId === providerTaskId);
+    if (matches.length === 0) return null;
+    // Return the latest version/updated
+    return matches.reduce((prev, curr) => (curr.version > prev.version ? curr : prev));
   }
 
   public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
@@ -229,6 +247,44 @@ function compareIncidentsDesc(a: Incident, b: Incident): number {
   return a.id < b.id ? 1 : a.id > b.id ? -1 : 0;
 }
 
+class InMemoryProviderCallbackRepository implements ProviderCallbackRepositoryPort {
+  private readonly staged: ProviderCallbackRecord[] = [];
+
+  constructor(
+    private readonly db: InMemoryDatabase,
+    private readonly stage: Stage
+  ) {}
+
+  public async insert(record: ProviderCallbackRecord): Promise<void> {
+    const copy = { ...record };
+    this.staged.push(copy);
+    this.stage(() => this.db.callbacks.push(copy));
+  }
+
+  public async findByEventId(eventId: string): Promise<ProviderCallbackRecord | null> {
+    return (
+      this.staged.find((c) => c.eventId === eventId) ??
+      this.db.callbacks.find((c) => c.eventId === eventId) ??
+      null
+    );
+  }
+
+  public async updateProcessingOutcome(
+    eventId: string,
+    outcome: string,
+    processedAt: Date
+  ): Promise<void> {
+    this.stage(() => {
+      const callback = this.db.callbacks.find((c) => c.eventId === eventId);
+      if (callback) {
+        callback.processed = true;
+        callback.processingOutcome = outcome;
+        callback.processedAt = processedAt;
+      }
+    });
+  }
+}
+
 class InMemoryAuditRepository implements AuditEventPort {
   constructor(
     private readonly db: InMemoryDatabase,
@@ -252,12 +308,22 @@ class InMemoryIdempotencyStore implements IdempotencyStorePort {
   public async reserve(
     operation: IdempotentOperation,
     key: string,
-    requestHash: string
+    requestHash: string,
+    callTaskId?: string
   ): Promise<IdempotencyReservation> {
     const id = `${operation}::${key}`;
     const existing = this.db.idempotency.get(id);
     if (!existing) {
-      this.stage(() => this.db.idempotency.set(id, { requestHash, state: 'in_progress' }));
+      this.stage(() =>
+        this.db.idempotency.set(id, {
+          operation,
+          key,
+          requestHash,
+          state: 'in_progress',
+          callTaskId: callTaskId ?? null,
+          createdAt: new Date()
+        })
+      );
       return { outcome: 'reserved' };
     }
     if (existing.requestHash !== requestHash) {
@@ -283,4 +349,28 @@ class InMemoryIdempotencyStore implements IdempotencyStorePort {
     });
   }
 
+  public async findStaleReservations(
+    operation: IdempotentOperation,
+    cutoff: Date,
+    limit: number
+  ): Promise<StaleReservationRecord[]> {
+    const matching: StaleReservationRecord[] = [];
+    for (const record of this.db.idempotency.values()) {
+      if (
+        record.operation === operation &&
+        record.state === 'in_progress' &&
+        record.createdAt.getTime() < cutoff.getTime()
+      ) {
+        matching.push({
+          operation: record.operation,
+          key: record.key,
+          requestHash: record.requestHash,
+          callTaskId: record.callTaskId,
+          createdAt: record.createdAt
+        });
+      }
+    }
+    matching.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    return matching.slice(0, limit);
+  }
 }
