@@ -7,7 +7,7 @@
 | Submission window open | Devpost CALL-E key dates | PASS | Codex | Overview page reports the hackathon accepting submissions |
 | Deadline | 2026-09-14 23:45 SGT | RESOLVED | Codex | The official overview header states "Deadline: Sep 14, 2026 @ 11:45pm SGT". The earlier AM/PM conflict is closed; roughly seven weeks remain from 2026-07-25. |
 | Age/jurisdiction/conflict eligibility | Official rules and required checkboxes | BLOCKED | User | Human truthfully confirms required attestations |
-| Functional CALL-E use | `CalleApiAdapter` calling `POST /v1/calls` behind `CallEPort` | PARTIAL | Codex/user | Adapter implemented and tested against the published OpenAPI contract (v0.6.0); credential and base URL proven live. One approved end-to-end call remains. |
+| Functional CALL-E use | Real call `call_MzD1ou1AbX1XtYkTnxMCBA` placed by FieldRelay on 2026-07-25 | PASS | Codex | `docs/CALL_E_RUNTIME_PROOF.md`: FieldRelay's own use cases drove `POST /v1/calls`; the call completed with a schema-conforming structured result and round-tripped FieldRelay's task IDs in `metadata` |
 | CALL-E API key | `CALLE_API_KEY` in git-ignored `.env` | PASS | Codex | Created self-service in the CALL-E dashboard; verified by a read-only probe returning 404 with the key and 401 without it |
 | Authorized test number | `CALLE_DIAL_TARGETS` | PASS | User | +91 90947 13923, already used for the user's own CALL-E test call |
 | Significant in-period work | Git history and changelog after 2026-07-23 | ON TRACK | Codex | Commit history on `main` from 2026-07-24 onward |

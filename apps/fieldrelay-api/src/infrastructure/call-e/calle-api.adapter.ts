@@ -23,7 +23,16 @@ const CREATE_CALL_PATH = '/v1/calls';
 const MIN_API_KEY_LENGTH = 16;
 const MIN_TIMEOUT_MS = 1_000;
 const MAX_TIMEOUT_MS = 60_000;
-const DEFAULT_TIMEOUT_MS = 15_000;
+// Measured against the live API on 2026-07-25: POST /v1/calls does real work
+// before responding and exceeded 15s, while the call itself was accepted and
+// dialled anyway. A client timeout shorter than the server's own work window is
+// actively harmful here — it abandons a call that is already happening, and any
+// naive retry places a second one. 45s leaves headroom above what was observed.
+//
+// The retry path is safe regardless: the Idempotency-Key is the call task's ID,
+// which is generated once per authorized call and reused on every attempt, so
+// CALL-E collapses a repeat of the same task rather than dialling twice.
+const DEFAULT_TIMEOUT_MS = 45_000;
 const MAX_RESPONSE_BYTES = 64 * 1024;
 
 export interface CalleApiConfig {

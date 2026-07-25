@@ -200,7 +200,7 @@ describe('readCalleConfigFromEnv', () => {
   it('accepts a valid configuration and strips the trailing slash', () => {
     expect(readCalleConfigFromEnv({ ...valid })).toMatchObject({
       baseUrl: 'https://api.example.test',
-      requestTimeoutMs: 15000
+      requestTimeoutMs: 45000
     });
   });
 
@@ -225,6 +225,13 @@ describe('readCalleConfigFromEnv', () => {
   it('clamps an out-of-range timeout back to the default', () => {
     expect(
       readCalleConfigFromEnv({ ...valid, CALLE_REQUEST_TIMEOUT_MS: '900000' }).requestTimeoutMs
-    ).toBe(15000);
+    ).toBe(45000);
+  });
+
+  it('defaults high enough that the API is not abandoned mid-create', () => {
+    // A live POST /v1/calls was observed taking longer than 15s while the call
+    // was accepted and dialled anyway. Timing out below that window abandons a
+    // call that is already happening.
+    expect(readCalleConfigFromEnv({ ...valid }).requestTimeoutMs).toBeGreaterThanOrEqual(45000);
   });
 });
