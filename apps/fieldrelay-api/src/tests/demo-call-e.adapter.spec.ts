@@ -1,4 +1,5 @@
 import { DemoCallEAdapter } from '../infrastructure/call-e/demo-call-e.adapter';
+import { briefForPurpose } from '../application/call-brief';
 import { CallTask } from '../domain/call-task.entity';
 import { MOCK_INCIDENT_ID, MOCK_CONTACT_ID, MOCK_PURPOSE } from '@fieldrelay/testing';
 
@@ -18,10 +19,14 @@ describe('DemoCallEAdapter', () => {
       createdAt: new Date('2042-03-01T09:00:00.000Z')
     });
 
-    const result = await adapter.startCall(task);
+    const result = await adapter.startCall(task, briefForPurpose(MOCK_PURPOSE, task.displayId));
 
     expect(result.simulated).toBe(true);
     expect(result.status).toBe('queued');
     expect(result.providerTaskId).toMatch(/^demo_/);
+  });
+
+  it('declares itself simulated before any call is attempted', () => {
+    expect(new DemoCallEAdapter().describe()).toEqual({ mode: 'demo', simulated: true });
   });
 });

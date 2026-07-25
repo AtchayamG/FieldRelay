@@ -33,7 +33,10 @@ describe('StartCallUseCase', () => {
   let db: InMemoryDatabase;
 
   beforeEach(() => {
-    mockPort = { startCall: jest.fn() };
+    mockPort = {
+      describe: jest.fn().mockReturnValue({ mode: 'demo', simulated: true }),
+      startCall: jest.fn()
+    };
     mockContacts = { resolve: jest.fn() };
     mockContacts.resolve.mockResolvedValue({
       contactId: MOCK_CONTACT_ID,

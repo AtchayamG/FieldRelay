@@ -30,3 +30,10 @@
 - Repository hygiene: `.gitattributes` added so line endings no longer depend on per-machine `core.autocrlf`; the previously reported 156-file dirty tree was a cross-platform inspection artifact, not real churn
 - Environment template: duplicated `FRONTEND_ORIGINS` removed and the required `CALLBACK_SIGNING_SECRET` documented
 - Highest open risks: no live CALL-E adapter (G1), no API authentication or authorization on any route (G14), nine of fifteen routes unimplemented (G7), no deployable artifact or judge environment (G5)
+- Official hackathon research: CALL-E offers MCP, SDK, REST API, CLI and Skill surfaces; deadline confirmed as 2026-09-14 23:45 SGT; new accounts include 20 free calls; submission requires a PR to `CALLE-AI/awesome-phone-call-agents`, a public sub-three-minute video and the CALL-E account email
+- CALL-E integration: `CalleApiAdapter` calls `POST /v1/calls` behind `CallEPort` with bearer auth, a per-task idempotency key, a purpose-derived brief with mandatory disclosure, a closed result schema and a webhook URL (ADR-004 supersedes ADR-003)
+- Call safety: `CALL_E_MODE` defaults to demo and only the exact value `live` enables dialling; live mode fails at boot on invalid configuration; phone numbers exist only in `CALLE_DIAL_TARGETS` and are validated at boot
+- CALL-E webhook: token-authenticated route translating provider deliveries into the existing replay-safe callback pipeline, discarding transcripts, recordings and structured results
+- Toolchain: Node upgraded to 24.18.0 LTS, clearing the `>=22.12` engine blocker and the Vite engine warning
+- Verification: lint, strict typecheck, 198 tests and production builds pass
+- Remaining on the CALL-E proof: a CALL-E API key and an authorized test number, both user-supplied

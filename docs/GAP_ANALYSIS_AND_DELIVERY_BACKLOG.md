@@ -27,7 +27,15 @@
 
 ### P0 — Blocks the submission itself
 
-**G1. No live CALL-E integration exists.**
+> **Status update 2026-07-25.** Track 0 is complete and Track 1 has landed in code.
+> G2, G3, G4, G6 and G16 are closed. G1 is substantially addressed: a live
+> `CalleApiAdapter` now calls the CALL-E developer API behind `CallEPort`, and a
+> token-authenticated CALL-E webhook route feeds the existing callback pipeline.
+> What remains on G1 is a real authorized call, which needs a CALL-E API key and
+> a nominated test number. G13 is unchanged. The design record is ADR-004, which
+> supersedes ADR-003.
+
+**G1. No live CALL-E integration exists.** *(largely closed 2026-07-25 — proof call outstanding)*
 `DemoCallEAdapter` is the only implementation of `CallEPort`; it returns `simulated: true` and never dials. The Devpost requirement "CALL-E imported/called at runtime" is currently **unmet**. The callback endpoint (`POST /api/v1/call-e/callbacks`, HMAC-verified) and reconciliation use case exist but nothing on the platform produces those callbacks.
 Needs: a real `CallEAdapter` behind the existing port, credential handling from a secret store, outbound request mapping (`StartCallTaskCommand` per `docs/06`), and one authorized end-to-end proof.
 Blocked on: CALL-E credentials + an explicitly authorized test number.
@@ -45,8 +53,8 @@ All work sits on `codex/devpost-foundation`; seven `codex/worker-*` branches rem
 **G5. No deployable artifact or judge environment.**
 No Dockerfile for API or app; `docker-compose.yml` containerizes PostgreSQL only. No staging/production config, no hosted URL, no judge test credentials/instructions. "Testing access" is a required Devpost field.
 
-**G6. Node/toolchain blocker.**
-`engines: node >=22.12`; the recorded local runtime is 22.9, below the Vite 7 floor. Release builds are gated on this upgrade.
+**G6. Node/toolchain blocker.** *(closed 2026-07-25)*
+The workstation now runs Node 24.18.0 LTS, above the `>=22.12` engine floor, and the Vite engine warning no longer appears in `pnpm build`. Note: installing nvm-windows silently removed the previous `C:\Program Files\nodejs` installation before its own elevated step completed, so the recovery was a direct Node LTS install. Do not install nvm-windows silently on this machine again.
 
 ### P1 — Blocks "fully working" and "visually faithful"
 

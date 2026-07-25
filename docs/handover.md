@@ -13,14 +13,15 @@ The blueprint and mockup packages are complete. `codex/devpost-foundation` carri
 
 ## Highest-priority task
 
-Implement the live CALL-E adapter behind `CallEPort` (gap G1) with a dry-run default, credential handling outside the repository, and an authorized end-to-end proof. Wire a periodic runner for `ReconcileStaleReservationsUseCase` (G13) in the same track.
+Place one real authorized CALL-E call to close G1. That needs a CALL-E account (20 free calls on signup), `CALLE_API_KEY`, `CALLE_BASE_URL`, a webhook URL reachable from the internet with `CALLE_WEBHOOK_TOKEN`, and one nominated number in `CALLE_DIAL_TARGETS`. Then build the API authentication boundary (G14), which must land before any public deployment.
 
 ## Known blockers/risks
 
 - Human eligibility attestations, CALL-E account email, public PR, demo video, deployment, and final Devpost submission all require explicit user approval.
-- Rules prose lists 11:45 AM SGT while Devpost key-date data lists 11:45 PM SGT on 2026-09-14; plan to the earlier time. About seven weeks remain.
+- Deadline confirmed as 2026-09-14 23:45 SGT by the official overview header. About seven weeks remain.
 - The API has no authentication or authorization on any route, including call initiation. This must land before any public deployment.
-- Local Node is 22.9 against a `>=22.12` engine requirement; upgrade before release builds.
+- The CALL-E developer API is in beta: response and webhook shapes are parsed defensively because the full reference is a client-rendered page that could not be read directly. Re-verify field names against a real response before the demo.
+- CALL-E's webhook has no documented signing scheme, so that route is authenticated by a URL token. Replace it with signature verification if CALL-E publishes one.
 - The production frontend build succeeds but its initial JavaScript chunk is 1.23 MB.
 - Mission Control still renders demo adapter data rather than live API data.
 - Nine of fifteen designed routes are unimplemented.

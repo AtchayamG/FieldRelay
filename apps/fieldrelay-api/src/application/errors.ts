@@ -4,6 +4,16 @@ export class CallValidationError extends Error {}
 export class CallAuthorizationError extends Error {}
 export class CallbackAuthenticationError extends Error {}
 
+// The call provider was reachable but refused or failed the request, or was not
+// reachable at all. Thrown by CallEPort implementations; StartCallUseCase turns
+// it into a durable `outcome_unknown` task that can never be auto-redialled.
+export class CallProviderError extends Error {}
+
+// The server is configured to place live calls but the configuration is
+// missing, malformed, or unsafe. Raised at construction time so the process
+// fails at boot rather than at the first attempted call.
+export class CallProviderConfigurationError extends Error {}
+
 // A requested aggregate does not exist.
 export class NotFoundError extends Error {}
 

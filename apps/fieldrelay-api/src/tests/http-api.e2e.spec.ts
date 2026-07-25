@@ -21,6 +21,11 @@ import { ApiExceptionFilter } from '../interfaces/api-exception.filter';
 import { CallEController, HealthController } from '../interfaces/call-e.controller';
 import { IncidentController } from '../interfaces/incident.controller';
 import { ProviderCallbackController } from '../interfaces/provider-callback.controller';
+import { CalleWebhookController } from '../interfaces/calle-webhook.controller';
+import {
+  CALLE_WEBHOOK_TRANSLATOR,
+  CalleWebhookTranslator
+} from '../infrastructure/call-e/calle-webhook.translator';
 
 interface JsonResponse<T> {
   response: Response;
@@ -32,11 +37,15 @@ describe('FieldRelay HTTP API', () => {
   let baseUrl: string;
   let provider: jest.Mocked<CallEPort>;
   const signingSecret = 'e2e_test_signing_secret_123456';
+  const webhookToken = 'e2e_calle_webhook_token_abcdefghijkl';
 
   beforeEach(async () => {
     process.env.CALLBACK_SIGNING_SECRET = signingSecret;
     const transactions = new InMemoryTransactionManager(new InMemoryDatabase());
-    provider = { startCall: jest.fn() };
+    provider = {
+      describe: jest.fn().mockReturnValue({ mode: 'demo', simulated: true }),
+      startCall: jest.fn()
+    };
     provider.startCall.mockResolvedValue({
       providerTaskId: 'demo_provider_task',
       status: 'queued',
@@ -55,9 +64,14 @@ describe('FieldRelay HTTP API', () => {
         IncidentController,
         CallEController,
         HealthController,
-        ProviderCallbackController
+        ProviderCallbackController,
+        CalleWebhookController
       ],
       providers: [
+        {
+          provide: CALLE_WEBHOOK_TRANSLATOR,
+          useValue: new CalleWebhookTranslator(webhookToken)
+        },
         {
           provide: CreateIncidentUseCase,
           useValue: new CreateIncidentUseCase(transactions)
@@ -239,6 +253,53 @@ describe('FieldRelay HTTP API', () => {
     expect(badSigResponse.status).toBe(401);
   });
 
+  it('authenticates the CALL-E webhook by token and applies a terminal delivery once', async () => {
+    const incident = await createIncident('idem-calle-hook-1');
+    const started = await postJson<{ data: { callTaskId: string } }>(
+      '/api/v1/calls',
+      {
+        incidentId: incident.body.data.id,
+        authorizedContactId: 'CNS-4491',
+        purpose: 'vendor_availability'
+      },
+      'idem-calle-hook-call-1'
+    );
+    expect(started.response.status).toBe(202);
+
+    const delivery = { call_id: 'demo_provider_task', status: 'completed' };
+
+    const unauthenticated = await postCalleWebhook(delivery, 'not-the-right-token-but-long-enough');
+    expect(unauthenticated.response.status).toBe(401);
+
+    const missingToken = await fetch(`${baseUrl}/api/v1/call-e/webhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(delivery)
+    });
+    expect(missingToken.status).toBe(401);
+
+    const accepted = await postCalleWebhook<{
+      data: { accepted: boolean; applied: boolean; eventId: string };
+    }>(delivery, webhookToken);
+    expect(accepted.response.status).toBe(202);
+    expect(accepted.body.data.applied).toBe(true);
+
+    // The same terminal delivery again must be recognised, not re-applied.
+    const replay = await postCalleWebhook<{ data: { applied: boolean } }>(delivery, webhookToken);
+    expect(replay.response.status).toBe(202);
+    expect(replay.body.data.applied).toBe(false);
+    expect(replay.response.headers.get('idempotency-replayed')).toBe('true');
+
+    // Authentic but non-actionable lifecycle noise is absorbed, not applied.
+    const notActionable = await postCalleWebhook<{ data: { applied: boolean; eventId: null } }>(
+      { call_id: 'demo_provider_task', status: 'queued' },
+      webhookToken
+    );
+    expect(notActionable.response.status).toBe(202);
+    expect(notActionable.body.data.applied).toBe(false);
+    expect(notActionable.body.data.eventId).toBeNull();
+  });
+
   it('returns stable errors and a database-backed health response', async () => {
     const missing = await getJson<{ error: { code: string; requestId: string } }>(
       '/api/v1/incidents/11111111-1111-4111-8111-111111119999'
@@ -282,6 +343,21 @@ describe('FieldRelay HTTP API', () => {
 
   async function getJson<T>(path: string): Promise<JsonResponse<T>> {
     const response = await fetch(`${baseUrl}${path}`);
+    return { response, body: (await response.json()) as T };
+  }
+
+  async function postCalleWebhook<T = { data: { accepted: boolean; applied: boolean } }>(
+    body: Record<string, unknown>,
+    token: string
+  ): Promise<JsonResponse<T>> {
+    const response = await fetch(`${baseUrl}/api/v1/call-e/webhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-calle-webhook-token': token
+      },
+      body: JSON.stringify(body)
+    });
     return { response, body: (await response.json()) as T };
   }
 

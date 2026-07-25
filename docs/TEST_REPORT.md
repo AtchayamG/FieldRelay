@@ -1,5 +1,20 @@
 # Test Report
 
+## 2026-07-25 — Live CALL-E integration
+
+Environment: Node 24.18.0 LTS, pnpm 10.34.4, Windows. No local PostgreSQL running.
+
+| Check | Result |
+|---|---|
+| `pnpm lint` | PASS |
+| `pnpm typecheck` | PASS — strict, all five projects |
+| `pnpm test` | PASS — 198 tests: API 144, app 52, tokens 2; 15 PostgreSQL-dependent tests skipped |
+| `pnpm build` | PASS — the Node engine warning is gone; the 1.23 MB initial chunk warning remains |
+
+New coverage proves that the live adapter sends bearer auth, a per-task idempotency key, the brief, the recipient and the closed result schema; that the incident UUID is never transmitted; that a rejected request neither echoes the provider's message nor leaks the dialled number; that transport failures, missing call identifiers and oversized responses become provider errors rather than silent successes; that an unknown provider status degrades to `queued` instead of a fabricated terminal state; that live mode refuses to boot without valid configuration and that every non-`live` mode value selects the demo adapter; that malformed dial-target entries fail at boot; and that the CALL-E webhook rejects missing and wrong tokens, applies a terminal delivery exactly once, recognises a repeat delivery as a replay, absorbs non-actionable lifecycle noise, and discards transcripts, recordings and structured results.
+
+Still not covered: a real authorized CALL-E call, structured-outcome ingestion, production authentication and RBAC on the rest of the API, automated accessibility scanning, image-diff regression, offline PWA behaviour, and Capacitor native builds.
+
 ## 2026-07-24 — Backend and frontend foundations
 
 Environment: Node 22.9.0, pnpm 10.34.4, Windows.

@@ -3,6 +3,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { CallEController, HealthController } from './interfaces/call-e.controller';
 import { IncidentController } from './interfaces/incident.controller';
 import { ProviderCallbackController } from './interfaces/provider-callback.controller';
+import { CalleWebhookController } from './interfaces/calle-webhook.controller';
 import { ApiExceptionFilter } from './interfaces/api-exception.filter';
 import { StartCallUseCase } from './application/start-call.use-case';
 import { ListCallsUseCase } from './application/list-calls.use-case';
@@ -20,14 +21,41 @@ import {
 } from './application/contact-authorization.port';
 import { TransactionPort, TRANSACTION_PORT } from './application/persistence.port';
 import { DemoCallEAdapter } from './infrastructure/call-e/demo-call-e.adapter';
+import {
+  CalleApiAdapter,
+  readCalleConfigFromEnv
+} from './infrastructure/call-e/calle-api.adapter';
+import {
+  CALLE_WEBHOOK_TRANSLATOR,
+  CalleWebhookTranslator
+} from './infrastructure/call-e/calle-webhook.translator';
 import { DemoContactRepository } from './infrastructure/contact/demo-contact.repository';
+import { EnvDialTargetResolver } from './infrastructure/contact/env-dial-target.resolver';
 import {
   PgPoolProvider,
   PgTransactionManager
 } from './infrastructure/persistence/pg/pg-unit-of-work';
 
+// CALL-E is only ever live when the deployment says so explicitly. Any value
+// other than "live" — including an unset variable, a typo, or an empty string —
+// selects the demo adapter, so no environment can start dialling by accident.
+export function selectCallEAdapter(env: NodeJS.ProcessEnv): CallEPort {
+  if ((env.CALL_E_MODE ?? '').trim().toLowerCase() !== 'live') {
+    return new DemoCallEAdapter();
+  }
+  // Throws at boot when the live configuration is missing or unsafe, rather
+  // than at the first attempted call.
+  return new CalleApiAdapter(readCalleConfigFromEnv(env), new EnvDialTargetResolver());
+}
+
 @Module({
-  controllers: [CallEController, HealthController, IncidentController, ProviderCallbackController],
+  controllers: [
+    CallEController,
+    HealthController,
+    IncidentController,
+    ProviderCallbackController,
+    CalleWebhookController
+  ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
 
@@ -42,8 +70,9 @@ import {
       inject: [PgPoolProvider]
     },
 
-    { provide: CALL_E_PORT, useClass: DemoCallEAdapter },
+    { provide: CALL_E_PORT, useFactory: () => selectCallEAdapter(process.env) },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
+    { provide: CALLE_WEBHOOK_TRANSLATOR, useFactory: () => new CalleWebhookTranslator() },
 
     // Factories keep the use cases plain classes free of Nest decorators.
     {

@@ -137,8 +137,19 @@ export class ProcessProviderCallbackUseCase {
       input.signingSecret
     );
     const validated = this.validateDto(input.body);
+    return this.acceptVerified(validated, input.rawBody);
+  }
 
-    const payloadHash = createHash('sha256').update(input.rawBody).digest('hex');
+  // Deduplicate and record an already-authenticated, already-normalized event.
+  // `accept` reaches this after verifying FieldRelay's own HMAC; the CALL-E
+  // webhook route reaches it after verifying CALL-E's authentication and
+  // translating its payload. Both share one replay-safety implementation so a
+  // second ingestion path cannot drift from the first.
+  public async acceptVerified(
+    validated: { eventId: string; providerTaskId: string; status: AllowedCallbackStatus },
+    rawBody: Buffer
+  ): Promise<AcceptCallbackOutcome> {
+    const payloadHash = createHash('sha256').update(rawBody).digest('hex');
 
     const outcome = await this.transactions.withTransaction(async (uow) => {
       const existing = await uow.callbacks.findByEventId(validated.eventId);

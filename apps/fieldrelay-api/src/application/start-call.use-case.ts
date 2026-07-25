@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { CallPurpose, CallStatus, CallTask } from '../domain/call-task.entity';
+import { briefForPurpose } from './call-brief';
 import { CallEPort, CallEResult } from './call-e.port';
 import { ContactAuthorizationPort } from './contact-authorization.port';
 import {
@@ -103,6 +104,11 @@ export class StartCallUseCase {
 
     const correlationId = input.correlationId ?? randomUUID();
 
+    // Ask the adapter what it is before creating the task, so a task is never
+    // stored claiming to be simulated while a live provider is wired in, or the
+    // reverse. This is read once and used for both the row and its audit event.
+    const simulated = this.callEPort.describe().simulated;
+
     // --- Phase 1: atomically claim the key and persist the queued task. The
     // provider call is external I/O and must not run inside an open
     // transaction, so both records are committed before dialling.
@@ -126,7 +132,7 @@ export class StartCallUseCase {
         provider: 'call-e',
         authorizedContactId: input.authorizedContactId,
         purpose: input.purpose as CallPurpose,
-        simulated: true,
+        simulated,
         timeoutSeconds,
         retries,
         createdAt
@@ -143,7 +149,7 @@ export class StartCallUseCase {
           incidentId: input.incidentId,
           authorizedContactId: input.authorizedContactId,
           purpose: input.purpose,
-          simulated: true,
+          simulated,
           requestHash
         }
       });
@@ -176,9 +182,14 @@ export class StartCallUseCase {
       throw new Error('Reserved call did not produce a durable call task');
     }
 
+    // The brief is derived from the purpose the contact is authorized for, and
+    // references the call only by its display ID, so nothing the caller typed
+    // reaches the person who answers.
+    const brief = briefForPurpose(callTask.purpose, callTask.displayId);
+
     let providerResult: CallEResult;
     try {
-      providerResult = await this.callEPort.startCall(callTask);
+      providerResult = await this.callEPort.startCall(callTask, brief);
     } catch (error) {
       callTask.markOutcomeUnknown(new Date());
       await this.transactions.withTransaction(async (uow) => {

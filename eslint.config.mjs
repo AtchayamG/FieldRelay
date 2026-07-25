@@ -12,7 +12,13 @@ export default [
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": "error"
+      // A leading underscore is the explicit opt-out for a parameter that a
+      // port contract requires but this implementation genuinely does not use.
+      // Everything else stays an error.
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "all" }
+      ]
     }
   }
 ];
