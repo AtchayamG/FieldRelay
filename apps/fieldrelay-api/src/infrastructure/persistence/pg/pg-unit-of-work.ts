@@ -48,9 +48,25 @@ export function createPool(env: NodeJS.ProcessEnv = process.env): Pool {
         'idempotency records in PostgreSQL and will not start without it.'
     );
   }
+  // On a serverless platform every concurrent invocation is its own process
+  // with its own pool, so the default pool size multiplies by the number of
+  // live functions and exhausts the database's connection limit. PGPOOL_MAX
+  // lets that deployment pin one connection per invocation, and a pooling
+  // endpoint (PgBouncer, Neon's -pooler host) does the real multiplexing.
+  const rawMax = Number(env.PGPOOL_MAX ?? '10');
+  const max = Number.isInteger(rawMax) && rawMax > 0 && rawMax <= 50 ? rawMax : 10;
+
   // TLS is configured through the connection string (`?sslmode=require`) so
   // certificate verification is never silently weakened in code.
-  return new Pool({ connectionString });
+  return new Pool({
+    connectionString,
+    max,
+    // A serverless invocation is frozen between requests, so an idle socket is
+    // usually already dead by the next one. Recycling quickly avoids handing
+    // out a connection the platform has silently closed.
+    idleTimeoutMillis: Number(env.PGPOOL_IDLE_MS ?? '10000'),
+    connectionTimeoutMillis: Number(env.PGPOOL_CONNECT_MS ?? '10000')
+  });
 }
 
 // Owns the pool's lifetime so Nest closes it on shutdown instead of leaving
