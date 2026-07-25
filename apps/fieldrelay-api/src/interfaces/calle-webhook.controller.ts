@@ -18,6 +18,7 @@ import {
   CalleWebhookTranslator
 } from '../infrastructure/call-e/calle-webhook.translator';
 import { requestIdOf } from './request-context';
+import { PublicRoute } from './session.guard';
 
 export interface CalleWebhookAcceptedDto {
   accepted: boolean;
@@ -30,7 +31,10 @@ export interface CalleWebhookAcceptedDto {
 // CALL-E posts terminal call results to the webhook_url supplied on call
 // creation. That URL carries a secret token, which is the only thing that
 // authenticates this route, so the token is verified before the body is read.
+// Public to the session guard because CALL-E has no session: this route
+// authenticates every request by the secret token carried in its webhook URL.
 @Controller('api/v1/call-e/webhook')
+@PublicRoute()
 export class CalleWebhookController {
   constructor(
     private readonly processCallbackUseCase: ProcessProviderCallbackUseCase,

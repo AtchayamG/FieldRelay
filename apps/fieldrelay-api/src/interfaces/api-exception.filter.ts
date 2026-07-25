@@ -9,6 +9,7 @@ import {
 import type { Request, Response } from 'express';
 import type { ApiError, ApiErrorCode } from '@fieldrelay/contracts';
 import {
+  AuthenticationError,
   CallAuthorizationError,
   CallValidationError,
   CallbackAuthenticationError,
@@ -61,7 +62,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
         message: exception.message
       };
     }
-    if (exception instanceof CallbackAuthenticationError) {
+    if (
+      exception instanceof CallbackAuthenticationError ||
+      exception instanceof AuthenticationError
+    ) {
       return {
         status: HttpStatus.UNAUTHORIZED,
         code: 'NOT_AUTHORIZED',

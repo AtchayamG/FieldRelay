@@ -3,8 +3,12 @@ import type { Request, Response } from 'express';
 import { ProcessProviderCallbackUseCase } from '../application/process-provider-callback.use-case';
 import { ApiResponse, ProviderCallbackAcceptedResponseDto } from '@fieldrelay/contracts';
 import { requestIdOf } from './request-context';
+import { PublicRoute } from './session.guard';
 
+// Public to the session guard because the provider has no session: this route
+// authenticates every request by HMAC signature over the raw body instead.
 @Controller('api/v1/call-e/callbacks')
+@PublicRoute()
 export class ProviderCallbackController {
   constructor(private readonly processCallbackUseCase: ProcessProviderCallbackUseCase) {}
 

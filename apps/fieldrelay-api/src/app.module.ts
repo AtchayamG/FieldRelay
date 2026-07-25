@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CallEController, HealthController } from './interfaces/call-e.controller';
 import { IncidentController } from './interfaces/incident.controller';
 import { ProviderCallbackController } from './interfaces/provider-callback.controller';
 import { CalleWebhookController } from './interfaces/calle-webhook.controller';
+import { AuthController } from './interfaces/auth.controller';
+import { SessionGuard } from './interfaces/session.guard';
+import { IssueSessionUseCase } from './application/issue-session.use-case';
+import { requireSigningSecret } from './application/session-token';
 import { ApiExceptionFilter } from './interfaces/api-exception.filter';
 import { StartCallUseCase } from './application/start-call.use-case';
 import { ListCallsUseCase } from './application/list-calls.use-case';
@@ -54,10 +58,30 @@ export function selectCallEAdapter(env: NodeJS.ProcessEnv): CallEPort {
     HealthController,
     IncidentController,
     ProviderCallbackController,
-    CalleWebhookController
+    CalleWebhookController,
+    AuthController
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
+
+    // Registered globally so every route is closed unless it opts out with
+    // @PublicRoute(). Adding a controller without thinking about auth yields a
+    // locked route, not an open one.
+    { provide: APP_GUARD, useClass: SessionGuard },
+    {
+      provide: IssueSessionUseCase,
+      useFactory: () =>
+        new IssueSessionUseCase(
+          {
+            // Published evaluator credentials: judges must be able to sign in
+            // without being handed a secret out of band. What protects the call
+            // budget on a public deployment is CALL_E_MODE, not this password.
+            email: process.env.DEMO_OPERATOR_EMAIL ?? 'ops.demo@fieldrelay.io',
+            password: process.env.DEMO_OPERATOR_PASSWORD ?? 'DemoOps2026!'
+          },
+          requireSigningSecret(process.env.AUTH_SIGNING_SECRET)
+        )
+    },
 
     // Persistence is PostgreSQL, always. PgPoolProvider reads DATABASE_URL and
     // throws when it is missing, so the process fails at boot rather than

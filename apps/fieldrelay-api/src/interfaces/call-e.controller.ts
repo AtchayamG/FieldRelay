@@ -23,6 +23,7 @@ import {
   ApiResponse
 } from '@fieldrelay/contracts';
 import { requestIdOf } from './request-context';
+import { PublicRoute } from './session.guard';
 import { CheckHealthUseCase } from '../application/check-health.use-case';
 import { CallValidationError } from '../application/errors';
 import type { CallTask } from '../domain/call-task.entity';
@@ -105,7 +106,10 @@ export class CallEController {
   }
 }
 
+// Public to the session guard: liveness has to answer before anyone can sign
+// in, and load balancers cannot hold a session.
 @Controller('health')
+@PublicRoute()
 export class HealthController {
   constructor(private readonly checkHealth: CheckHealthUseCase) {}
 

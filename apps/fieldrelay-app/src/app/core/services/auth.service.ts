@@ -1,5 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 export interface UserSession {
   email: string;
@@ -7,7 +9,22 @@ export interface UserSession {
   name: string;
   organization: string;
   isDemo: boolean;
+  // Issued and signed by the API. Every API request carries it, and the API
+  // refuses any request without it, so this is a real credential rather than a
+  // client-side flag the browser could simply set.
   token: string;
+  expiresAt: string;
+}
+
+// Published on the sign-in screen and in the README on purpose: evaluators must
+// be able to get in without being handed a secret out of band.
+export const DEMO_CREDENTIALS = {
+  email: 'ops.demo@fieldrelay.io',
+  password: 'DemoOps2026!'
+} as const;
+
+interface SessionApiResponse {
+  data: { token: string; expiresAt: string; subject: string; role: string; demo: boolean };
 }
 
 @Injectable({
@@ -18,6 +35,8 @@ export class AuthService {
   readonly currentSession = signal<UserSession | null>(null);
   readonly isLoading = signal<boolean>(false);
   readonly authError = signal<string | null>(null);
+
+  private readonly http = inject(HttpClient);
 
   constructor(private router: Router) {
     this.restoreSession();
@@ -39,7 +58,7 @@ export class AuthService {
   }
 
   signInDemo(): Promise<boolean> {
-    return this.signIn('ops.demo@fieldrelay.io', 'DemoOps2026!', true, true);
+    return this.signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password, true, true);
   }
 
   async signIn(
@@ -51,42 +70,44 @@ export class AuthService {
     this.isLoading.set(true);
     this.authError.set(null);
 
-    // Simulate network validation delay
-    await new Promise((res) => setTimeout(res, 600));
-
     if (!email || !password) {
       this.authError.set('Please provide both email and password.');
       this.isLoading.set(false);
       return false;
     }
 
-    if (password.length < 6) {
-      this.authError.set('Invalid password credentials.');
+    try {
+      // The API is the only authority on whether these credentials are valid.
+      // The browser cannot mint a session for itself.
+      const response = await firstValueFrom(
+        this.http.post<SessionApiResponse>('/api/v1/auth/session', { email, password })
+      );
+
+      const session: UserSession = {
+        email,
+        role: 'Operations Manager',
+        name: isDemo ? 'Demo Ops Manager' : email.split('@')[0],
+        organization: 'Apex Property Management',
+        isDemo: response.data.demo,
+        token: response.data.token,
+        expiresAt: response.data.expiresAt
+      };
+
+      this.currentSession.set(session);
+      const storage = rememberSession ? localStorage : sessionStorage;
+      storage.setItem(this.SESSION_KEY, JSON.stringify(session));
+      this.isLoading.set(false);
+      this.router.navigate(['/mission-control']);
+      return true;
+    } catch (error) {
+      this.authError.set(
+        error instanceof HttpErrorResponse && error.status === 401
+          ? 'Use the evaluator demo credentials shown on this page.'
+          : 'Could not reach the FieldRelay API. Check that the service is running.'
+      );
       this.isLoading.set(false);
       return false;
     }
-
-    if (email !== 'ops.demo@fieldrelay.io' || password !== 'DemoOps2026!') {
-      this.authError.set('Use the evaluator demo credentials shown on this page.');
-      this.isLoading.set(false);
-      return false;
-    }
-
-    const session: UserSession = {
-      email,
-      role: 'Operations Manager',
-      name: isDemo ? 'Demo Ops Manager' : email.split('@')[0],
-      organization: 'Apex Property Management',
-      isDemo: true, // Always explicitly labeled as demo session in this foundation
-      token: 'demo-simulated-jwt-token'
-    };
-
-    this.currentSession.set(session);
-    const storage = rememberSession ? localStorage : sessionStorage;
-    storage.setItem(this.SESSION_KEY, JSON.stringify(session));
-    this.isLoading.set(false);
-    this.router.navigate(['/mission-control']);
-    return true;
   }
 
   signOut(): void {

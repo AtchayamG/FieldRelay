@@ -4,6 +4,11 @@ export class CallValidationError extends Error {}
 export class CallAuthorizationError extends Error {}
 export class CallbackAuthenticationError extends Error {}
 
+// No usable caller identity: the session token is absent, malformed, expired,
+// or wrongly signed. Distinct from CallAuthorizationError, which means the
+// caller is known but is not permitted to do this particular thing.
+export class AuthenticationError extends Error {}
+
 // The call provider was reachable but refused or failed the request, or was not
 // reachable at all. Thrown by CallEPort implementations; StartCallUseCase turns
 // it into a durable `outcome_unknown` task that can never be auto-redialled.

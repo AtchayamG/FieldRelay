@@ -2,6 +2,10 @@ import type { AddressInfo } from 'node:net';
 import type { INestApplication } from '@nestjs/common';
 import { createHmac } from 'node:crypto';
 import { Test } from '@nestjs/testing';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthController } from '../interfaces/auth.controller';
+import { SessionGuard } from '../interfaces/session.guard';
+import { IssueSessionUseCase } from '../application/issue-session.use-case';
 import { CallEPort } from '../application/call-e.port';
 import { CheckHealthUseCase } from '../application/check-health.use-case';
 import { ContactAuthorizationPort } from '../application/contact-authorization.port';
@@ -38,9 +42,13 @@ describe('FieldRelay HTTP API', () => {
   let provider: jest.Mocked<CallEPort>;
   const signingSecret = 'e2e_test_signing_secret_123456';
   const webhookToken = 'e2e_calle_webhook_token_abcdefghijkl';
+  const authSecret = 'e2e-auth-signing-secret-at-least-32-chars';
+  const demoCredentials = { email: 'ops.demo@fieldrelay.io', password: 'DemoOps2026!' };
+  let sessionToken: string;
 
   beforeEach(async () => {
     process.env.CALLBACK_SIGNING_SECRET = signingSecret;
+    process.env.AUTH_SIGNING_SECRET = authSecret;
     const transactions = new InMemoryTransactionManager(new InMemoryDatabase());
     provider = {
       describe: jest.fn().mockReturnValue({ mode: 'demo', simulated: true }),
@@ -65,9 +73,17 @@ describe('FieldRelay HTTP API', () => {
         CallEController,
         HealthController,
         ProviderCallbackController,
-        CalleWebhookController
+        CalleWebhookController,
+        AuthController
       ],
       providers: [
+        // Mirrors AppModule: the guard is global, so every route is closed
+        // unless it carries @PublicRoute().
+        { provide: APP_GUARD, useClass: SessionGuard },
+        {
+          provide: IssueSessionUseCase,
+          useValue: new IssueSessionUseCase(demoCredentials, authSecret)
+        },
         {
           provide: CALLE_WEBHOOK_TRANSLATOR,
           useValue: new CalleWebhookTranslator(webhookToken)
@@ -116,10 +132,87 @@ describe('FieldRelay HTTP API', () => {
     await app.listen(0, '127.0.0.1');
     const address = app.getHttpServer().address() as AddressInfo;
     baseUrl = `http://127.0.0.1:${address.port}`;
+
+    const session = await fetch(`${baseUrl}/api/v1/auth/session`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(demoCredentials)
+    });
+    sessionToken = ((await session.json()) as { data: { token: string } }).data.token;
   });
 
   afterEach(async () => {
     await app.close();
+  });
+
+  it('refuses every state-changing and data-reading route without a session', async () => {
+    const anonymous = (path: string, init: RequestInit = {}) =>
+      fetch(`${baseUrl}${path}`, {
+        ...init,
+        headers: { 'content-type': 'application/json', ...(init.headers ?? {}) }
+      });
+
+    // The money endpoint first: an unauthenticated caller must never be able to
+    // ask this service to dial a telephone.
+    const startCall = await anonymous('/api/v1/calls', {
+      method: 'POST',
+      headers: { 'idempotency-key': 'anon-attempt-1' },
+      body: JSON.stringify({
+        incidentId: '11111111-1111-4111-8111-111111111111',
+        authorizedContactId: 'CNS-4491',
+        purpose: 'vendor_availability'
+      })
+    });
+    expect(startCall.status).toBe(401);
+    expect(provider.startCall).not.toHaveBeenCalled();
+
+    for (const [path, init] of [
+      ['/api/v1/incidents', { method: 'POST', body: JSON.stringify(incidentBody) }],
+      ['/api/v1/incidents', {}],
+      ['/api/v1/calls', {}]
+    ] as const) {
+      const response = await anonymous(path, init);
+      expect(response.status).toBe(401);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'NOT_AUTHORIZED'
+      );
+    }
+
+    // A forged or expired token is refused just as firmly as no token at all.
+    const forged = await anonymous('/api/v1/incidents', {
+      headers: { authorization: 'Bearer v1.YWJj.' + 'a'.repeat(64) }
+    });
+    expect(forged.status).toBe(401);
+
+    // Liveness stays reachable, because nothing can sign in until it is.
+    expect((await anonymous('/health')).status).toBe(200);
+  });
+
+  it('issues a session for the published evaluator credentials and refuses others', async () => {
+    const good = await fetch(`${baseUrl}/api/v1/auth/session`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(demoCredentials)
+    });
+    expect(good.status).toBe(200);
+    const issued = (await good.json()) as { data: { token: string; role: string; demo: boolean } };
+    expect(issued.data).toMatchObject({ role: 'operator', demo: true });
+
+    const bad = await fetch(`${baseUrl}/api/v1/auth/session`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: demoCredentials.email, password: 'wrong' })
+    });
+    expect(bad.status).toBe(401);
+
+    // The issued token is accepted by a protected route.
+    const me = await fetch(`${baseUrl}/api/v1/auth/session`, {
+      headers: { authorization: `Bearer ${issued.data.token}` }
+    });
+    expect(me.status).toBe(200);
+    expect(((await me.json()) as { data: { subject: string } }).data.subject).toBe(
+      demoCredentials.email
+    );
   });
 
   it('creates, lists and retrieves an incident through the public contract', async () => {
@@ -342,7 +435,9 @@ describe('FieldRelay HTTP API', () => {
   }
 
   async function getJson<T>(path: string): Promise<JsonResponse<T>> {
-    const response = await fetch(`${baseUrl}${path}`);
+    const response = await fetch(`${baseUrl}${path}`, {
+      headers: { authorization: `Bearer ${sessionToken}` }
+    });
     return { response, body: (await response.json()) as T };
   }
 
@@ -370,7 +465,8 @@ describe('FieldRelay HTTP API', () => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'idempotency-key': idempotencyKey
+        'idempotency-key': idempotencyKey,
+        authorization: `Bearer ${sessionToken}`
       },
       body: JSON.stringify(body)
     });
