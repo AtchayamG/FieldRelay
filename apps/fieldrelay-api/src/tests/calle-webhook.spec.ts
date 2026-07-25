@@ -37,7 +37,50 @@ describe('CalleWebhookTranslator authentication', () => {
 describe('CalleWebhookTranslator translation', () => {
   const translator = new CalleWebhookTranslator(TOKEN);
 
-  it('translates a terminal delivery', () => {
+  // Envelope shape from the CALL-E OpenAPI document (v0.6.0) WebhookEvent:
+  // { id, type, created_at, data: { id, status, ... } }
+  const envelope = (type: string, callId = 'call_9') => ({
+    id: 'evt_wh_1',
+    type,
+    created_at: '2026-07-25T10:00:00Z',
+    data: { id: callId, object: 'call_task', status: 'completed' }
+  });
+
+  it('takes the call ID from data.id and the event ID from the envelope root', () => {
+    expect(translator.translate(envelope('call.completed'))).toEqual({
+      eventId: 'evt_wh_1',
+      providerTaskId: 'call_9',
+      status: 'completed'
+    });
+  });
+
+  it('never mistakes the webhook event ID for the call ID', () => {
+    const translated = translator.translate(envelope('call.completed'));
+    expect(translated?.providerTaskId).not.toBe('evt_wh_1');
+  });
+
+  it('maps call.failed to a failed transition', () => {
+    expect(translator.translate(envelope('call.failed'))?.status).toBe('failed');
+  });
+
+  it('treats a result validation failure as a completed call, not a failed one', () => {
+    // The conversation happened; only the extracted answer was unusable.
+    expect(translator.translate(envelope('call.result_validation_failed'))?.status).toBe(
+      'completed'
+    );
+  });
+
+  it('ignores an envelope with an unrecognised event type', () => {
+    expect(translator.translate(envelope('call.something_new'))).toBeNull();
+  });
+
+  it('ignores an envelope carrying no call ID', () => {
+    expect(
+      translator.translate({ id: 'evt_1', type: 'call.completed', data: { object: 'call_task' } })
+    ).toBeNull();
+  });
+
+  it('translates a non-envelope status delivery', () => {
     expect(
       translator.translate({ event_id: 'evt_1', call_id: 'call_9', status: 'completed' })
     ).toEqual({ eventId: 'evt_1', providerTaskId: 'call_9', status: 'completed' });
@@ -85,6 +128,41 @@ describe('CalleWebhookTranslator translation', () => {
       providerTaskId: 'call_9',
       status: 'completed'
     });
+  });
+
+  it('discards the transcript turns and structured result carried on a real envelope', () => {
+    const translated = translator.translate({
+      id: 'evt_wh_2',
+      type: 'call.completed',
+      created_at: '2026-07-25T10:00:00Z',
+      data: {
+        id: 'call_9',
+        status: 'completed',
+        structured_result: { available: 'yes', quoted_amount_text: 'about 400 dollars' },
+        summary: 'The vendor can attend tomorrow morning.',
+        recipients: [
+          {
+            id: 'rcp_1',
+            phones: ['+6512345678'],
+            attempts: [
+              {
+                transcript_turns: [{ offset_seconds: 0, speaker: 'bot', text: 'Hello' }],
+                provider_call_id: 'provider_call_123'
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    expect(translated).toEqual({
+      eventId: 'evt_wh_2',
+      providerTaskId: 'call_9',
+      status: 'completed'
+    });
+    // Nothing beyond the three accepted fields survives translation, so no
+    // transcript or phone number can reach persistence through this path.
+    expect(Object.keys(translated ?? {})).toEqual(['eventId', 'providerTaskId', 'status']);
   });
 });
 

@@ -13,8 +13,20 @@ const DISCLOSURE =
 // and free-text-averse. A narrow schema is what makes a phone answer safe to
 // act on downstream: anything the caller could not have been asked cannot come
 // back, and every uncertain answer has an explicit `unknown` branch rather than
-// being coerced into a decision.
-const YES_NO_UNKNOWN = { type: 'string', enum: ['yes', 'no', 'unknown'] } as const;
+// being coerced into a decision — which is also what CALL-E's schema guidance
+// recommends over booleans.
+//
+// Only features CALL-E's extraction supports are used here: `type`,
+// `properties`, `required`, `enum`, `description` and `additionalProperties:
+// false`. Notably absent are `$ref`, `oneOf`, `anyOf`, `allOf` and nullable
+// type unions such as `["string", "null"]`; optional fields are expressed by
+// omission from `required` instead.
+const YES_NO_UNKNOWN = {
+  type: 'string',
+  enum: ['yes', 'no', 'unknown'],
+  description:
+    'Use yes only when the answer is clearly affirmative, no when it is clearly negative, and unknown when the other party is unsure, evasive, or never answers.'
+} as const;
 
 const BRIEFS: Record<CallPurpose, CallBrief> = {
   vendor_availability: {
@@ -29,9 +41,20 @@ const BRIEFS: Record<CallPurpose, CallBrief> = {
       required: ['available'],
       properties: {
         available: YES_NO_UNKNOWN,
-        earliest_eta_minutes: { type: ['integer', 'null'], minimum: 0, maximum: 20160 },
-        quoted_amount_text: { type: ['string', 'null'], maxLength: 120 },
-        answered_by_name: { type: ['string', 'null'], maxLength: 120 }
+        earliest_eta_minutes: {
+          type: 'integer',
+          description:
+            'Earliest arrival in whole minutes from now, if the vendor states one. Omit the field entirely when no time is given.'
+        },
+        quoted_amount_text: {
+          type: 'string',
+          description:
+            'The cost exactly as the vendor stated it, including currency and any range. Omit when no figure is given.'
+        },
+        answered_by_name: {
+          type: 'string',
+          description: 'Name of the person who answered, if they give one. Omit otherwise.'
+        }
       },
       additionalProperties: false
     }
@@ -47,8 +70,15 @@ const BRIEFS: Record<CallPurpose, CallBrief> = {
       required: ['confirmed'],
       properties: {
         confirmed: YES_NO_UNKNOWN,
-        stated_time_window: { type: ['string', 'null'], maxLength: 120 },
-        answered_by_name: { type: ['string', 'null'], maxLength: 120 }
+        stated_time_window: {
+          type: 'string',
+          description:
+            'The appointment window exactly as the other party stated it. Omit when they do not state one.'
+        },
+        answered_by_name: {
+          type: 'string',
+          description: 'Name of the person who answered, if they give one. Omit otherwise.'
+        }
       },
       additionalProperties: false
     }
@@ -64,8 +94,15 @@ const BRIEFS: Record<CallPurpose, CallBrief> = {
       required: ['follow_up_required'],
       properties: {
         follow_up_required: YES_NO_UNKNOWN,
-        status_summary: { type: ['string', 'null'], maxLength: 400 },
-        answered_by_name: { type: ['string', 'null'], maxLength: 120 }
+        status_summary: {
+          type: 'string',
+          description:
+            'One or two sentences describing the current job status in the other party’s own terms. Omit when they give no status.'
+        },
+        answered_by_name: {
+          type: 'string',
+          description: 'Name of the person who answered, if they give one. Omit otherwise.'
+        }
       },
       additionalProperties: false
     }

@@ -8,7 +8,8 @@ Environment: Node 24.18.0 LTS, pnpm 10.34.4, Windows. No local PostgreSQL runnin
 |---|---|
 | `pnpm lint` | PASS |
 | `pnpm typecheck` | PASS — strict, all five projects |
-| `pnpm test` | PASS — 198 tests: API 144, app 52, tokens 2; 15 PostgreSQL-dependent tests skipped |
+| `pnpm test` | PASS — 208 tests: API 154, app 52, tokens 2; 15 PostgreSQL-dependent tests skipped |
+| CALL-E credential probe (read-only, places no call) | PASS — valid key returns `404 not_found`; invalid key returns `401 unauthorized` against `https://api.heycall-e.com` |
 | `pnpm build` | PASS — the Node engine warning is gone; the 1.23 MB initial chunk warning remains |
 
 New coverage proves that the live adapter sends bearer auth, a per-task idempotency key, the brief, the recipient and the closed result schema; that the incident UUID is never transmitted; that a rejected request neither echoes the provider's message nor leaks the dialled number; that transport failures, missing call identifiers and oversized responses become provider errors rather than silent successes; that an unknown provider status degrades to `queued` instead of a fabricated terminal state; that live mode refuses to boot without valid configuration and that every non-`live` mode value selects the demo adapter; that malformed dial-target entries fail at boot; and that the CALL-E webhook rejects missing and wrong tokens, applies a terminal delivery exactly once, recognises a repeat delivery as a replay, absorbs non-actionable lifecycle noise, and discards transcripts, recordings and structured results.

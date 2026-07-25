@@ -2,7 +2,12 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { AllowedCallbackStatus } from '@fieldrelay/contracts';
 import { CallbackAuthenticationError } from '../../application/errors';
-import { asRecord, mapCalleStatus, readBoundedString } from './calle-status';
+import {
+  asRecord,
+  mapCalleStatus,
+  mapCalleWebhookEventType,
+  readBoundedString
+} from './calle-status';
 
 export const CALLE_WEBHOOK_TRANSLATOR = Symbol('CALLE_WEBHOOK_TRANSLATOR');
 
@@ -14,6 +19,12 @@ export type TranslatedCalleEvent = {
   providerTaskId: string;
   status: AllowedCallbackStatus;
 } | null;
+
+// A duplicate delivery of the same transition hashes to the same event ID, so
+// it is recognised as an exact replay instead of being applied twice.
+function deriveEventId(callId: string, status: string): string {
+  return `calle_${createHash('sha256').update(`${callId}.${status}`).digest('hex').slice(0, 40)}`;
+}
 
 const ACTIONABLE: ReadonlySet<string> = new Set([
   'ringing',
@@ -61,26 +72,44 @@ export class CalleWebhookTranslator {
       return null;
     }
 
-    const providerTaskId = readBoundedString(body, ['call_id', 'callId', 'id', 'run_id', 'runId']);
+    // Documented terminal envelope (OpenAPI v0.6.0 `WebhookEvent`):
+    //   { id, type, created_at, data: { id, status, ... } }
+    // `id` at the top level is the *webhook event* id, while the call id lives
+    // at `data.id`. Reading the call id from the envelope root would silently
+    // bind every callback to a provider task that does not exist, so the
+    // envelope is matched first and only then fallen back on.
+    const data = asRecord(record.data);
+    const eventType = mapCalleWebhookEventType(record.type);
+    if (data && eventType) {
+      const callId = readBoundedString(data, ['id', 'call_id', 'callId']);
+      if (!callId) {
+        return null;
+      }
+      // CALL-E documents the webhook event id as an idempotency key, so it is
+      // used verbatim: a redelivery of the same event is recognised as an exact
+      // replay rather than applied twice.
+      const eventId =
+        readBoundedString(record, ['id', 'event_id', 'eventId']) ??
+        deriveEventId(callId, eventType);
+      return { eventId, providerTaskId: callId, status: eventType as AllowedCallbackStatus };
+    }
+
+    // Fallback for any non-envelope delivery shape (for example a status-only
+    // ping). Deliberately conservative: it must carry its own call identifier.
+    const providerTaskId = readBoundedString(record, ['call_id', 'callId', 'run_id', 'runId']);
     if (!providerTaskId) {
       return null;
     }
 
-    const nested = asRecord(record.call) ?? asRecord(record.data) ?? asRecord(record.object);
-    const rawStatus = record.status ?? record.state ?? nested?.status ?? nested?.state;
-    const status = mapCalleStatus(rawStatus);
+    const nested = asRecord(record.call) ?? asRecord(record.object);
+    const status = mapCalleStatus(record.status ?? record.state ?? nested?.status ?? nested?.state);
     if (!ACTIONABLE.has(status)) {
       return null;
     }
 
-    // CALL-E may or may not supply its own event identifier. When it does not,
-    // derive a deterministic one from the call and the state it reports: a
-    // duplicate delivery of the same transition then hashes to the same event
-    // ID and is recognised as an exact replay instead of double-applying.
-    const suppliedEventId = readBoundedString(body, ['event_id', 'eventId', 'delivery_id']);
     const eventId =
-      suppliedEventId ??
-      `calle_${createHash('sha256').update(`${providerTaskId}.${status}`).digest('hex').slice(0, 40)}`;
+      readBoundedString(record, ['event_id', 'eventId', 'delivery_id']) ??
+      deriveEventId(providerTaskId, status);
 
     return { eventId, providerTaskId, status: status as AllowedCallbackStatus };
   }

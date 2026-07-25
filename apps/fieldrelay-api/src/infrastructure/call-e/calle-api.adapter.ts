@@ -116,11 +116,17 @@ export class CalleApiAdapter implements CallEPort {
 
     const body = {
       task: `${brief.disclosure}\n\n${brief.goal}`,
-      recipient: {
-        phone: target.phoneE164,
-        region: target.region,
-        locale: target.locale
-      },
+      // `recipients` is an array of recipient objects, each holding a `phones`
+      // array — verified against the CALL-E Developer API OpenAPI document
+      // (v0.6.0), not inferred from the README prose. FieldRelay authorizes
+      // exactly one contact per call task, so exactly one is ever sent.
+      recipients: [
+        {
+          phones: [target.phoneE164],
+          region: target.region,
+          locale: target.locale
+        }
+      ],
       result_schema: brief.resultSchema,
       metadata: {
         // Correlation only. No tenant, address, contact or incident free text.

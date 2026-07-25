@@ -78,8 +78,10 @@ describe('CalleApiAdapter', () => {
     expect(headers['Idempotency-Key']).toBe('11111111-2222-3333-4444-555555555555');
 
     const sent = JSON.parse(String(capturedInit?.body)) as Record<string, never>;
+    // Shape verified against the CALL-E OpenAPI document: `recipients` is an
+    // array and each entry carries a `phones` array.
     expect(sent).toMatchObject({
-      recipient: { phone: '+6512345678', region: 'SG', locale: 'en-SG' },
+      recipients: [{ phones: ['+6512345678'], region: 'SG', locale: 'en-SG' }],
       webhook_url: CONFIG.webhookUrl,
       metadata: { call_task_id: '11111111-2222-3333-4444-555555555555', purpose: 'vendor_availability' }
     });
@@ -167,10 +169,14 @@ describe('CalleApiAdapter', () => {
 });
 
 describe('mapCalleStatus', () => {
+  // The first five are the documented CallStatus / AttemptStatus enum values.
   it.each([
+    ['queued', 'queued'],
     ['dialing', 'ringing'],
     ['in_progress', 'connected'],
     ['completed', 'completed'],
+    ['failed', 'failed'],
+    ['canceled', 'failed'],
     ['cancelled', 'failed'],
     ['voicemail', 'no_answer'],
     ['BUSY', 'no_answer']

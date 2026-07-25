@@ -5,6 +5,10 @@ import { ProviderCallStatus } from '../../domain/call-task.entity';
 // and inventing a terminal state here would be worse than waiting for the next
 // webhook. `queued` is not an accepted callback transition, so an unrecognised
 // value is ignored rather than acted on.
+// Verified against the CALL-E Developer API OpenAPI document (v0.6.0):
+//   CallStatus    : queued | in_progress | completed | failed | canceled
+//   AttemptStatus : queued | dialing | in_progress | completed | failed | canceled
+// The extra keys below are tolerated aliases, not invented states.
 const STATUS_MAP: Record<string, ProviderCallStatus> = {
   queued: 'queued',
   pending: 'queued',
@@ -35,6 +39,27 @@ export function mapCalleStatus(raw: unknown): ProviderCallStatus {
     return 'queued';
   }
   return STATUS_MAP[raw.trim().toLowerCase()] ?? 'queued';
+}
+
+// Terminal webhook event types, per the OpenAPI document's WebhookEventType:
+//   call.completed | call.failed | call.result_validation_failed
+//
+// `call.result_validation_failed` means the conversation happened but the
+// answer did not satisfy the declared result schema. That is a completed call
+// with an unusable result, not a failed call, so it maps to `completed` and is
+// left for the outcome-validation path to judge rather than being silently
+// downgraded to a failure.
+const WEBHOOK_EVENT_MAP: Record<string, ProviderCallStatus> = {
+  'call.completed': 'completed',
+  'call.failed': 'failed',
+  'call.result_validation_failed': 'completed'
+};
+
+export function mapCalleWebhookEventType(raw: unknown): ProviderCallStatus | null {
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  return WEBHOOK_EVENT_MAP[raw.trim().toLowerCase()] ?? null;
 }
 
 export function asRecord(value: unknown): Record<string, unknown> | null {
