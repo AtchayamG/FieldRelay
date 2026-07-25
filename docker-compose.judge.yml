@@ -1,0 +1,82 @@
+# FieldRelay judge environment.
+#
+#   docker compose -f docker-compose.judge.yml up -d --build
+#   open http://localhost:8080
+#
+# Deliberately incapable of placing a real phone call: CALL_E_MODE is demo and
+# no CALL-E credential is passed in, so nothing a visitor does can spend the
+# call balance. Evidence of the real call FieldRelay placed is recorded in
+# docs/CALL_E_RUNTIME_PROOF.md and shown in the demo video.
+
+name: fieldrelay-judge
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fieldrelay
+      POSTGRES_USER: fieldrelay
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fieldrelay_judge_local}
+    volumes:
+      - judge-postgres-data:/var/lib/postgresql/data
+      - ./infra/database/migrations/0001_incidents.sql:/docker-entrypoint-initdb.d/10_0001.sql:ro
+      - ./infra/database/migrations/0002_call_tasks.sql:/docker-entrypoint-initdb.d/20_0002.sql:ro
+      - ./infra/database/migrations/0003_call_callbacks.sql:/docker-entrypoint-initdb.d/25_0003.sql:ro
+      - ./infra/database/migrations/0004_idempotency_task_fk.sql:/docker-entrypoint-initdb.d/27_0004.sql:ro
+      - ./infra/database/migrations/0005_runtime_settings.sql:/docker-entrypoint-initdb.d/28_0005.sql:ro
+      - ./infra/database/seed/0001_demo_incidents.sql:/docker-entrypoint-initdb.d/30_seed.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fieldrelay -d fieldrelay']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/fieldrelay-api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://fieldrelay:${POSTGRES_PASSWORD:-fieldrelay_judge_local}@postgres:5432/fieldrelay
+      # nginx proxies /api on the same origin, so no browser origin is allowed
+      # to call the API directly.
+      FRONTEND_ORIGINS: http://localhost:8080
+
+      # Signs session tokens. Override in any environment that is not a laptop.
+      AUTH_SIGNING_SECRET: ${AUTH_SIGNING_SECRET:-judge_environment_signing_secret_change_me_please}
+      DEMO_OPERATOR_EMAIL: ops.demo@fieldrelay.io
+      DEMO_OPERATOR_PASSWORD: DemoOps2026!
+
+      CALLBACK_SIGNING_SECRET: ${CALLBACK_SIGNING_SECRET:-judge_environment_callback_secret}
+
+      # The two settings that make this environment safe to expose publicly.
+      # demo: the demo adapter is selected, so no call can ever be placed.
+      # false: the live call target cannot be changed from inside the app.
+      CALL_E_MODE: demo
+      CALLE_ALLOW_RUNTIME_DIAL_TARGET: 'false'
+    # The API writes nothing to disk.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/fieldrelay-app/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - '${JUDGE_PORT:-8080}:8080'
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  judge-postgres-data:

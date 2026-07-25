@@ -37,3 +37,15 @@
 - Toolchain: Node upgraded to 24.18.0 LTS, clearing the `>=22.12` engine blocker and the Vite engine warning
 - Verification: lint, strict typecheck, 198 tests and production builds pass
 - Remaining on the CALL-E proof: a CALL-E API key and an authorized test number, both user-supplied
+
+## 2026-07-26
+
+- CALL-E runtime proof: COMPLETE — FieldRelay placed call `call_MzD1ou1AbX1XtYkTnxMCBA`, which returned `{available: yes, quoted_amount_text: $35}` with 0.82 confidence and round-tripped the call task IDs; recorded in `docs/CALL_E_RUNTIME_PROOF.md`
+- API key: created self-service in the CALL-E dashboard (free, 2 per account, 90-day expiry); stored only in the git-ignored `.env`
+- Session boundary: global guard closes every route by default; HMAC tokens with expiry; anonymous call initiation returns 401 and never reaches the provider
+- Operator-changeable call target: Settings screen plus `GET/PUT/DELETE /api/v1/settings/dial-target`, gated by `CALLE_ALLOW_RUNTIME_DIAL_TARGET` (default false), numbers validated, contact-bound, masked in responses and audit
+- Deployment: multi-stage Dockerfiles for API and web, `docker-compose.judge.yml`, nginx same-origin proxy with CSP and security headers
+- Defects fixed: idempotency foreign key had no delete rule so call tasks could not be purged (migration 0004); CALL-E request timeout raised 15s to 45s after a client timeout abandoned an accepted call and a naive retry dialled twice
+- Agent documentation: `docs/SYSTEM_STATE_FOR_AGENTS.md` added and `AGENTS.md` updated with the non-negotiable call-safety rules
+- Verification: lint, strict typecheck, 258 tests with PostgreSQL 17, production builds — all pass
+- Remaining highest-priority: deploy the judge environment to a public URL and capture testing instructions; then ingest structured call results to open the approval and dispatch loop

@@ -8,6 +8,10 @@ export interface NavItem {
   icon: string;
   badge?: string;
   exact?: boolean;
+  // Whether the route is actually built. Unbuilt destinations render disabled
+  // and labelled "planned" rather than linking to an empty screen, so the
+  // navigation never overstates what this build can do.
+  available?: boolean;
 }
 
 @Component({
@@ -21,7 +25,7 @@ export interface NavItem {
         <nav class="nav-list">
           <ng-container *ngFor="let item of primaryNav">
             <a
-              *ngIf="item.path === '/mission-control' || item.path === '/incidents' || item.path === '/calls'; else plannedPrimary"
+              *ngIf="item.available; else plannedPrimary"
               [routerLink]="item.path"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
@@ -45,15 +49,28 @@ export interface NavItem {
       <div class="nav-section">
         <div class="nav-section-title">Management</div>
         <nav class="nav-list">
-          <span
-            *ngFor="let item of secondaryNav"
-            class="nav-item unavailable"
-            aria-disabled="true"
-            [attr.title]="item.label + ' — planned'"
-          >
-            <span class="nav-icon">{{ item.icon }}</span>
-            <span class="nav-label">{{ item.label }}</span>
-          </span>
+          <ng-container *ngFor="let item of secondaryNav">
+            <a
+              *ngIf="item.available; else plannedSecondary"
+              [routerLink]="item.path"
+              routerLinkActive="active"
+              class="nav-item"
+              [attr.title]="item.label"
+            >
+              <span class="nav-icon">{{ item.icon }}</span>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+            <ng-template #plannedSecondary>
+              <span
+                class="nav-item unavailable"
+                aria-disabled="true"
+                [attr.title]="item.label + ' — planned'"
+              >
+                <span class="nav-icon">{{ item.icon }}</span>
+                <span class="nav-label">{{ item.label }}</span>
+              </span>
+            </ng-template>
+          </ng-container>
         </nav>
       </div>
 
@@ -178,9 +195,16 @@ export interface NavItem {
 })
 export class SidebarComponent {
   primaryNav: NavItem[] = [
-    { path: '/mission-control', label: 'Mission Control', icon: '🎯', badge: 'LIVE', exact: true },
-    { path: '/incidents', label: 'Incidents', icon: '🚨' },
-    { path: '/calls', label: 'Calls & AI Ops', icon: '📞' },
+    {
+      path: '/mission-control',
+      label: 'Mission Control',
+      icon: '🎯',
+      badge: 'LIVE',
+      exact: true,
+      available: true
+    },
+    { path: '/incidents', label: 'Incidents', icon: '🚨', available: true },
+    { path: '/calls', label: 'Calls & AI Ops', icon: '📞', available: true },
     { path: '/dispatch', label: 'Dispatch Board', icon: '🗺️' },
     { path: '/approvals', label: 'Approvals', icon: '⚖️', badge: '2' }
   ];
@@ -189,6 +213,6 @@ export class SidebarComponent {
     { path: '/technicians', label: 'Technicians', icon: '👷' },
     { path: '/vendors', label: 'Vendors', icon: '🏢' },
     { path: '/analytics', label: 'Analytics', icon: '📊' },
-    { path: '/settings', label: 'Settings', icon: '⚙️' }
+    { path: '/settings', label: 'Settings', icon: '⚙️', available: true }
   ];
 }

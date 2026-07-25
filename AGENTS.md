@@ -1,6 +1,15 @@
 # FieldRelay Agent Rules
 
-Read `docs/00_MASTER_BLUEPRINT.md` first. Follow the authority order in that document and the repository root request. Mockups are implementation references, not inspiration.
+Read `docs/00_MASTER_BLUEPRINT.md` first, then **`docs/SYSTEM_STATE_FOR_AGENTS.md`**, which describes what actually exists today, the CALL-E contract details that are easy to get wrong, and the traps that have already caught people. Follow the authority order in the blueprint and the repository root request. Mockups are implementation references, not inspiration.
+
+## Non-negotiable call safety
+
+- Only the exact value `live` in `CALL_E_MODE` may enable dialling. Never widen that check.
+- A raw phone number may exist only in `CALLE_DIAL_TARGETS` or the `runtime_settings` row, and only inside infrastructure. Never return, log, persist, or commit one.
+- The call task and its idempotency reservation commit before any provider I/O, and the idempotency key is the call task UUID reused across retries.
+- Ambiguous outcomes stay `outcome_unknown` and are never auto-redialled.
+- Free CALL-E calls are metered and are what the judges will use. Never place a real call to test a change — use the demo adapter.
+- Run the test suite with `DATABASE_URL` set. Without it, 15 integration tests skip in silence.
 
 ## Delivery rules
 

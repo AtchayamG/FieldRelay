@@ -8,6 +8,15 @@ import { AuthController } from './interfaces/auth.controller';
 import { SessionGuard } from './interfaces/session.guard';
 import { IssueSessionUseCase } from './application/issue-session.use-case';
 import { requireSigningSecret } from './application/session-token';
+import { SettingsController } from './interfaces/settings.controller';
+import { ManageDialTargetUseCase } from './application/manage-dial-target.use-case';
+import {
+  DIAL_TARGET_SETTINGS_PORT,
+  DialTargetSettingsPort
+} from './application/dial-target-settings.port';
+import { DIAL_TARGET_PORT, DialTargetResolverPort } from './application/dial-target.port';
+import { PgDialTargetSettingsRepository } from './infrastructure/persistence/pg/pg-dial-target-settings.repository';
+import { LayeredDialTargetResolver } from './infrastructure/contact/layered-dial-target.resolver';
 import { ApiExceptionFilter } from './interfaces/api-exception.filter';
 import { StartCallUseCase } from './application/start-call.use-case';
 import { ListCallsUseCase } from './application/list-calls.use-case';
@@ -43,13 +52,23 @@ import {
 // CALL-E is only ever live when the deployment says so explicitly. Any value
 // other than "live" — including an unset variable, a typo, or an empty string —
 // selects the demo adapter, so no environment can start dialling by accident.
-export function selectCallEAdapter(env: NodeJS.ProcessEnv): CallEPort {
+export function selectCallEAdapter(
+  env: NodeJS.ProcessEnv,
+  dialTargets: DialTargetResolverPort = new EnvDialTargetResolver()
+): CallEPort {
   if ((env.CALL_E_MODE ?? '').trim().toLowerCase() !== 'live') {
     return new DemoCallEAdapter();
   }
   // Throws at boot when the live configuration is missing or unsafe, rather
   // than at the first attempted call.
-  return new CalleApiAdapter(readCalleConfigFromEnv(env), new EnvDialTargetResolver());
+  return new CalleApiAdapter(readCalleConfigFromEnv(env), dialTargets);
+}
+
+// Off unless a deployment explicitly turns it on, so the published demo
+// credentials can never be used to point a public judge environment at an
+// arbitrary telephone.
+export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean {
+  return (env.CALLE_ALLOW_RUNTIME_DIAL_TARGET ?? '').trim().toLowerCase() === 'true';
 }
 
 @Module({
@@ -59,7 +78,8 @@ export function selectCallEAdapter(env: NodeJS.ProcessEnv): CallEPort {
     IncidentController,
     ProviderCallbackController,
     CalleWebhookController,
-    AuthController
+    AuthController,
+    SettingsController
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
@@ -94,8 +114,41 @@ export function selectCallEAdapter(env: NodeJS.ProcessEnv): CallEPort {
       inject: [PgPoolProvider]
     },
 
-    { provide: CALL_E_PORT, useFactory: () => selectCallEAdapter(process.env) },
+    PgDialTargetSettingsRepository,
+    {
+      provide: DIAL_TARGET_SETTINGS_PORT,
+      useExisting: PgDialTargetSettingsRepository
+    },
+    {
+      // The operator-nominated number wins over the environment allowlist, and
+      // a contact present in neither is simply not callable.
+      provide: DIAL_TARGET_PORT,
+      useFactory: (settings: DialTargetSettingsPort) =>
+        new LayeredDialTargetResolver(settings, new EnvDialTargetResolver()),
+      inject: [DIAL_TARGET_SETTINGS_PORT]
+    },
+    {
+      provide: CALL_E_PORT,
+      useFactory: (dialTargets: DialTargetResolverPort) =>
+        selectCallEAdapter(process.env, dialTargets),
+      inject: [DIAL_TARGET_PORT]
+    },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
+    {
+      provide: ManageDialTargetUseCase,
+      useFactory: (
+        settings: DialTargetSettingsPort,
+        contacts: ContactAuthorizationPort,
+        transactions: TransactionPort
+      ) =>
+        new ManageDialTargetUseCase(
+          settings,
+          contacts,
+          transactions,
+          runtimeDialTargetChangesAllowed(process.env)
+        ),
+      inject: [DIAL_TARGET_SETTINGS_PORT, CONTACT_AUTH_PORT, TRANSACTION_PORT]
+    },
     { provide: CALLE_WEBHOOK_TRANSLATOR, useFactory: () => new CalleWebhookTranslator() },
 
     // Factories keep the use cases plain classes free of Nest decorators.

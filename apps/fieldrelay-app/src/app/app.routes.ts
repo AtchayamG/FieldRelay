@@ -61,6 +61,13 @@ export const routes: Routes = [
           import(
             './features/calls/presentation/call-detail/call-detail.component'
           ).then((m) => m.CallDetailComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./features/settings/presentation/settings.component').then(
+            (m) => m.SettingsComponent
+          )
       }
     ]
   },
