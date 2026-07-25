@@ -21,3 +21,12 @@
 - Frontend safety boundary: demo-only credentials, explicit simulated labeling, unavailable routes/actions disabled rather than faked
 - CALL-E real-call proof: BLOCKED on credentials and authorized test number; safe demo adapter remains in scope
 - Release risks: Node must be upgraded from 22.9 to >=22.12; initial frontend chunk is 1.23 MB
+
+## 2026-07-25
+
+- Gap analysis: complete — 25 tracked gaps in `docs/GAP_ANALYSIS_AND_DELIVERY_BACKLOG.md`, ordered into seven execution tracks
+- Approved direction: Track 0 hygiene first; CALL-E via the MCP connector behind `CallEPort`; all 15 routes in scope; `main` as the working baseline with short-lived `codex/*` branches per track
+- Provider callback and reconciliation slice: verified (lint, strict typecheck, 96 passing tests with 15 PostgreSQL-dependent tests skipped) and committed
+- Repository hygiene: `.gitattributes` added so line endings no longer depend on per-machine `core.autocrlf`; the previously reported 156-file dirty tree was a cross-platform inspection artifact, not real churn
+- Environment template: duplicated `FRONTEND_ORIGINS` removed and the required `CALLBACK_SIGNING_SECRET` documented
+- Highest open risks: no live CALL-E adapter (G1), no API authentication or authorization on any route (G14), nine of fifteen routes unimplemented (G7), no deployable artifact or judge environment (G5)
