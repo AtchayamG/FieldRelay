@@ -5,12 +5,13 @@ import { CallPort } from '../../application/call.port';
 import { CallHttpAdapter } from '../../data/call-http.adapter';
 import { CallTask } from '../../domain/call.model';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { callApiErrorMessage, callApiStatus } from '../../application/call-api-error';
 
 @Component({
   selector: 'app-call-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, StatusBadgeComponent],
+  imports: [CommonModule, RouterModule, StatusBadgeComponent, IconComponent],
   providers: [
     { provide: CallPort, useClass: CallHttpAdapter }
   ],
@@ -31,7 +32,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
 
       <!-- 404 Not Found State -->
       <div *ngIf="isNotFound" class="state-card error-card" role="alert">
-        <div class="error-icon">🔍</div>
+        <fr-icon class="error-icon" name="search" [size]="42" [strokeWidth]="1.4" />
         <h2>Call Task Not Found</h2>
         <p>The requested call task ID is not available.</p>
         <a routerLink="/calls" class="action-btn primary-btn">
@@ -41,7 +42,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
 
       <!-- 403 Forbidden State -->
       <div *ngIf="isPermissionDenied" class="state-card error-card" role="alert">
-        <div class="error-icon">🔒</div>
+        <fr-icon class="error-icon" name="lock" [size]="42" [strokeWidth]="1.4" />
         <h2>Access Denied</h2>
         <p>You do not have permission to view this call detail.</p>
         <a routerLink="/calls" class="action-btn secondary-btn">
@@ -51,7 +52,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
 
       <!-- Generic Error State -->
       <div *ngIf="errorMessage && !isNotFound && !isPermissionDenied && !call" class="state-card error-card" role="alert">
-        <div class="error-icon">⚠️</div>
+        <fr-icon class="error-icon" name="alert" [size]="42" [strokeWidth]="1.4" />
         <h2>Unable to Load Call Task</h2>
         <p>{{ errorMessage }}</p>
         <button type="button" class="action-btn primary-btn" (click)="loadCallDetail()">
@@ -63,7 +64,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       <main *ngIf="call" class="detail-content">
         <!-- Prominent Simulation Banner -->
         <div *ngIf="call.simulated" class="simulated-banner">
-          <span class="banner-icon">⚡</span>
+          <fr-icon class="banner-icon" name="bolt" [size]="20" [strokeWidth]="2" />
           <div class="banner-text">
             <strong class="banner-title">SIMULATED CALL TASK</strong>
             <span class="banner-sub">
@@ -74,7 +75,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
 
         <!-- Reconciliation Required Alert Banner -->
         <div *ngIf="call.status === 'outcome_unknown'" class="reconciliation-alert" role="alert">
-          <span class="alert-icon">⚠️</span>
+          <fr-icon class="alert-icon" name="alert" [size]="20" />
           <div class="alert-text">
             <strong class="alert-title">Reconciliation required — do not redial</strong>
             <span class="alert-sub">
@@ -142,7 +143,10 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
               <div class="field-row">
                 <dt class="field-label">Execution Mode</dt>
                 <dd class="field-value">
-                  <span *ngIf="call.simulated" class="simulated-pill">⚡ SIMULATED</span>
+                  <span *ngIf="call.simulated" class="simulated-pill">
+                    <fr-icon name="bolt" [size]="12" [strokeWidth]="2.2" />
+                    <span>SIMULATED</span>
+                  </span>
                   <span *ngIf="!call.simulated" class="live-pill">NON-SIMULATED</span>
                 </dd>
               </div>
@@ -224,8 +228,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       color: var(--fr-color-warning);
     }
     .banner-icon {
-      font-size: 24px;
-      line-height: 1;
+      color: var(--fr-color-warning);
     }
     .banner-text {
       display: flex;
@@ -253,8 +256,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       color: var(--fr-color-danger);
     }
     .alert-icon {
-      font-size: 24px;
-      line-height: 1;
+      color: var(--fr-color-danger);
     }
     .alert-text {
       display: flex;
@@ -411,7 +413,8 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       font-size: 14px;
     }
     .error-icon {
-      font-size: 32px;
+      color: var(--fr-color-muted);
+      opacity: 0.75;
     }
 
     /* Spinner */

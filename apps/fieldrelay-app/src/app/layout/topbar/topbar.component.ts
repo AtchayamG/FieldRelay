@@ -67,7 +67,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             aria-label="Sign out"
             title="Sign out"
           >
-            🚪
+            <fr-icon name="sign-out" [size]="19" />
           </button>
         </div>
       </div>

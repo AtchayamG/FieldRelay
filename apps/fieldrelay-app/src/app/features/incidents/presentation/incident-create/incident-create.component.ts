@@ -10,6 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { IncidentPort } from '../../application/incident.port';
 import { IncidentHttpAdapter } from '../../data/incident-http.adapter';
 import { IncidentPriority, IncidentType } from '../../domain/incident.model';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import {
   incidentApiErrorMessage,
   incidentApiStatus
@@ -18,7 +19,7 @@ import {
 @Component({
   selector: 'app-incident-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, IconComponent],
   providers: [
     { provide: IncidentPort, useClass: IncidentHttpAdapter }
   ],
@@ -69,7 +70,10 @@ import {
 
         <!-- API Error Alert -->
         <div class="alert-banner danger-banner" *ngIf="apiError">
-          <span>⚠️ <strong>Submission Failed:</strong> {{ apiError }}</span>
+          <span class="error-text">
+            <fr-icon name="alert" [size]="16" />
+            <span><strong>Submission Failed:</strong> {{ apiError }}</span>
+          </span>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="incident-form">
@@ -207,7 +211,10 @@ import {
               class="action-btn primary-btn"
               [disabled]="isSubmitting"
             >
-              <span *ngIf="!isSubmitting">⚡ Create Incident Record</span>
+              <span *ngIf="!isSubmitting" class="btn-content">
+                <fr-icon name="plus" [size]="16" [strokeWidth]="2.2" />
+                <span>Create Incident Record</span>
+              </span>
               <span *ngIf="isSubmitting">Submitting to API...</span>
             </button>
           </div>
@@ -217,12 +224,12 @@ import {
       <!-- Honest Unavailable Workflow Panels -->
       <div class="unavailable-sections-grid">
         <div class="ops-card unavailable-panel">
-          <h3>📎 Evidence & Attachments Intake</h3>
+          <h3><fr-icon name="link" [size]="16" /> Evidence &amp; Attachments Intake</h3>
           <p>Photo and document upload is planned for the next release.</p>
           <span class="planned-badge font-mono">Planned / Unavailable</span>
         </div>
         <div class="ops-card unavailable-panel">
-          <h3>🤖 AI Voice Triage Preview</h3>
+          <h3><fr-icon name="activity" [size]="16" /> AI Voice Triage Preview</h3>
           <p>Authorized AI phone workflow setup will be added in a later delivery slice.</p>
           <span class="planned-badge font-mono">Planned / Unavailable</span>
         </div>
@@ -433,6 +440,22 @@ import {
       padding: var(--fr-space-md);
       border-radius: var(--fr-radius-md);
       font-size: 13px;
+    }
+    .error-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    /* Section headings pair an icon with the label on a shared baseline. */
+    .unavailable-panel h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .danger-banner {
       background: var(--fr-color-danger-soft);

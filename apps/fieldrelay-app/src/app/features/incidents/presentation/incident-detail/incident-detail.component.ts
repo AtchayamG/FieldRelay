@@ -5,6 +5,7 @@ import { IncidentPort } from '../../application/incident.port';
 import { IncidentHttpAdapter } from '../../data/incident-http.adapter';
 import { Incident } from '../../domain/incident.model';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import {
   incidentApiErrorCode,
   incidentApiErrorMessage,
@@ -16,7 +17,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
 @Component({
   selector: 'app-incident-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, StatusBadgeComponent],
+  imports: [CommonModule, RouterModule, StatusBadgeComponent, IconComponent],
   providers: [
     { provide: IncidentPort, useClass: IncidentHttpAdapter }
   ],
@@ -30,7 +31,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
 
       <!-- 404 Not Found State -->
       <div class="empty-state-container" *ngIf="!isLoading && isNotFound">
-        <div class="empty-icon">🚫</div>
+        <fr-icon class="empty-icon" name="forbidden" [size]="44" [strokeWidth]="1.4" />
         <h2>404 — Incident Not Found</h2>
         <p>The requested incident identifier does not exist or was removed.</p>
         <a routerLink="/incidents" class="action-btn primary-btn mt-md">
@@ -41,9 +42,13 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       <!-- Generic Error State -->
       <div class="alert-banner danger-banner" *ngIf="!isLoading && !isNotFound && errorMsg">
         <div class="error-content">
-          <span>⚠️ <strong>Error Loading Incident:</strong> {{ errorMsg }}</span>
+          <span class="error-text">
+            <fr-icon name="alert" [size]="16" />
+            <span><strong>Error Loading Incident:</strong> {{ errorMsg }}</span>
+          </span>
           <button type="button" class="retry-btn" (click)="retryLoad()">
-            🔄 Retry
+            <fr-icon name="refresh" [size]="15" />
+            <span>Retry</span>
           </button>
         </div>
       </div>
@@ -64,7 +69,8 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
                 aria-disabled="true"
                 title="Editing incident is planned for next release"
               >
-                ✏️ Edit (Planned)
+                <fr-icon name="edit" [size]="15" />
+                <span>Edit (Planned)</span>
               </button>
               <button
                 type="button"
@@ -73,7 +79,8 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
                 aria-disabled="true"
                 title="Share incident link is planned for next release"
               >
-                🔗 Share (Planned)
+                <fr-icon name="link" [size]="15" />
+                <span>Share (Planned)</span>
               </button>
             </div>
           </div>
@@ -215,7 +222,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
         <!-- Tab 2: Commitment Timeline (Truthful Unavailable State) -->
         <section class="tab-content ops-card" *ngIf="activeTab === 'commitments'">
           <div class="empty-tab-panel">
-            <div class="tab-icon">📜</div>
+            <fr-icon class="tab-icon" name="document" [size]="40" [strokeWidth]="1.4" />
             <h3>No Commitments Recorded</h3>
             <p>
               Vendor arrival and cost commitments are captured automatically when CALL-E conducts an authorized phone workflow.
@@ -227,7 +234,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
         <!-- Tab 3: AI Insights (Truthful Unavailable State) -->
         <section class="tab-content ops-card" *ngIf="activeTab === 'ai'">
           <div class="empty-tab-panel">
-            <div class="tab-icon">🤖</div>
+            <fr-icon class="tab-icon" name="activity" [size]="40" [strokeWidth]="1.4" />
             <h3>AI Summary & Insights Unavailable</h3>
             <p>
               AI summaries and confidence scores require a future authorized phone workflow.
@@ -239,7 +246,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
         <!-- Tab 4: Latest Call (Truthful Unavailable State) -->
         <section class="tab-content ops-card" *ngIf="activeTab === 'calls'">
           <div class="empty-tab-panel">
-            <div class="tab-icon">📞</div>
+            <fr-icon class="tab-icon" name="phone" [size]="40" [strokeWidth]="1.4" />
             <h3>No Call Record</h3>
             <p>
               No authorized phone call workflow has been dispatched for this incident yet.
@@ -251,7 +258,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
         <!-- Tab 5: Attachments (Truthful Unavailable State) -->
         <section class="tab-content ops-card" *ngIf="activeTab === 'attachments'">
           <div class="empty-tab-panel">
-            <div class="tab-icon">📎</div>
+            <fr-icon class="tab-icon" name="link" [size]="40" [strokeWidth]="1.4" />
             <h3>No Attachments Uploaded</h3>
             <p>
               Photo and document evidence attachment is planned for a future delivery milestone.
@@ -291,7 +298,13 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       to { transform: rotate(360deg); }
     }
     .empty-icon {
-      font-size: 36px;
+      color: var(--fr-color-muted);
+      opacity: 0.75;
+    }
+    .error-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .mt-md {
       margin-top: var(--fr-space-md);
@@ -321,6 +334,10 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
     .detail-container {
       display: flex;
@@ -363,6 +380,9 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .secondary-btn:disabled {
       cursor: not-allowed;
@@ -517,7 +537,8 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       gap: var(--fr-space-sm);
     }
     .tab-icon {
-      font-size: 36px;
+      color: var(--fr-color-muted);
+      opacity: 0.7;
     }
     .unavailable-badge {
       font-size: 11px;

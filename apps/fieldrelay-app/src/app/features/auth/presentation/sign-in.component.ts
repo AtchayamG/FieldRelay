@@ -145,7 +145,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
           </div>
 
           <div class="auth-error-banner" *ngIf="authService.authError() as err" role="alert">
-            ⚠️ {{ err }}
+            <fr-icon name="alert" [size]="15" />
+            <span>{{ err }}</span>
           </div>
 
           <button

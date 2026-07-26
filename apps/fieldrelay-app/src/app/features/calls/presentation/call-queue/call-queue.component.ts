@@ -6,6 +6,7 @@ import { CallPort } from '../../application/call.port';
 import { CallHttpAdapter } from '../../data/call-http.adapter';
 import { CallTask, CallStatus } from '../../domain/call.model';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { callApiErrorMessage, callApiStatus } from '../../application/call-api-error';
 
 const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
@@ -13,7 +14,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
 @Component({
   selector: 'app-call-queue',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, StatusBadgeComponent],
+  imports: [CommonModule, FormsModule, RouterModule, StatusBadgeComponent, IconComponent],
   providers: [
     { provide: CallPort, useClass: CallHttpAdapter }
   ],
@@ -71,7 +72,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
                 aria-label="Clear incident filter"
                 (click)="clearIncidentFilter()"
               >
-                ✕
+                <fr-icon name="close" [size]="14" [strokeWidth]="2.2" />
               </button>
             </div>
           </div>
@@ -88,7 +89,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
 
         <!-- Validation Error Message -->
         <div *ngIf="validationError" class="validation-banner" role="alert">
-          <span class="alert-icon">⚠️</span>
+          <fr-icon class="alert-icon" name="alert" [size]="16" />
           <span>{{ validationError }}</span>
         </div>
 
@@ -114,7 +115,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
 
         <!-- Permission 403 Error State -->
         <div *ngIf="isPermissionDenied" class="state-card error-card" role="alert">
-          <div class="error-icon">🔒</div>
+          <fr-icon class="error-icon" name="lock" [size]="42" [strokeWidth]="1.4" />
           <h2>Access Denied</h2>
           <p>You do not have permission to view call tasks.</p>
           <button type="button" class="action-btn primary-btn" (click)="loadCalls()">
@@ -124,7 +125,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
 
         <!-- Generic / Network Error State -->
         <div *ngIf="errorMessage && !isPermissionDenied && calls.length === 0" class="state-card error-card" role="alert">
-          <div class="error-icon">⚠️</div>
+          <fr-icon class="error-icon" name="alert" [size]="42" [strokeWidth]="1.4" />
           <h2>Unable to Load Call Queue</h2>
           <p>{{ errorMessage }}</p>
           <button type="button" class="action-btn primary-btn" (click)="loadCalls()">
@@ -134,7 +135,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
 
         <!-- Empty State -->
         <div *ngIf="!loading && !errorMessage && !validationError && calls.length === 0" class="state-card empty-card">
-          <div class="empty-icon">📞</div>
+          <fr-icon class="empty-icon" name="phone" [size]="42" [strokeWidth]="1.4" />
           <h2>No Call Tasks Found</h2>
           <p *ngIf="selectedStatus !== 'all' || activeIncidentId">
             No calls match the selected filters. Try broadening your criteria.
@@ -191,7 +192,10 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
                     </app-status-badge>
                   </td>
                   <td>
-                    <span *ngIf="call.simulated" class="simulated-pill">⚡ SIMULATED</span>
+                    <span *ngIf="call.simulated" class="simulated-pill">
+                    <fr-icon name="bolt" [size]="12" [strokeWidth]="2.2" />
+                    <span>SIMULATED</span>
+                  </span>
                     <span *ngIf="!call.simulated" class="live-pill">NON-SIMULATED</span>
                   </td>
                   <td class="font-mono">{{ call.retries }} / {{ call.timeoutSeconds }}s</td>
@@ -233,7 +237,10 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
                 </div>
                 <div class="card-field">
                   <span class="field-label">Execution:</span>
-                  <span *ngIf="call.simulated" class="simulated-pill">⚡ SIMULATED</span>
+                  <span *ngIf="call.simulated" class="simulated-pill">
+                    <fr-icon name="bolt" [size]="12" [strokeWidth]="2.2" />
+                    <span>SIMULATED</span>
+                  </span>
                   <span *ngIf="!call.simulated" class="live-pill">NON-SIMULATED</span>
                 </div>
               </div>
@@ -471,7 +478,8 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
       color: var(--fr-color-text);
     }
     .empty-icon, .error-icon {
-      font-size: 32px;
+      color: var(--fr-color-muted);
+      opacity: 0.75;
     }
 
     /* Spinner */
@@ -587,6 +595,10 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
     }
     .live-pill {
       background: var(--fr-color-muted-soft);

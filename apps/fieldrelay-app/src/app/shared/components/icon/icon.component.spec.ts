@@ -5,9 +5,10 @@ import { IconComponent, IconName } from './icon.component';
 const ALL_ICONS: IconName[] = [
   'activity', 'alert', 'analytics', 'approvals', 'bell', 'bolt', 'building',
   'calendar', 'check', 'check-circle', 'chevron-right', 'clock', 'close',
-  'dispatch', 'document', 'filter', 'incidents', 'info', 'lock',
-  'mission-control', 'moon', 'phone', 'phone-active', 'plus', 'refresh',
-  'search', 'settings', 'shield', 'sun', 'technicians', 'user', 'wrench'
+  'dispatch', 'document', 'download', 'edit', 'filter', 'folder', 'forbidden',
+  'incidents', 'info', 'link', 'lock', 'mission-control', 'moon', 'phone',
+  'phone-active', 'plus', 'refresh', 'search', 'settings', 'shield',
+  'sign-out', 'sun', 'technicians', 'user', 'wrench'
 ];
 
 describe('IconComponent', () => {

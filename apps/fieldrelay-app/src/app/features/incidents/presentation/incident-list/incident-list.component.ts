@@ -6,6 +6,7 @@ import { IncidentPort } from '../../application/incident.port';
 import { IncidentHttpAdapter } from '../../data/incident-http.adapter';
 import { Incident, IncidentStatus } from '../../domain/incident.model';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import {
   incidentApiErrorMessage,
   incidentApiStatus
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-incident-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, StatusBadgeComponent],
+  imports: [CommonModule, FormsModule, RouterModule, StatusBadgeComponent, IconComponent],
   providers: [
     { provide: IncidentPort, useClass: IncidentHttpAdapter }
   ],
@@ -31,7 +32,8 @@ import {
           </div>
           <div class="header-actions">
             <a routerLink="/incidents/new" class="action-btn primary-btn">
-              ⚡ New Incident
+              <fr-icon name="plus" [size]="16" [strokeWidth]="2.2" />
+              <span>New Incident</span>
             </a>
           </div>
         </div>
@@ -108,7 +110,8 @@ import {
             aria-disabled="true"
             title="CSV Export — planned for next release"
           >
-            📥 Export CSV (Unavailable)
+            <fr-icon name="download" [size]="15" />
+            <span>Export CSV (Unavailable)</span>
           </button>
         </div>
       </div>
@@ -122,15 +125,19 @@ import {
       <!-- Error State with Retry -->
       <div class="alert-banner danger-banner" *ngIf="!isLoading && errorMsg">
         <div class="error-content">
-          <span>⚠️ <strong>Error Loading Incidents:</strong> {{ errorMsg }}</span>
+          <span class="error-text">
+            <fr-icon name="alert" [size]="16" />
+            <span><strong>Error Loading Incidents:</strong> {{ errorMsg }}</span>
+          </span>
           <button type="button" class="retry-btn" (click)="retryLoad()">
-            🔄 Retry
+            <fr-icon name="refresh" [size]="15" />
+            <span>Retry</span>
           </button>
         </div>
       </div>
 
       <div class="empty-state-container" *ngIf="!isLoading && isPermissionRestricted">
-        <div class="empty-icon">🔒</div>
+        <fr-icon class="empty-icon" name="lock" [size]="44" [strokeWidth]="1.4" />
         <h2>Incident Access Restricted</h2>
         <p>Your current role cannot view the incident queue.</p>
       </div>
@@ -140,11 +147,12 @@ import {
         class="empty-state-container"
         *ngIf="!isLoading && !errorMsg && !isPermissionRestricted && incidents.length === 0 && !selectedStatus && !searchQuery"
       >
-        <div class="empty-icon">📂</div>
+        <fr-icon class="empty-icon" name="folder" [size]="44" [strokeWidth]="1.4" />
         <h2>No Incidents Recorded</h2>
         <p>Your organization currently has no reported operational incidents.</p>
         <a routerLink="/incidents/new" class="action-btn primary-btn mt-md">
-          ⚡ Report First Incident
+          <fr-icon name="plus" [size]="16" [strokeWidth]="2.2" />
+          <span>Report First Incident</span>
         </a>
       </div>
 
@@ -153,7 +161,7 @@ import {
         class="empty-state-container"
         *ngIf="!isLoading && !errorMsg && !isPermissionRestricted && filteredIncidents.length === 0 && (incidents.length > 0 || !!selectedStatus || !!searchQuery)"
       >
-        <div class="empty-icon">🔍</div>
+        <fr-icon class="empty-icon" name="search" [size]="44" [strokeWidth]="1.4" />
         <h2>No Matching Incidents</h2>
         <p>No incidents matched your selected filter or search terms.</p>
         <button type="button" class="secondary-btn mt-md" (click)="clearFilters()">
@@ -313,6 +321,9 @@ import {
       font-weight: 600;
       cursor: pointer;
       transition: all var(--fr-motion-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .secondary-btn:hover:not(:disabled) {
       background: var(--fr-color-surface3);
@@ -406,7 +417,13 @@ import {
       to { transform: rotate(360deg); }
     }
     .empty-icon {
-      font-size: 36px;
+      color: var(--fr-color-muted);
+      opacity: 0.75;
+    }
+    .error-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .mt-md {
       margin-top: var(--fr-space-md);
@@ -436,6 +453,10 @@ import {
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
     .ops-card {
       background: var(--fr-color-surface);
