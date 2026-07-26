@@ -7,8 +7,11 @@ import {
   IdempotencyConflictError
 } from './errors';
 import { TransactionPort } from './persistence.port';
+import { randomUUID } from 'node:crypto';
 import { briefForPurpose } from './call-brief';
 import { readConfidence, validateStructuredResult } from './call-outcome';
+import { evaluateApprovalRequirement } from './approval-policy';
+import { Approval } from '../domain/approval.entity';
 
 // The untrusted outcome fields a terminal webhook may carry. Validated against
 // the declared result schema before any of it is persisted.
@@ -198,6 +201,9 @@ export class ProcessProviderCallbackUseCase {
           const schema = briefForPurpose(task.purpose, task.displayId).resultSchema;
           const checked = validateStructuredResult(validated.outcome.structuredResult, schema);
           const confidence = readConfidence(validated.outcome.confidence);
+          // One timestamp shared by the outcome and any approval raised from
+          // it, so the staleness check compares like with like.
+          const outcomeReceivedAt = new Date();
 
           await uow.outcomes.upsert({
             callTaskId: task.id,
@@ -206,7 +212,7 @@ export class ProcessProviderCallbackUseCase {
             confidenceScore: confidence.score,
             confidenceLabel: confidence.label,
             validationFailed: checked.validationFailed,
-            receivedAt: new Date()
+            receivedAt: outcomeReceivedAt
           });
 
           await uow.audit.append({
@@ -227,6 +233,41 @@ export class ProcessProviderCallbackUseCase {
               validationFailed: checked.validationFailed
             }
           });
+
+          // Raised in the same transaction as the outcome that triggered it, so
+          // a call can never land with a decision nobody recorded needing to be
+          // made. Idempotent under webhook redelivery: one approval per call.
+          const reasons = evaluateApprovalRequirement({
+            callTaskId: task.id,
+            structuredResult: checked.structuredResult,
+            taskCompleted: validated.outcome.taskCompleted,
+            confidenceScore: confidence.score,
+            confidenceLabel: confidence.label,
+            validationFailed: checked.validationFailed,
+            receivedAt: outcomeReceivedAt
+          });
+
+          if (reasons.length > 0 && !(await uow.approvals.findByCallTaskId(task.id))) {
+            const approval = Approval.create({
+              id: randomUUID(),
+              displayId: await uow.approvals.nextDisplayId(),
+              incidentId: task.incidentId,
+              callTaskId: task.id,
+              reasons,
+              outcomeReceivedAt,
+              createdAt: outcomeReceivedAt
+            });
+            await uow.approvals.insert(approval);
+            await uow.audit.append({
+              actorType: 'system',
+              actorId: 'fieldrelay-api',
+              action: 'approval.required',
+              entityType: 'approval',
+              entityId: approval.id,
+              correlationId: validated.eventId,
+              metadata: { callTaskId: task.id, incidentId: task.incidentId, reasons }
+            });
+          }
         }
       }
 

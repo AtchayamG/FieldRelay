@@ -1,6 +1,7 @@
 import type { Incident, IncidentStatus } from '../domain/incident.entity';
 import type { CallStatus, ProviderCallStatus, CallTask } from '../domain/call-task.entity';
 import type { CallOutcomeRepositoryPort } from './call-outcome';
+import type { ApprovalRepositoryPort } from './approval.port';
 
 export const TRANSACTION_PORT = Symbol('TRANSACTION_PORT');
 
@@ -138,6 +139,9 @@ export interface UnitOfWork {
   // state it belongs to must commit together, or a task can end up marked
   // completed with no answer attached.
   outcomes: CallOutcomeRepositoryPort;
+  // An approval is raised in the same transaction as the outcome that triggered
+  // it, so a call can never land with a pending decision that nobody recorded.
+  approvals: ApprovalRepositoryPort;
   audit: AuditEventPort;
   idempotency: IdempotencyStorePort;
 }

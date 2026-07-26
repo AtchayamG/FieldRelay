@@ -27,6 +27,12 @@ import type {
   CallOutcome,
   CallOutcomeRepositoryPort
 } from '../../../application/call-outcome';
+import type {
+  ApprovalPage,
+  ApprovalRepositoryPort,
+  ListApprovalsQuery
+} from '../../../application/approval.port';
+import { Approval, ApprovalReason, ApprovalStatus } from '../../../domain/approval.entity';
 import {
   CallFailureCode,
   CallPurpose,
@@ -96,6 +102,7 @@ export class PgTransactionManager implements TransactionPort {
         calls: new PgCallTaskRepository(client),
         callbacks: new PgProviderCallbackRepository(client),
         outcomes: new PgCallOutcomeRepository(client),
+        approvals: new PgApprovalRepository(client),
         audit: new PgAuditEventRepository(client),
         idempotency: new PgIdempotencyStore(client)
       });
@@ -282,6 +289,156 @@ interface ProviderCallbackRow {
   processing_outcome: string | null;
   received_at: Date;
   processed_at: Date | null;
+}
+
+interface ApprovalRow {
+  id: string;
+  display_id: string;
+  incident_id: string;
+  call_task_id: string;
+  status: ApprovalStatus;
+  reasons: ApprovalReason[];
+  outcome_received_at: Date;
+  decided_by: string | null;
+  decided_at: Date | null;
+  decision_note: string | null;
+  created_at: Date;
+  version: number;
+}
+
+function toApproval(row: ApprovalRow): Approval {
+  return Approval.rehydrate({
+    id: row.id,
+    displayId: row.display_id,
+    incidentId: row.incident_id,
+    callTaskId: row.call_task_id,
+    status: row.status,
+    reasons: row.reasons,
+    outcomeReceivedAt: row.outcome_received_at,
+    decidedBy: row.decided_by,
+    decidedAt: row.decided_at,
+    decisionNote: row.decision_note,
+    createdAt: row.created_at,
+    version: row.version
+  });
+}
+
+class PgApprovalRepository implements ApprovalRepositoryPort {
+  constructor(private readonly client: PoolClient) {}
+
+  public async nextDisplayId(): Promise<string> {
+    const result = await this.client.query<{ n: string }>(
+      "SELECT nextval('approval_display_seq') AS n"
+    );
+    return `APP-2042-${String(result.rows[0].n).padStart(4, '0')}`;
+  }
+
+  public async insert(approval: Approval): Promise<void> {
+    const props = approval.toProps();
+    await this.client.query(
+      `INSERT INTO approvals
+         (id, display_id, incident_id, call_task_id, status, reasons,
+          outcome_received_at, decided_by, decided_at, decision_note, created_at, version)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12)`,
+      [
+        props.id,
+        props.displayId,
+        props.incidentId,
+        props.callTaskId,
+        props.status,
+        JSON.stringify(props.reasons),
+        props.outcomeReceivedAt,
+        props.decidedBy,
+        props.decidedAt,
+        props.decisionNote,
+        props.createdAt,
+        props.version
+      ]
+    );
+  }
+
+  public async update(approval: Approval): Promise<void> {
+    const props = approval.toProps();
+    // Optimistic concurrency: two operators deciding the same approval at once
+    // must not both succeed, or the audit trail would name the wrong person.
+    const result = await this.client.query(
+      `UPDATE approvals
+          SET status = $2, decided_by = $3, decided_at = $4,
+              decision_note = $5, version = $6
+        WHERE id = $1 AND version = $7`,
+      [
+        props.id,
+        props.status,
+        props.decidedBy,
+        props.decidedAt,
+        props.decisionNote,
+        props.version,
+        props.version - 1
+      ]
+    );
+    if (result.rowCount === 0) {
+      throw new Error(`Approval ${props.id} was modified concurrently`);
+    }
+  }
+
+  public async findById(id: string): Promise<Approval | null> {
+    const result = await this.client.query<ApprovalRow>(
+      'SELECT * FROM approvals WHERE id = $1',
+      [id]
+    );
+    return result.rows[0] ? toApproval(result.rows[0]) : null;
+  }
+
+  public async findByCallTaskId(callTaskId: string): Promise<Approval | null> {
+    const result = await this.client.query<ApprovalRow>(
+      'SELECT * FROM approvals WHERE call_task_id = $1',
+      [callTaskId]
+    );
+    return result.rows[0] ? toApproval(result.rows[0]) : null;
+  }
+
+  public async countPending(): Promise<number> {
+    const result = await this.client.query<{ n: string }>(
+      "SELECT count(*) AS n FROM approvals WHERE status = 'pending'"
+    );
+    return Number(result.rows[0]?.n ?? 0);
+  }
+
+  public async list(query: ListApprovalsQuery): Promise<ApprovalPage> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    if (query.status) {
+      params.push(query.status);
+      conditions.push(`status = $${params.length}`);
+    }
+    if (query.incidentId) {
+      params.push(query.incidentId);
+      conditions.push(`incident_id = $${params.length}`);
+    }
+    if (query.cursor) {
+      params.push(new Date(Buffer.from(query.cursor, 'base64url').toString()));
+      conditions.push(`created_at > $${params.length}`);
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    // Oldest first: the approval that has waited longest is usually the one
+    // blocking a resolution.
+    params.push(query.limit + 1);
+    const result = await this.client.query<ApprovalRow>(
+      `SELECT * FROM approvals ${where} ORDER BY created_at ASC LIMIT $${params.length}`,
+      params
+    );
+
+    const rows = result.rows.slice(0, query.limit);
+    const hasMore = result.rows.length > query.limit;
+    return {
+      items: rows.map(toApproval),
+      nextCursor:
+        hasMore && rows.length
+          ? Buffer.from(rows[rows.length - 1].created_at.toISOString()).toString('base64url')
+          : null
+    };
+  }
 }
 
 class PgCallOutcomeRepository implements CallOutcomeRepositoryPort {

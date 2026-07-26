@@ -10,6 +10,9 @@ import { IssueSessionUseCase } from './application/issue-session.use-case';
 import { requireSigningSecret } from './application/session-token';
 import { SettingsController } from './interfaces/settings.controller';
 import { CallUsageController } from './interfaces/call-usage.controller';
+import { ApprovalController } from './interfaces/approval.controller';
+import { ListApprovalsUseCase } from './application/list-approvals.use-case';
+import { DecideApprovalUseCase } from './application/decide-approval.use-case';
 import {
   GetCallUsageUseCase,
   readPriorCallCount
@@ -85,7 +88,8 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     CalleWebhookController,
     AuthController,
     SettingsController,
-    CallUsageController
+    CallUsageController,
+    ApprovalController
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
@@ -140,6 +144,16 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
       inject: [DIAL_TARGET_PORT]
     },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
+    {
+      provide: ListApprovalsUseCase,
+      useFactory: (transactions: TransactionPort) => new ListApprovalsUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: DecideApprovalUseCase,
+      useFactory: (transactions: TransactionPort) => new DecideApprovalUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
     {
       provide: GetCallUsageUseCase,
       useFactory: (transactions: TransactionPort) =>

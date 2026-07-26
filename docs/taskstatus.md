@@ -64,4 +64,8 @@
 - Outcome exposed end to end: `GET /api/v1/calls/:callTaskId` returns `CallTaskDetailDto` with the outcome read in the same transaction as the task, and call detail renders it as a primary panel showing the validated fields, task completion, confidence, and an explicit warning when part of the answer failed validation
 - Migration 0006_call_outcomes applied to the deployed Neon database
 - Verification: lint, strict typecheck, 232 API and 107 app tests, production builds — all pass
-- Next: Approvals, then Dispatch, then wire Mission Control metrics and incident queue to real data
+- Approvals backend: migration 0007_approvals, Approval entity, single-source approval policy returning explainable reasons, list and decide use cases, PostgreSQL and in-memory repositories, and `GET /api/v1/approvals` plus `POST /api/v1/approvals/:id/decision`
+- Approval accountability rules: a second decision is refused rather than overwriting the first; a decision against a superseded outcome is refused; the approver comes from the signed session, never the request body; the audit records whether a note was left, never its text
+- Approvals are raised inside the same transaction as the outcome that triggered them, one per call task, idempotent under webhook redelivery
+- Verification: lint, strict typecheck, 253 API tests; migration 0007 applied to the deployed Neon database
+- Next: Approvals UI, then Dispatch, then wire Mission Control metrics and incident queue to real data

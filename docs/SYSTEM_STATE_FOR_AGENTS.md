@@ -59,6 +59,17 @@ This is the most sensitive rule in the codebase.
 - `GET /api/v1/calls/:callTaskId` returns `CallTaskDetailDto` with the outcome attached, read in the **same transaction** as the task so the two can never disagree. The list endpoint deliberately does not carry outcomes: a queue row has no space for one and most rows have none.
 - Call detail renders the outcome as a primary panel. A failed validation is **shown with a warning, not hidden** — the operator is told the answer is incomplete and to verify before acting, which is the opposite of silently presenting partial data as whole.
 
+## Approvals — the accountability gate
+
+- **The policy lives in one place**: `evaluateApprovalRequirement` in `application/approval-policy.ts`. It returns *reasons*, not a boolean, because the queue has to explain itself to the person being asked. Do not scatter approval rules through the write path.
+- Four reasons currently force review: a cost commitment in the answer, confidence below 0.7, a partial answer, or a call that finished without achieving its goal. **A null confidence counts as low** — no opinion is not the same as a good opinion.
+- Reasons are **stored on the approval**, so changing the policy later does not rewrite why past decisions were required.
+- **Two refusals matter more than the happy path.** A second decision on a decided approval is refused rather than overwriting the first, because the first is the accountable one. A decision made against an outcome whose `receivedAt` has moved is refused, because the approver would be committing to an answer they never read.
+- The approver is taken from the **signed session**, never from the request body. A caller cannot name somebody else as the decider.
+- The audit trail records **whether** a note was left, never its text — the note may quote the call.
+- One approval per call task, enforced by a unique index and by `findByCallTaskId` before insert, so webhook redelivery cannot raise a second.
+- Approvals are raised **inside the same transaction as the outcome that triggered them**, so a call cannot land with a decision nobody recorded needing to be made.
+
 ## Safety invariants — do not weaken these
 
 1. The call task and its idempotency reservation commit **before** any provider I/O.

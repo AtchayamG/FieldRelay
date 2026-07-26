@@ -22,6 +22,12 @@ import {
   UnitOfWork
 } from '../../../application/persistence.port';
 import type { CallOutcome, CallOutcomeRepositoryPort } from '../../../application/call-outcome';
+import type {
+  ApprovalPage,
+  ApprovalRepositoryPort,
+  ListApprovalsQuery
+} from '../../../application/approval.port';
+import { Approval } from '../../../domain/approval.entity';
 import { CallTask } from '../../../domain/call-task.entity';
 import { Incident } from '../../../domain/incident.entity';
 
@@ -46,6 +52,8 @@ export class InMemoryDatabase {
   public readonly callTasks: CallTask[] = [];
   public readonly callbacks: ProviderCallbackRecord[] = [];
   public readonly outcomes = new Map<string, CallOutcome>();
+  public readonly approvals: Approval[] = [];
+  public approvalDisplaySequence = 0;
   public readonly auditEvents: AuditEventInput[] = [];
   public readonly idempotency = new Map<string, StoredIdempotency>();
   public displaySequence = 0;
@@ -82,6 +90,7 @@ class StagedUnitOfWork implements UnitOfWork {
   public readonly calls: CallTaskRepositoryPort;
   public readonly callbacks: ProviderCallbackRepositoryPort;
   public readonly outcomes: CallOutcomeRepositoryPort;
+  public readonly approvals: ApprovalRepositoryPort;
   public readonly audit: AuditEventPort;
   public readonly idempotency: IdempotencyStorePort;
 
@@ -93,6 +102,7 @@ class StagedUnitOfWork implements UnitOfWork {
     this.calls = new InMemoryCallTaskRepository(db, stage);
     this.callbacks = new InMemoryProviderCallbackRepository(db, stage);
     this.outcomes = new InMemoryCallOutcomeRepository(db, stage);
+    this.approvals = new InMemoryApprovalRepository(db, stage);
     this.audit = new InMemoryAuditRepository(db, stage);
     this.idempotency = new InMemoryIdempotencyStore(db, stage);
   }
@@ -259,6 +269,77 @@ function compareIncidentsDesc(a: Incident, b: Incident): number {
   const byTime = b.createdAt.getTime() - a.createdAt.getTime();
   if (byTime !== 0) return byTime;
   return a.id < b.id ? 1 : a.id > b.id ? -1 : 0;
+}
+
+class InMemoryApprovalRepository implements ApprovalRepositoryPort {
+  private readonly inserted: Approval[] = [];
+  private readonly updated = new Map<string, Approval>();
+
+  constructor(
+    private readonly db: InMemoryDatabase,
+    private readonly stage: Stage
+  ) {}
+
+  private all(): Approval[] {
+    const byId = new Map(
+      [...this.db.approvals, ...this.inserted, ...this.updated.values()].map((a) => [a.id, a])
+    );
+    return [...byId.values()];
+  }
+
+  public async nextDisplayId(): Promise<string> {
+    this.db.approvalDisplaySequence += 1;
+    return `APP-2042-${String(this.db.approvalDisplaySequence).padStart(4, '0')}`;
+  }
+
+  public async insert(approval: Approval): Promise<void> {
+    this.inserted.push(approval);
+    this.stage(() => this.db.approvals.push(approval));
+  }
+
+  public async update(approval: Approval): Promise<void> {
+    this.updated.set(approval.id, approval);
+    this.stage(() => {
+      const index = this.db.approvals.findIndex((a) => a.id === approval.id);
+      if (index >= 0) {
+        this.db.approvals[index] = approval;
+      } else {
+        this.db.approvals.push(approval);
+      }
+    });
+  }
+
+  public async findById(id: string): Promise<Approval | null> {
+    return this.all().find((a) => a.id === id) ?? null;
+  }
+
+  public async findByCallTaskId(callTaskId: string): Promise<Approval | null> {
+    return this.all().find((a) => a.callTaskId === callTaskId) ?? null;
+  }
+
+  public async countPending(): Promise<number> {
+    return this.all().filter((a) => a.status === 'pending').length;
+  }
+
+  public async list(query: ListApprovalsQuery): Promise<ApprovalPage> {
+    let rows = this.all().sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    if (query.status) {
+      rows = rows.filter((a) => a.status === query.status);
+    }
+    if (query.incidentId) {
+      rows = rows.filter((a) => a.incidentId === query.incidentId);
+    }
+    const offset = query.cursor ? Number(Buffer.from(query.cursor, 'base64url').toString()) : 0;
+    const page = rows.slice(offset, offset + query.limit);
+    const nextOffset = offset + page.length;
+    return {
+      items: page,
+      nextCursor:
+        nextOffset < rows.length
+          ? Buffer.from(String(nextOffset)).toString('base64url')
+          : null
+    };
+  }
 }
 
 class InMemoryCallOutcomeRepository implements CallOutcomeRepositoryPort {
