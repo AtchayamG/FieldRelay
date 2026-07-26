@@ -21,6 +21,7 @@ import {
   TransactionPort,
   UnitOfWork
 } from '../../../application/persistence.port';
+import type { CallOutcome, CallOutcomeRepositoryPort } from '../../../application/call-outcome';
 import { CallTask } from '../../../domain/call-task.entity';
 import { Incident } from '../../../domain/incident.entity';
 
@@ -44,6 +45,7 @@ export class InMemoryDatabase {
   public readonly incidents: Incident[] = [];
   public readonly callTasks: CallTask[] = [];
   public readonly callbacks: ProviderCallbackRecord[] = [];
+  public readonly outcomes = new Map<string, CallOutcome>();
   public readonly auditEvents: AuditEventInput[] = [];
   public readonly idempotency = new Map<string, StoredIdempotency>();
   public displaySequence = 0;
@@ -79,6 +81,7 @@ class StagedUnitOfWork implements UnitOfWork {
   public readonly incidents: IncidentRepositoryPort;
   public readonly calls: CallTaskRepositoryPort;
   public readonly callbacks: ProviderCallbackRepositoryPort;
+  public readonly outcomes: CallOutcomeRepositoryPort;
   public readonly audit: AuditEventPort;
   public readonly idempotency: IdempotencyStorePort;
 
@@ -89,6 +92,7 @@ class StagedUnitOfWork implements UnitOfWork {
     this.incidents = new InMemoryIncidentRepository(db, stage);
     this.calls = new InMemoryCallTaskRepository(db, stage);
     this.callbacks = new InMemoryProviderCallbackRepository(db, stage);
+    this.outcomes = new InMemoryCallOutcomeRepository(db, stage);
     this.audit = new InMemoryAuditRepository(db, stage);
     this.idempotency = new InMemoryIdempotencyStore(db, stage);
   }
@@ -255,6 +259,30 @@ function compareIncidentsDesc(a: Incident, b: Incident): number {
   const byTime = b.createdAt.getTime() - a.createdAt.getTime();
   if (byTime !== 0) return byTime;
   return a.id < b.id ? 1 : a.id > b.id ? -1 : 0;
+}
+
+class InMemoryCallOutcomeRepository implements CallOutcomeRepositoryPort {
+  private readonly staged = new Map<string, CallOutcome>();
+
+  constructor(
+    private readonly db: InMemoryDatabase,
+    private readonly stage: Stage
+  ) {}
+
+  public async upsert(outcome: CallOutcome): Promise<void> {
+    this.staged.set(outcome.callTaskId, { ...outcome });
+    this.stage(() => {
+      for (const [key, value] of this.staged) {
+        this.db.outcomes.set(key, value);
+      }
+    });
+  }
+
+  public async findByCallTaskId(callTaskId: string): Promise<CallOutcome | null> {
+    // Staged writes are visible inside the same transaction, matching the
+    // read-your-own-writes behaviour of the PostgreSQL implementation.
+    return this.staged.get(callTaskId) ?? this.db.outcomes.get(callTaskId) ?? null;
+  }
 }
 
 class InMemoryProviderCallbackRepository implements ProviderCallbackRepositoryPort {

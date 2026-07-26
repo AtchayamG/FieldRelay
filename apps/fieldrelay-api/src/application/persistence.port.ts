@@ -1,5 +1,6 @@
 import type { Incident, IncidentStatus } from '../domain/incident.entity';
 import type { CallStatus, ProviderCallStatus, CallTask } from '../domain/call-task.entity';
+import type { CallOutcomeRepositoryPort } from './call-outcome';
 
 export const TRANSACTION_PORT = Symbol('TRANSACTION_PORT');
 
@@ -133,6 +134,10 @@ export interface UnitOfWork {
   incidents: IncidentRepositoryPort;
   calls: CallTaskRepositoryPort;
   callbacks: ProviderCallbackRepositoryPort;
+  // Inside the unit of work on purpose: an outcome and the terminal call-task
+  // state it belongs to must commit together, or a task can end up marked
+  // completed with no answer attached.
+  outcomes: CallOutcomeRepositoryPort;
   audit: AuditEventPort;
   idempotency: IdempotencyStorePort;
 }

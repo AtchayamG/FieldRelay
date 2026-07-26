@@ -15,6 +15,17 @@ Verified on 2026-07-26 with PostgreSQL 17 running: lint, strict typecheck, 258 t
 - **Deployment.** Multi-stage Dockerfiles for API and web, `docker-compose.judge.yml`, nginx same-origin proxy with CSP and security headers.
 - **Two real defects fixed.** Migration 0004 gave the idempotency foreign key a delete rule so call tasks can be purged; the CALL-E request timeout was raised to 45s after a 15s timeout abandoned a call that had already been accepted.
 
+## In flight: the closed loop
+
+Structured outcome ingestion is **complete on the backend** — validation, persistence, webhook wiring and audit. Migration `0006_call_outcomes.sql` needs applying to any environment that predates it.
+
+Remaining on this track, in order:
+
+1. Expose the outcome on `GET /api/v1/calls/:callTaskId` and render it on call detail.
+2. **Approvals** — the human decision gate over a validated outcome. This is what turns an AI phone call into an accountable business decision, and it is the screen judges score hardest.
+3. **Dispatch** — approved outcome to assigned technician.
+4. Mission Control: wire the metric cards and incident queue to real API data, keeping the orchestration flow and live-mission panel as clearly-labelled illustrations. Approved 2026-07-26. Note that demo-versus-live is a deployment-wide setting, not a per-user one, so mode-based switching would show judges sparse real data instead of the richer picture.
+
 ## Highest-priority task
 
 Deploy the judge environment to a public URL and record the testing instructions on the Devpost form. `docker-compose.judge.yml` runs the whole stack and is already configured to be incapable of placing a call. After that: ingest structured call results so the approval and dispatch loop can begin, since that is what turns a completed call into a workflow.

@@ -14,10 +14,22 @@ export const CALLE_WEBHOOK_TRANSLATOR = Symbol('CALLE_WEBHOOK_TRANSLATOR');
 // A CALL-E lifecycle event, reduced to the three fields FieldRelay is willing
 // to accept from a provider. `null` means the delivery was well-formed but not
 // actionable — an early lifecycle state, or one this build does not recognise.
+// The raw outcome fields carried on a terminal delivery. Deliberately kept
+// separate from the three fields that drive the state machine: these are
+// untrusted values that must pass schema validation before anything is stored,
+// whereas eventId/providerTaskId/status are structural.
+export interface RawCalleOutcome {
+  structuredResult: unknown;
+  taskCompleted: boolean;
+  confidence: unknown;
+}
+
 export type TranslatedCalleEvent = {
   eventId: string;
   providerTaskId: string;
   status: AllowedCallbackStatus;
+  // Present only on a terminal delivery that carried an answer.
+  outcome?: RawCalleOutcome;
 } | null;
 
 // A duplicate delivery of the same transition hashes to the same event ID, so
@@ -91,7 +103,22 @@ export class CalleWebhookTranslator {
       const eventId =
         readBoundedString(record, ['id', 'event_id', 'eventId']) ??
         deriveEventId(callId, eventType);
-      return { eventId, providerTaskId: callId, status: eventType as AllowedCallbackStatus };
+
+      // Transcripts, recordings and the provider's free-text summary are still
+      // not read: only the schema-shaped answer and its confidence, which the
+      // application layer then validates before anything is persisted.
+      const outcome: RawCalleOutcome = {
+        structuredResult: data.structured_result,
+        taskCompleted: data.task_completed === true,
+        confidence: data.completion_confidence
+      };
+
+      return {
+        eventId,
+        providerTaskId: callId,
+        status: eventType as AllowedCallbackStatus,
+        ...(outcome.structuredResult !== undefined ? { outcome } : {})
+      };
     }
 
     // Fallback for any non-envelope delivery shape (for example a status-only

@@ -23,6 +23,10 @@ import {
   TransactionPort,
   UnitOfWork
 } from '../../../application/persistence.port';
+import type {
+  CallOutcome,
+  CallOutcomeRepositoryPort
+} from '../../../application/call-outcome';
 import {
   CallFailureCode,
   CallPurpose,
@@ -91,6 +95,7 @@ export class PgTransactionManager implements TransactionPort {
         incidents: new PgIncidentRepository(client),
         calls: new PgCallTaskRepository(client),
         callbacks: new PgProviderCallbackRepository(client),
+        outcomes: new PgCallOutcomeRepository(client),
         audit: new PgAuditEventRepository(client),
         idempotency: new PgIdempotencyStore(client)
       });
@@ -277,6 +282,64 @@ interface ProviderCallbackRow {
   processing_outcome: string | null;
   received_at: Date;
   processed_at: Date | null;
+}
+
+class PgCallOutcomeRepository implements CallOutcomeRepositoryPort {
+  constructor(private readonly client: PoolClient) {}
+
+  public async upsert(outcome: CallOutcome): Promise<void> {
+    // One outcome per call task: a redelivered terminal webhook must overwrite
+    // the row rather than append a competing answer.
+    await this.client.query(
+      `INSERT INTO call_outcomes
+         (call_task_id, structured_result, task_completed, confidence_score,
+          confidence_label, validation_failed, received_at)
+       VALUES ($1, $2::jsonb, $3, $4, $5, $6, $7)
+       ON CONFLICT (call_task_id) DO UPDATE
+         SET structured_result = EXCLUDED.structured_result,
+             task_completed    = EXCLUDED.task_completed,
+             confidence_score  = EXCLUDED.confidence_score,
+             confidence_label  = EXCLUDED.confidence_label,
+             validation_failed = EXCLUDED.validation_failed,
+             received_at       = EXCLUDED.received_at`,
+      [
+        outcome.callTaskId,
+        JSON.stringify(outcome.structuredResult),
+        outcome.taskCompleted,
+        outcome.confidenceScore,
+        outcome.confidenceLabel,
+        outcome.validationFailed,
+        outcome.receivedAt
+      ]
+    );
+  }
+
+  public async findByCallTaskId(callTaskId: string): Promise<CallOutcome | null> {
+    const result = await this.client.query<{
+      call_task_id: string;
+      structured_result: Record<string, unknown>;
+      task_completed: boolean;
+      confidence_score: string | null;
+      confidence_label: string | null;
+      validation_failed: boolean;
+      received_at: Date;
+    }>('SELECT * FROM call_outcomes WHERE call_task_id = $1', [callTaskId]);
+
+    const row = result.rows[0];
+    if (!row) {
+      return null;
+    }
+    return {
+      callTaskId: row.call_task_id,
+      structuredResult: row.structured_result,
+      taskCompleted: row.task_completed,
+      // numeric arrives as a string from node-postgres to avoid float drift.
+      confidenceScore: row.confidence_score === null ? null : Number(row.confidence_score),
+      confidenceLabel: row.confidence_label,
+      validationFailed: row.validation_failed,
+      receivedAt: row.received_at
+    };
+  }
 }
 
 class PgProviderCallbackRepository implements ProviderCallbackRepositoryPort {

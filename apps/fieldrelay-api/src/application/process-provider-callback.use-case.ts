@@ -7,6 +7,16 @@ import {
   IdempotencyConflictError
 } from './errors';
 import { TransactionPort } from './persistence.port';
+import { briefForPurpose } from './call-brief';
+import { readConfidence, validateStructuredResult } from './call-outcome';
+
+// The untrusted outcome fields a terminal webhook may carry. Validated against
+// the declared result schema before any of it is persisted.
+export interface RawOutcomeInput {
+  structuredResult: unknown;
+  taskCompleted: boolean;
+  confidence: unknown;
+}
 
 const ALLOWED_STATUSES: Set<string> = new Set([
   'ringing',
@@ -146,7 +156,12 @@ export class ProcessProviderCallbackUseCase {
   // translating its payload. Both share one replay-safety implementation so a
   // second ingestion path cannot drift from the first.
   public async acceptVerified(
-    validated: { eventId: string; providerTaskId: string; status: AllowedCallbackStatus },
+    validated: {
+      eventId: string;
+      providerTaskId: string;
+      status: AllowedCallbackStatus;
+      outcome?: RawOutcomeInput;
+    },
     rawBody: Buffer
   ): Promise<AcceptCallbackOutcome> {
     const payloadHash = createHash('sha256').update(rawBody).digest('hex');
@@ -174,6 +189,46 @@ export class ProcessProviderCallbackUseCase {
         receivedAt: new Date(),
         processedAt: null
       });
+
+      // The answer is stored in the same transaction as its acceptance, so a
+      // call task can never end up terminal with its outcome missing.
+      if (validated.outcome) {
+        const task = await uow.calls.findByProviderTaskId(validated.providerTaskId);
+        if (task) {
+          const schema = briefForPurpose(task.purpose, task.displayId).resultSchema;
+          const checked = validateStructuredResult(validated.outcome.structuredResult, schema);
+          const confidence = readConfidence(validated.outcome.confidence);
+
+          await uow.outcomes.upsert({
+            callTaskId: task.id,
+            structuredResult: checked.structuredResult,
+            taskCompleted: validated.outcome.taskCompleted,
+            confidenceScore: confidence.score,
+            confidenceLabel: confidence.label,
+            validationFailed: checked.validationFailed,
+            receivedAt: new Date()
+          });
+
+          await uow.audit.append({
+            actorType: 'system',
+            actorId: 'fieldrelay-api',
+            action: checked.validationFailed
+              ? 'call.outcome.recorded_with_validation_failure'
+              : 'call.outcome.recorded',
+            entityType: 'call_task',
+            entityId: task.id,
+            correlationId: validated.eventId,
+            metadata: {
+              // Field names only. The values are answers from a telephone
+              // conversation and do not belong in an append-only audit log.
+              fields: Object.keys(checked.structuredResult),
+              taskCompleted: validated.outcome.taskCompleted,
+              confidenceLabel: confidence.label,
+              validationFailed: checked.validationFailed
+            }
+          });
+        }
+      }
 
       return { type: 'accepted' as const, eventId: validated.eventId };
     });

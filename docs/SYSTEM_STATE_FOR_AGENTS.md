@@ -53,6 +53,9 @@ This is the most sensitive rule in the codebase.
 - **FieldRelay's acceptance rules are deliberately stricter than the schema it sends CALL-E.** `minimum` and `maximum` are enforced locally but stripped by `toProviderSchema` before transmission, because CALL-E's documented feature list omits them and an unrecognised keyword risks the call being rejected outright. If you add a constraint, decide which side of that boundary it belongs on.
 - Transcripts, recordings and the provider's free-text summary are still **not** persisted. Security doc 08 requires access controls and retention rules that do not exist yet.
 - Migration `0006_call_outcomes.sql` stores one outcome per call task, keyed by `call_task_id`, so a redelivered terminal webhook overwrites rather than appending a second opinion.
+- The outcome is written **inside the same transaction** that accepts the callback, so a call task can never end up terminal with its answer missing. `outcomes` therefore lives on `UnitOfWork`, unlike the dial-target settings store which is deliberately outside it.
+- The audit trail records **field names only** — `fields: ['available', 'quoted_amount_text']` — never the answers. Those values came from a stranger on a telephone and do not belong in an append-only log. A test asserts the amount never appears in audit metadata.
+- `call.outcome.recorded` and `call.outcome.recorded_with_validation_failure` are distinct actions, so an operator can find calls that connected but produced nothing usable.
 
 ## Safety invariants — do not weaken these
 

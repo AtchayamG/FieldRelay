@@ -130,7 +130,7 @@ describe('CalleWebhookTranslator translation', () => {
     });
   });
 
-  it('discards the transcript turns and structured result carried on a real envelope', () => {
+  it('carries the structured result for validation but discards transcripts and summaries', () => {
     const translated = translator.translate({
       id: 'evt_wh_2',
       type: 'call.completed',
@@ -155,14 +155,35 @@ describe('CalleWebhookTranslator translation', () => {
       }
     });
 
-    expect(translated).toEqual({
+    expect(translated).toMatchObject({
       eventId: 'evt_wh_2',
       providerTaskId: 'call_9',
-      status: 'completed'
+      status: 'completed',
+      outcome: {
+        structuredResult: { available: 'yes', quoted_amount_text: 'about 400 dollars' },
+        taskCompleted: false
+      }
     });
-    // Nothing beyond the three accepted fields survives translation, so no
-    // transcript or phone number can reach persistence through this path.
-    expect(Object.keys(translated ?? {})).toEqual(['eventId', 'providerTaskId', 'status']);
+
+    // The structured result is carried onward for schema validation, but the
+    // transcript, the recipient's number and the provider's free-text summary
+    // must not survive translation — they have no access controls or retention
+    // rules yet, so they never reach persistence through this path.
+    const serialised = JSON.stringify(translated);
+    expect(serialised).not.toContain('Hello');
+    expect(serialised).not.toContain('6512345678');
+    expect(serialised).not.toContain('tomorrow morning');
+    expect(serialised).not.toContain('provider_call_123');
+  });
+
+  it('omits the outcome entirely when the delivery carried no answer', () => {
+    const translated = translator.translate({
+      id: 'evt_wh_3',
+      type: 'call.failed',
+      data: { id: 'call_9', status: 'failed' }
+    });
+
+    expect(translated).not.toHaveProperty('outcome');
   });
 });
 
