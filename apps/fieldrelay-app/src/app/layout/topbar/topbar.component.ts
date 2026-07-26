@@ -238,6 +238,21 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      /* The icon inherits currentColor. Without this the button fell back to
+         the inherited near-black text colour and vanished against the dark
+         topbar — the emoji it replaced carried its own colour and hid the gap. */
+      color: var(--fr-color-muted);
+      transition: color var(--fr-motion-fast) ease, background var(--fr-motion-fast) ease,
+        border-color var(--fr-motion-fast) ease;
+    }
+    .signout-btn:hover {
+      color: var(--fr-color-danger);
+      border-color: var(--fr-color-danger);
+      background: var(--fr-color-danger-soft);
+    }
+    .signout-btn:focus-visible {
+      outline: 2px solid var(--fr-color-primary);
+      outline-offset: 2px;
     }
   `]
 })

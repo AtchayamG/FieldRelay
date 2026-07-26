@@ -177,13 +177,13 @@ import { Observable } from 'rxjs';
                 <app-status-badge variant="live">{{ call.status }}</app-status-badge>
               </div>
               <div class="audio-waveform" aria-hidden="true">
-                <span class="bar bar1"></span>
-                <span class="bar bar2"></span>
-                <span class="bar bar3"></span>
-                <span class="bar bar4"></span>
-                <span class="bar bar5"></span>
-                <span class="bar bar6"></span>
-                <span class="bar bar7"></span>
+                <span
+                  class="bar"
+                  *ngFor="let bar of waveformBars"
+                  [style.height.%]="bar.height"
+                  [style.animation-delay.ms]="bar.delay"
+                  [style.animation-duration.ms]="bar.duration"
+                ></span>
               </div>
             </div>
 
@@ -604,28 +604,53 @@ import { Observable } from 'rxjs';
       font-size: 14px;
       font-weight: 700;
     }
+    /* A voice waveform reads as many thin ticks, not a handful of slabs. The
+       bars previously used flex: 1, so seven of them each took a seventh of the
+       panel and looked like a bar chart. Fixed narrow widths with a small gap
+       give the dense, instrument-like texture the reference calls for. */
     .audio-waveform {
       display: flex;
       align-items: center;
-      gap: 4px;
-      height: 32px;
+      justify-content: space-between;
+      gap: 2px;
+      height: 34px;
+      padding: 0 2px;
     }
     .audio-waveform .bar {
-      flex: 1;
-      background: var(--fr-color-cyan);
-      border-radius: 2px;
-      animation: wave 1.2s ease-in-out infinite alternate;
+      width: 3px;
+      flex: 0 0 3px;
+      border-radius: 999px;
+      /* Brighter at the crest than the trough, so the motion reads as energy
+         rather than a row of blocks changing size. */
+      background: linear-gradient(
+        to top,
+        color-mix(in srgb, var(--fr-color-cyan) 45%, transparent),
+        var(--fr-color-cyan)
+      );
+      transform-origin: center;
+      animation-name: wave;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+      will-change: transform;
     }
-    .bar1 { height: 40%; animation-delay: 0.1s; }
-    .bar2 { height: 80%; animation-delay: 0.3s; }
-    .bar3 { height: 100%; animation-delay: 0.2s; }
-    .bar4 { height: 60%; animation-delay: 0.4s; }
-    .bar5 { height: 90%; animation-delay: 0.15s; }
-    .bar6 { height: 50%; animation-delay: 0.25s; }
-    .bar7 { height: 75%; animation-delay: 0.35s; }
     @keyframes wave {
-      0% { transform: scaleY(0.3); }
-      100% { transform: scaleY(1); }
+      from {
+        transform: scaleY(0.18);
+        opacity: 0.55;
+      }
+      to {
+        transform: scaleY(1);
+        opacity: 1;
+      }
+    }
+    /* Respect a reduced-motion preference: hold a static waveform instead of
+       animating, rather than removing the visual entirely. */
+    @media (prefers-reduced-motion: reduce) {
+      .audio-waveform .bar {
+        animation: none;
+        transform: scaleY(0.7);
+      }
     }
     .structured-outcome-panel {
       background: var(--fr-color-surface3);
@@ -909,6 +934,21 @@ export class MissionControlComponent implements OnInit {
   onStateModeChange(mode: SystemStateMode): void {
     this.port.setSystemStateMode(mode);
   }
+
+  // Fixed, not random: a deterministic profile renders identically on every
+  // load and in every screenshot, which matters for a demo video and for visual
+  // regression. The heights follow a speech-like envelope rather than a flat
+  // sweep, so it reads as a voice rather than an equaliser.
+  readonly waveformBars = [
+    38, 62, 30, 84, 52, 96, 44, 70, 34, 88, 58, 100, 46, 76,
+    40, 66, 92, 50, 32, 80, 56, 98, 42, 72, 36, 60, 86, 48
+  ].map((height, index) => ({
+    height,
+    // Prime-ish stride keeps neighbouring bars out of phase, avoiding the
+    // marching-band effect a uniform delay produces.
+    delay: (index * 70) % 900,
+    duration: 900 + ((index * 130) % 500)
+  }));
 
   onApprove(id: string): void {
     this.port.approveRequest(id);

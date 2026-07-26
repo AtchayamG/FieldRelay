@@ -77,18 +77,20 @@ export interface NavItem {
       </div>
 
       <div class="sidebar-footer">
+        <!-- Calls placed, deliberately not calls remaining: CALL-E publishes no
+             balance endpoint and its stated free allowance differs between
+             sources, so a "remaining" figure would be a guess shown as fact.
+             Sits above the adapter card so the two read as one stacked block:
+             what the adapter is, then what it has done. -->
+        <p class="call-usage" *ngIf="usage() as u" [title]="usageTooltip(u)">
+          {{ u.totalLiveCallsPlaced }} real {{ u.totalLiveCallsPlaced === 1 ? 'call' : 'calls' }} placed
+        </p>
         <div class="system-status-card">
           <span class="status-indicator" [class.status-indicator--live]="usage()?.mode === 'live'"></span>
           <span class="status-text">
             {{ usage()?.mode === 'live' ? 'CALL-E Live Adapter' : 'CALL-E Demo Adapter' }}
           </span>
         </div>
-        <!-- Calls placed, deliberately not calls remaining: CALL-E publishes no
-             balance endpoint and its stated free allowance differs between
-             sources, so a "remaining" figure would be a guess shown as fact. -->
-        <p class="call-usage" *ngIf="usage() as u" [title]="usageTooltip(u)">
-          {{ u.totalLiveCallsPlaced }} real {{ u.totalLiveCallsPlaced === 1 ? 'call' : 'calls' }} placed
-        </p>
       </div>
     </aside>
   `,
@@ -212,11 +214,13 @@ export interface NavItem {
     .status-indicator--live {
       background: var(--fr-color-warning);
     }
+    /* Centred over the adapter card so the two form one balanced block rather
+       than two separately-aligned scraps. */
     .call-usage {
-      margin: 6px 0 0;
-      padding-left: 2px;
+      margin: 0 0 8px;
+      text-align: center;
       font-size: 10.5px;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.3px;
       color: var(--fr-color-muted);
       font-family: var(--fr-font-technical);
     }
