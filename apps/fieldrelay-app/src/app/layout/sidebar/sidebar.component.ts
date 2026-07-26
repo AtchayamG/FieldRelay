@@ -254,7 +254,7 @@ export class SidebarComponent implements OnInit {
     { path: '/incidents', label: 'Incidents', icon: 'incidents', available: true },
     { path: '/calls', label: 'Calls & AI Ops', icon: 'phone', available: true },
     { path: '/dispatch', label: 'Dispatch Board', icon: 'dispatch' },
-    { path: '/approvals', label: 'Approvals', icon: 'approvals', badge: '2' }
+    { path: '/approvals', label: 'Approvals', icon: 'approvals', available: true }
   ];
 
   secondaryNav: NavItem[] = [

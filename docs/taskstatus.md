@@ -68,4 +68,7 @@
 - Approval accountability rules: a second decision is refused rather than overwriting the first; a decision against a superseded outcome is refused; the approver comes from the signed session, never the request body; the audit records whether a note was left, never its text
 - Approvals are raised inside the same transaction as the outcome that triggered them, one per call task, idempotent under webhook redelivery
 - Verification: lint, strict typecheck, 253 API tests; migration 0007 applied to the deployed Neon database
-- Next: Approvals UI, then Dispatch, then wire Mission Control metrics and incident queue to real data
+- Approvals UI: `/approvals` route live in the sidebar and bottom navigation, status filters, each card showing why the decision is required alongside the answer being decided on, an optional operator note recorded against their name, and API refusals surfaced rather than swallowed
+- Seven of fifteen designed routes now built: sign-in, Mission Control, Incidents (list/detail/create), Calls (queue/detail), Settings, Approvals
+- Verification: lint, strict typecheck, 253 API and 116 app tests, production builds — all pass
+- Next: Dispatch, then wire Mission Control metrics and incident queue to real data

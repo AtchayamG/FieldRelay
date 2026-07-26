@@ -90,8 +90,8 @@ This is the most sensitive rule in the codebase.
 
 | Area | State |
 |---|---|
-| Routes built | Sign-in, Mission Control, Incidents (list/detail/create), Calls (queue/detail), Settings |
-| Routes designed but not built | Dispatch, Technicians, Vendor Detail, Approvals, Customers, Analytics, Audit & Consent, Knowledge Base |
+| Routes built | Sign-in, Mission Control, Incidents (list/detail/create), Calls (queue/detail), Settings, **Approvals** |
+| Routes designed but not built | Dispatch, Technicians, Vendor Detail, Customers, Analytics, Audit & Consent, Knowledge Base |
 | Persistence | PostgreSQL, migrations 0001–0005, in-memory unit of work for tests only |
 | Mission Control | Still demo-adapter data, not API-backed |
 | Deployment | Dockerfiles for API and web, `docker-compose.judge.yml`, nginx same-origin proxy with CSP |

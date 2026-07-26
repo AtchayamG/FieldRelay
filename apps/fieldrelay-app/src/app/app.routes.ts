@@ -63,6 +63,13 @@ export const routes: Routes = [
           ).then((m) => m.CallDetailComponent)
       },
       {
+        path: 'approvals',
+        loadComponent: () =>
+          import('./features/approvals/presentation/approvals.component').then(
+            (m) => m.ApprovalsComponent
+          )
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/presentation/settings.component').then(

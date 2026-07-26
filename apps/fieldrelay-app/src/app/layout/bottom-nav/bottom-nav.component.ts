@@ -25,10 +25,10 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
         <fr-icon class="nav-icon" name="dispatch" [size]="22" />
         <span class="nav-label">Dispatch</span>
       </span>
-      <span class="bottom-nav-item unavailable" aria-disabled="true" title="Approvals — planned">
+      <a routerLink="/approvals" routerLinkActive="active" class="bottom-nav-item">
         <fr-icon class="nav-icon" name="approvals" [size]="22" />
         <span class="nav-label">Approvals</span>
-      </span>
+      </a>
     </nav>
   `,
   styles: [`
