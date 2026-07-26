@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { IconComponent, IconName } from '../../shared/components/icon/icon.component';
 
 export interface NavItem {
   path: string;
   label: string;
-  icon: string;
+  icon: IconName;
   badge?: string;
   exact?: boolean;
   // Whether the route is actually built. Unbuilt destinations render disabled
@@ -17,7 +18,7 @@ export interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IconComponent],
   template: `
     <aside class="app-sidebar hide-mobile" role="navigation" aria-label="Main Navigation">
       <div class="nav-section">
@@ -32,13 +33,13 @@ export interface NavItem {
               class="nav-item"
               [attr.title]="item.label"
             >
-              <span class="nav-icon">{{ item.icon }}</span>
+              <fr-icon class="nav-icon" [name]="item.icon" [size]="20" />
               <span class="nav-label">{{ item.label }}</span>
               <span *ngIf="item.badge" class="nav-badge font-mono">{{ item.badge }}</span>
             </a>
             <ng-template #plannedPrimary>
               <span class="nav-item unavailable" aria-disabled="true" [attr.title]="item.label + ' — planned'">
-                <span class="nav-icon">{{ item.icon }}</span>
+                <fr-icon class="nav-icon" [name]="item.icon" [size]="20" />
                 <span class="nav-label">{{ item.label }}</span>
               </span>
             </ng-template>
@@ -57,7 +58,7 @@ export interface NavItem {
               class="nav-item"
               [attr.title]="item.label"
             >
-              <span class="nav-icon">{{ item.icon }}</span>
+              <fr-icon class="nav-icon" [name]="item.icon" [size]="20" />
               <span class="nav-label">{{ item.label }}</span>
             </a>
             <ng-template #plannedSecondary>
@@ -66,7 +67,7 @@ export interface NavItem {
                 aria-disabled="true"
                 [attr.title]="item.label + ' — planned'"
               >
-                <span class="nav-icon">{{ item.icon }}</span>
+                <fr-icon class="nav-icon" [name]="item.icon" [size]="20" />
                 <span class="nav-label">{{ item.label }}</span>
               </span>
             </ng-template>
@@ -155,9 +156,15 @@ export interface NavItem {
       opacity: 0.55;
     }
     .nav-icon {
-      font-size: 16px;
+      /* Fixed box so every label starts on the same optical line, whatever the
+         icon's own width. */
       min-width: 20px;
-      text-align: center;
+      opacity: 0.78;
+      transition: opacity var(--fr-motion-fast) ease;
+    }
+    .nav-item:hover .nav-icon,
+    .nav-item.active .nav-icon {
+      opacity: 1;
     }
     .nav-label {
       flex: 1;
@@ -198,21 +205,21 @@ export class SidebarComponent {
     {
       path: '/mission-control',
       label: 'Mission Control',
-      icon: '🎯',
+      icon: 'mission-control',
       badge: 'LIVE',
       exact: true,
       available: true
     },
-    { path: '/incidents', label: 'Incidents', icon: '🚨', available: true },
-    { path: '/calls', label: 'Calls & AI Ops', icon: '📞', available: true },
-    { path: '/dispatch', label: 'Dispatch Board', icon: '🗺️' },
-    { path: '/approvals', label: 'Approvals', icon: '⚖️', badge: '2' }
+    { path: '/incidents', label: 'Incidents', icon: 'incidents', available: true },
+    { path: '/calls', label: 'Calls & AI Ops', icon: 'phone', available: true },
+    { path: '/dispatch', label: 'Dispatch Board', icon: 'dispatch' },
+    { path: '/approvals', label: 'Approvals', icon: 'approvals', badge: '2' }
   ];
 
   secondaryNav: NavItem[] = [
-    { path: '/technicians', label: 'Technicians', icon: '👷' },
-    { path: '/vendors', label: 'Vendors', icon: '🏢' },
-    { path: '/analytics', label: 'Analytics', icon: '📊' },
-    { path: '/settings', label: 'Settings', icon: '⚙️', available: true }
+    { path: '/technicians', label: 'Technicians', icon: 'technicians' },
+    { path: '/vendors', label: 'Vendors', icon: 'building' },
+    { path: '/analytics', label: 'Analytics', icon: 'analytics' },
+    { path: '/settings', label: 'Settings', icon: 'settings', available: true }
   ];
 }

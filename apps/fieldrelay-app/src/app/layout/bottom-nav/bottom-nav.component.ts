@@ -1,31 +1,32 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IconComponent],
   template: `
     <nav class="mobile-bottom-nav hide-desktop hide-tablet" role="navigation" aria-label="Mobile Bottom Navigation">
       <a routerLink="/mission-control" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="bottom-nav-item">
-        <span class="nav-icon">🎯</span>
+        <fr-icon class="nav-icon" name="mission-control" [size]="22" />
         <span class="nav-label">Home</span>
       </a>
       <a routerLink="/incidents" routerLinkActive="active" class="bottom-nav-item">
-        <span class="nav-icon">🚨</span>
+        <fr-icon class="nav-icon" name="incidents" [size]="22" />
         <span class="nav-label">Incidents</span>
       </a>
       <a routerLink="/calls" routerLinkActive="active" class="bottom-nav-item">
-        <span class="nav-icon">📞</span>
+        <fr-icon class="nav-icon" name="phone" [size]="22" />
         <span class="nav-label">Calls</span>
       </a>
       <span class="bottom-nav-item unavailable" aria-disabled="true" title="Dispatch — planned">
-        <span class="nav-icon">🗺️</span>
+        <fr-icon class="nav-icon" name="dispatch" [size]="22" />
         <span class="nav-label">Dispatch</span>
       </span>
       <span class="bottom-nav-item unavailable" aria-disabled="true" title="Approvals — planned">
-        <span class="nav-icon">⚖️</span>
+        <fr-icon class="nav-icon" name="approvals" [size]="22" />
         <span class="nav-label">Approvals</span>
       </span>
     </nav>
@@ -69,7 +70,11 @@ import { RouterModule } from '@angular/router';
       opacity: 0.5;
     }
     .nav-icon {
-      font-size: 18px;
+      opacity: 0.75;
+      transition: opacity var(--fr-motion-fast) ease;
+    }
+    .bottom-nav-item.active .nav-icon {
+      opacity: 1;
     }
   `]
 })

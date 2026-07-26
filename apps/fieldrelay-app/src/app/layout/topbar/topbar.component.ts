@@ -3,18 +3,19 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IconComponent],
   template: `
     <header class="app-topbar" role="banner">
       <div class="topbar-left">
         <a routerLink="/mission-control" class="brand-link" aria-label="FieldRelay Home">
           <div class="brand-icon">
             <span class="pulse-ring"></span>
-            <span class="icon-inner">⚡</span>
+            <fr-icon class="icon-inner" name="bolt" [size]="18" [strokeWidth]="2" />
           </div>
           <div class="brand-text">
             <span class="brand-name">FIELD<span class="brand-accent">RELAY</span></span>
@@ -30,7 +31,7 @@ import { AuthService } from '../../core/services/auth.service';
 
       <div class="topbar-center hide-mobile">
         <div class="global-search">
-          <span class="search-icon">🔍</span>
+          <fr-icon class="search-icon" name="search" [size]="18" />
           <input
             type="search"
             placeholder="Search incidents, call IDs, properties, vendors..."
@@ -50,8 +51,8 @@ import { AuthService } from '../../core/services/auth.service';
           [attr.aria-label]="'Switch to ' + (themeService.currentTheme() === 'dark' ? 'light' : 'dark') + ' theme'"
           [title]="'Switch to ' + (themeService.currentTheme() === 'dark' ? 'light' : 'dark') + ' theme'"
         >
-          <span *ngIf="themeService.currentTheme() === 'dark'">☀️</span>
-          <span *ngIf="themeService.currentTheme() === 'light'">🌙</span>
+          <fr-icon *ngIf="themeService.currentTheme() === 'dark'" name="sun" [size]="19" />
+          <fr-icon *ngIf="themeService.currentTheme() === 'light'" name="moon" [size]="19" />
         </button>
 
         <div class="user-session" *ngIf="authService.currentSession() as session">
@@ -171,7 +172,6 @@ import { AuthService } from '../../core/services/auth.service';
     .search-icon {
       position: absolute;
       left: 12px;
-      font-size: 12px;
       opacity: 0.6;
     }
     .search-kbd {

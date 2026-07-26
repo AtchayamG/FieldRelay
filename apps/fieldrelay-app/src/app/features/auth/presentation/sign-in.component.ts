@@ -3,17 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-sign-in',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent],
   template: `
     <div class="auth-page">
       <div class="auth-card">
         <div class="auth-header">
           <div class="brand-badge">
-            <span class="icon">⚡</span>
+            <fr-icon class="icon" name="bolt" [size]="14" [strokeWidth]="2" />
             <span class="text">FIELDRELAY OPS</span>
           </div>
           <h1 class="auth-title">Secure Sign In</h1>
@@ -34,7 +35,8 @@ import { ThemeService } from '../../../core/services/theme.service';
             [disabled]="authService.isLoading()"
             id="demo-login-btn"
           >
-            ⚡ Continue as Demo Ops Manager
+            <fr-icon name="bolt" [size]="17" [strokeWidth]="2" />
+            <span>Continue as Demo Ops Manager</span>
           </button>
         </div>
 
@@ -158,7 +160,8 @@ import { ThemeService } from '../../../core/services/theme.service';
 
         <div class="auth-footer">
           <p class="security-note">
-            🔒 Simulated Demo Environment • No real calls are placed
+            <fr-icon name="lock" [size]="13" />
+            <span>Simulated Demo Environment • No real calls are placed</span>
           </p>
           <div class="theme-switch-row">
             <span>Theme Mode:</span>
@@ -167,7 +170,8 @@ import { ThemeService } from '../../../core/services/theme.service';
               class="theme-btn"
               (click)="themeService.toggleTheme()"
             >
-              {{ themeService.currentTheme() === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode' }}
+              <fr-icon [name]="themeService.currentTheme() === 'dark' ? 'sun' : 'moon'" [size]="15" />
+              <span>{{ themeService.currentTheme() === 'dark' ? 'Light Mode' : 'Dark Mode' }}</span>
             </button>
           </div>
         </div>
@@ -248,6 +252,10 @@ import { ThemeService } from '../../../core/services/theme.service';
       font-weight: 700;
       cursor: pointer;
       transition: background var(--fr-motion-fast);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     .demo-btn:hover:not(:disabled) {
       background: var(--fr-color-primary-bright);
@@ -401,6 +409,10 @@ import { ThemeService } from '../../../core/services/theme.service';
     .security-note {
       font-size: 11px;
       color: var(--fr-color-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
     }
     .theme-switch-row {
       display: flex;
@@ -416,6 +428,9 @@ import { ThemeService } from '../../../core/services/theme.service';
       color: var(--fr-color-primary-bright);
       font-weight: 600;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
   `]
 })
