@@ -1,8 +1,39 @@
-# FieldRelay — Product Blueprint & UI/UX Reference Repository
+# FieldRelay
 
 **FieldRelay** is an AI phone-operations coordination platform for property and field-service incident management. It uses CALL-E to perform authorized real phone calls, collect structured outcomes, route decisions through human approval gates, dispatch the right technician, and maintain a complete audit trail.
 
-This repository is a **Git-ready implementation handoff** for Codex, Claude Code, Google Antigravity, designers, and human reviewers. It contains:
+## Try it — live demo
+
+| | |
+|---|---|
+| **URL** | **https://fieldrelay-pi.vercel.app** |
+| **Email** | `ops.demo@fieldrelay.io` |
+| **Password** | `DemoOps2026!` |
+
+Both fields are pre-filled, so **Continue as Demo Ops Manager** signs you straight in. The credentials above are here in case the pre-filled values are cleared by a password manager or autofill. Use the eye icon in the password field to check what was filled.
+
+Suggested path: Mission Control → Incidents → open an incident → Calls & AI Ops → open a call record → Settings.
+
+> **This deployment cannot place a real phone call.** It runs with `CALL_E_MODE=demo`, holds no CALL-E credential, and refuses runtime changes to the call target, so no visitor can spend the project's metered calls. Every call it creates is labelled `simulated`.
+
+FieldRelay *has* placed a real call through CALL-E — the evidence, including the structured result CALL-E returned, is in [`docs/CALL_E_RUNTIME_PROOF.md`](docs/CALL_E_RUNTIME_PROOF.md).
+
+## Configuring the number CALL-E dials
+
+Two different numbers are involved, and they are configured in two different places.
+
+**The number being called (the recipient).** FieldRelay owns this. Either:
+
+- **Settings → Live call target**, in the app, when the deployment sets `CALLE_ALLOW_RUNTIME_DIAL_TARGET=true`. Enter the number in E.164 form with a supported region and the authorized contact it belongs to. Off by default, and off on the public demo, so nobody signing in with the published credentials can point the system at an arbitrary phone.
+- **`CALLE_DIAL_TARGETS`** in the environment, format `contactId=+E164|REGION|locale`. This is the fallback and the only option when runtime changes are disabled.
+
+Either way the number is validated, bound to a contact that is authorized for the specific call purpose, masked to its last four digits in every API response, and never written to the audit trail in full.
+
+**The number being called *from* (the caller ID).** CALL-E owns this, not FieldRelay. Configure it in the [CALL-E dashboard](https://dashboard.heycall-e.com) by purchasing a number on the platform or connecting a SIP trunk. Per CALL-E's documentation an existing personal number generally cannot be attached, because of telecom identity verification, and outbound calling requires KYC verification in some regions.
+
+## Repository contents
+
+This repository is also a **Git-ready implementation handoff** for Codex, Claude Code, Google Antigravity, designers, and human reviewers. Agents should read [`docs/SYSTEM_STATE_FOR_AGENTS.md`](docs/SYSTEM_STATE_FOR_AGENTS.md) after `AGENTS.md`. It contains:
 
 - 90 separate, high-resolution screen mockups
 - Dark and light theme parity

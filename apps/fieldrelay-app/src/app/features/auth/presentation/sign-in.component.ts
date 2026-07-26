@@ -72,15 +72,63 @@ import { ThemeService } from '../../../core/services/theme.service';
                 Forgot password?
               </button>
             </div>
-            <input
-              id="password"
-              type="password"
-              formControlName="password"
-              class="form-input"
-              placeholder="••••••••••••"
-              autocomplete="current-password"
-              [class.is-invalid]="passwordControl?.invalid && passwordControl?.touched"
-            />
+            <div class="input-with-action">
+              <input
+                id="password"
+                [type]="passwordVisible ? 'text' : 'password'"
+                formControlName="password"
+                class="form-input form-input--with-action"
+                placeholder="••••••••••••"
+                autocomplete="current-password"
+                [class.is-invalid]="passwordControl?.invalid && passwordControl?.touched"
+              />
+              <button
+                type="button"
+                class="input-action"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="passwordVisible ? 'Hide password' : 'Show password'"
+                [attr.aria-pressed]="passwordVisible"
+                [title]="passwordVisible ? 'Hide password' : 'Show password'"
+              >
+                <!-- Inline SVG rather than an emoji or icon font: it inherits
+                     currentColor for theme parity and is announced by the
+                     aria-label above rather than by a decorative glyph. -->
+                <svg
+                  *ngIf="!passwordVisible"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg
+                  *ngIf="passwordVisible"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M10.7 5.1A9.9 9.9 0 0 1 12 5c6.4 0 10 7 10 7a17.3 17.3 0 0 1-3 4" />
+                  <path d="M6.2 6.2A17.3 17.3 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.1-1.4" />
+                  <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                  <line x1="3" y1="3" x2="21" y2="21" />
+                </svg>
+              </button>
+            </div>
             <div class="error-msg" *ngIf="passwordControl?.invalid && passwordControl?.touched">
               <span *ngIf="passwordControl?.errors?.['required']">Password is required.</span>
               <span *ngIf="passwordControl?.errors?.['minlength']">Password must be at least 6 characters.</span>
@@ -242,6 +290,43 @@ import { ThemeService } from '../../../core/services/theme.service';
       font-weight: 600;
       color: var(--fr-color-text);
     }
+    .input-with-action {
+      position: relative;
+      display: block;
+    }
+    /* Reserve room for the toggle so a long value never runs underneath it. */
+    .form-input--with-action {
+      padding-right: 44px;
+    }
+    .input-action {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      /* 32px plus the surrounding field padding keeps the hit area at the 44px
+         minimum without visually crowding the input. */
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--fr-radius-sm);
+      background: transparent;
+      color: var(--fr-color-muted);
+      cursor: pointer;
+      transition: color var(--fr-motion-fast) ease, background var(--fr-motion-fast) ease;
+    }
+    .input-action:hover {
+      color: var(--fr-color-text);
+      background: var(--fr-color-surface3);
+    }
+    .input-action:focus-visible {
+      outline: 2px solid var(--fr-color-primary);
+      outline-offset: 2px;
+      color: var(--fr-color-text);
+    }
     .forgot-link {
       padding: 0;
       border: 0;
@@ -347,6 +432,14 @@ export class SignInComponent {
 
   get emailControl() {
     return this.loginForm.get('email');
+  }
+
+  // Starts hidden. Revealing is an explicit, per-visit act, so a shared or
+  // screen-shared browser never exposes the value by default.
+  passwordVisible = false;
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible = !this.passwordVisible;
   }
 
   get passwordControl() {
