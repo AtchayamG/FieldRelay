@@ -146,6 +146,16 @@ class InMemoryCallTaskRepository implements CallTaskRepositoryPort {
     return matches.reduce((prev, curr) => (curr.version > prev.version ? curr : prev));
   }
 
+  public async countLiveCalls(): Promise<number> {
+    const byId = new Map(
+      [...this.db.callTasks, ...this.inserted, ...this.updated.values()].map((task) => [
+        task.id,
+        task
+      ])
+    );
+    return [...byId.values()].filter((task) => !task.simulated).length;
+  }
+
   public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
     const byId = new Map(
       [...this.db.callTasks, ...this.inserted, ...this.updated.values()].map((task) => [

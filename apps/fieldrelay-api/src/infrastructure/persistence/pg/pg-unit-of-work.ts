@@ -224,6 +224,13 @@ class PgCallTaskRepository implements CallTaskRepositoryPort {
     return rows.length > 0 ? toCallTask(rows[0]) : null;
   }
 
+  public async countLiveCalls(): Promise<number> {
+    const result = await this.client.query<{ n: string }>(
+      'SELECT count(*) AS n FROM call_tasks WHERE simulated = false'
+    );
+    return Number(result.rows[0]?.n ?? 0);
+  }
+
   public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
     const conditions: string[] = [];
     const params: unknown[] = [];

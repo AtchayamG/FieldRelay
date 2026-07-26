@@ -46,6 +46,9 @@ export interface CallTaskRepositoryPort {
   findById(id: string): Promise<CallTask | null>;
   findByProviderTaskId(providerTaskId: string): Promise<CallTask | null>;
   list(query: ListCallTasksQuery): Promise<CallTaskPage>;
+  // Number of call tasks that were placed against a live provider. Simulated
+  // tasks are excluded because they cost nothing and reach no telephone.
+  countLiveCalls(): Promise<number>;
 }
 
 // --- Provider Callbacks ---------------------------------------------------

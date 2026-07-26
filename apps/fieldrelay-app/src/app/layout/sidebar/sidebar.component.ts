@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IconComponent, IconName } from '../../shared/components/icon/icon.component';
+import { CallUsage, CallUsageService } from '../../core/services/call-usage.service';
 
 export interface NavItem {
   path: string;
@@ -77,9 +78,17 @@ export interface NavItem {
 
       <div class="sidebar-footer">
         <div class="system-status-card">
-          <span class="status-indicator"></span>
-          <span class="status-text">CALL-E Demo Adapter Online</span>
+          <span class="status-indicator" [class.status-indicator--live]="usage()?.mode === 'live'"></span>
+          <span class="status-text">
+            {{ usage()?.mode === 'live' ? 'CALL-E Live Adapter' : 'CALL-E Demo Adapter' }}
+          </span>
         </div>
+        <!-- Calls placed, deliberately not calls remaining: CALL-E publishes no
+             balance endpoint and its stated free allowance differs between
+             sources, so a "remaining" figure would be a guess shown as fact. -->
+        <p class="call-usage" *ngIf="usage() as u" [title]="usageTooltip(u)">
+          {{ u.totalLiveCallsPlaced }} real {{ u.totalLiveCallsPlaced === 1 ? 'call' : 'calls' }} placed
+        </p>
       </div>
     </aside>
   `,
@@ -197,10 +206,38 @@ export interface NavItem {
       height: 8px;
       border-radius: 50%;
       background: var(--fr-color-success);
+      flex-shrink: 0;
+    }
+    /* Live mode can reach a real telephone, so it reads as caution, not health. */
+    .status-indicator--live {
+      background: var(--fr-color-warning);
+    }
+    .call-usage {
+      margin: 6px 0 0;
+      padding-left: 2px;
+      font-size: 10.5px;
+      letter-spacing: 0.2px;
+      color: var(--fr-color-muted);
+      font-family: var(--fr-font-technical);
     }
   `]
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
+  private readonly usageApi = inject(CallUsageService);
+  readonly usage = this.usageApi.usage;
+
+  ngOnInit(): void {
+    this.usageApi.refresh();
+  }
+
+  usageTooltip(u: CallUsage): string {
+    const here = `${u.placedByThisDeployment} placed by this deployment`;
+    const elsewhere = u.placedElsewhere
+      ? `, ${u.placedElsewhere} placed earlier from the CLI and local runs`
+      : '';
+    return `Real CALL-E calls: ${here}${elsewhere}. Simulated calls are not counted.`;
+  }
+
   primaryNav: NavItem[] = [
     {
       path: '/mission-control',

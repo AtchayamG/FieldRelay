@@ -9,6 +9,11 @@ import { SessionGuard } from './interfaces/session.guard';
 import { IssueSessionUseCase } from './application/issue-session.use-case';
 import { requireSigningSecret } from './application/session-token';
 import { SettingsController } from './interfaces/settings.controller';
+import { CallUsageController } from './interfaces/call-usage.controller';
+import {
+  GetCallUsageUseCase,
+  readPriorCallCount
+} from './application/get-call-usage.use-case';
 import { ManageDialTargetUseCase } from './application/manage-dial-target.use-case';
 import {
   DIAL_TARGET_SETTINGS_PORT,
@@ -79,7 +84,8 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     ProviderCallbackController,
     CalleWebhookController,
     AuthController,
-    SettingsController
+    SettingsController,
+    CallUsageController
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
@@ -134,6 +140,19 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
       inject: [DIAL_TARGET_PORT]
     },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
+    {
+      provide: GetCallUsageUseCase,
+      useFactory: (transactions: TransactionPort) =>
+        new GetCallUsageUseCase(
+          transactions,
+          // Calls made against the same CALL-E account from outside this
+          // deployment — the CLI and the local proof run — which this database
+          // has no record of. Counting them keeps the displayed total honest.
+          readPriorCallCount(process.env.CALLE_CALLS_PLACED_ELSEWHERE),
+          (process.env.CALL_E_MODE ?? '').trim().toLowerCase() === 'live' ? 'live' : 'demo'
+        ),
+      inject: [TRANSACTION_PORT]
+    },
     {
       provide: ManageDialTargetUseCase,
       useFactory: (

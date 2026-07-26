@@ -14,9 +14,30 @@ Both fields are pre-filled, so **Continue as Demo Ops Manager** signs you straig
 
 Suggested path: Mission Control → Incidents → open an incident → Calls & AI Ops → open a call record → Settings.
 
-> **This deployment cannot place a real phone call.** It runs with `CALL_E_MODE=demo`, holds no CALL-E credential, and refuses runtime changes to the call target, so no visitor can spend the project's metered calls. Every call it creates is labelled `simulated`.
+### Making CALL-E call *your* phone
 
-FieldRelay *has* placed a real call through CALL-E — the evidence, including the structured result CALL-E returned, is in [`docs/CALL_E_RUNTIME_PROOF.md`](docs/CALL_E_RUNTIME_PROOF.md).
+The live demo can place a real call to a number you nominate, so you can hear FieldRelay work end to end rather than take our word for it.
+
+1. Sign in and open **Settings**.
+2. Under **Live call target**, enter:
+   - **Mobile number** in E.164 form — country code first, e.g. `+14155550123`, `+919094713923`, `+6598765432`. Spaces and dashes are fine.
+   - **Region** — pick yours from the list. CALL-E supports US, SG, MY, IN, AE, AU, CA, GB, VN, DE, JP, FR, MX, BR, ID, PH and KE.
+   - **Language locale** — e.g. `en-US`, `en-IN`, `en-GB`.
+   - **Authorized contact** — leave as `CNS-4491`.
+3. **Save call target.** Only the last four digits are shown back; the full number is never returned by the API or written to the audit trail.
+4. Go to an incident and start a vendor-availability call. **Your phone will ring**, an AI agent will ask about a fictional plumbing job, and the structured answer comes back on the call record.
+
+Your number replaces the previous target, so each judge can point it at their own phone. Remove it with **Remove** and the call target falls back to the environment configuration.
+
+### About the call counter
+
+The sidebar shows **"N real calls placed"** — not calls remaining. That is deliberate. CALL-E's API exposes no balance endpoint, its published free allowance differs between its own sources (the Devpost page says 20, heycall-e.com says 200), and the allowance can be topped up via [CALL-E's request form](https://forms.gle/EPQttEZ1rkW8iq9q6). Any "remaining" number would be a guess presented as fact, and would read as broken the moment it hit zero while calls still worked. Calls placed is verifiable from FieldRelay's own records.
+
+The count includes three calls made before this deployment existed — one CLI test and two proof calls — because they drew down the same CALL-E account. Simulated calls are never counted; they reach no telephone and cost nothing.
+
+**Nothing is blocked when the count is high.** The number is information, not a gate.
+
+FieldRelay's first real call, including the structured result CALL-E returned, is recorded in [`docs/CALL_E_RUNTIME_PROOF.md`](docs/CALL_E_RUNTIME_PROOF.md).
 
 ## Configuring the number CALL-E dials
 
