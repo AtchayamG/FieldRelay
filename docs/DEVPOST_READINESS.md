@@ -13,10 +13,21 @@
 | Significant in-period work | Git history and changelog after 2026-07-23 | ON TRACK | Codex | Commit history on `main` from 2026-07-24 onward |
 | Upstream contribution PR | `CALLE-AI/awesome-phone-call-agents` | TODO | Codex/user | FieldRelay fits the `apps/` contribution area; Codex prepares, user approves the public PR |
 | Public demo video under 3 minutes | YouTube/Vimeo URL | BLOCKED | User | Local export checked, then public playback |
-| Testing access | judge URL/build and instructions | TODO | Codex | Clean-browser smoke test |
+| Testing access | https://fieldrelay-pi.vercel.app | PASS | Codex | Deployed 2026-07-26 and verified live: health 200, anonymous read 401, demo login issues an operator session, three seeded incidents load, a call returns `simulated: true`, a dial-target change returns 403, SPA deep links resolve, CSP present |
 | CALL-E account email | Devpost required field | BLOCKED | User | User supplies at submission time |
 | Project/testing/use-case answers | Required Devpost fields | TODO | Codex | Draft factual answers from verified product |
 | Final legal checkboxes and submit | Devpost | BLOCKED | User | Human review and final action |
+
+## Judge testing instructions
+
+**URL:** https://fieldrelay-pi.vercel.app
+**Sign in:** the evaluator credentials are pre-filled — click **Continue as Demo Ops Manager**. (Typed manually: `ops.demo@fieldrelay.io` / `DemoOps2026!`)
+
+Suggested path: Mission Control → Incidents (three seeded fictional incidents) → open one → Calls & AI Ops → open a call record → Settings, which shows the live call target as read-only.
+
+**This environment cannot place a real phone call.** It runs with `CALL_E_MODE=demo`, carries no CALL-E credential, and refuses runtime changes to the call target, so no visitor can spend the project's metered calls. Every call it creates is labelled `simulated`. Evidence of the real call FieldRelay placed through CALL-E — including the structured result it returned — is in `docs/CALL_E_RUNTIME_PROOF.md` and in the demo video.
+
+Architecture: Angular SPA served as static output, the whole NestJS API in one serverless function on the same origin, Neon PostgreSQL. Routes are closed by default behind a session guard; an unauthenticated request to any data or call route returns 401.
 
 ## Prizes and where FieldRelay competes
 

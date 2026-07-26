@@ -49,3 +49,7 @@
 - Agent documentation: `docs/SYSTEM_STATE_FOR_AGENTS.md` added and `AGENTS.md` updated with the non-negotiable call-safety rules
 - Verification: lint, strict typecheck, 258 tests with PostgreSQL 17, production builds — all pass
 - Remaining highest-priority: deploy the judge environment to a public URL and capture testing instructions; then ingest structured call results to open the approval and dispatch loop
+
+- Live judge environment: DEPLOYED to https://fieldrelay-pi.vercel.app (Vercel: static SPA + whole NestJS API in one serverless function + Neon PostgreSQL, five migrations applied, three seeded incidents)
+- Live verification: health 200, anonymous read 401, demo login issues an operator session, incidents load, call returns simulated, dial-target change returns 403, SPA deep links resolve, CSP present
+- Deployed environment cannot place a real call: CALL_E_MODE=demo, no CALL-E credential present, runtime dial-target changes refused
