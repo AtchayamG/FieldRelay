@@ -20,6 +20,7 @@ import {
   CallStatusResponseDto,
   CallListDto,
   CallTaskResponseDto,
+  CallTaskDetailDto,
   ApiResponse
 } from '@fieldrelay/contracts';
 import { requestIdOf } from './request-context';
@@ -100,9 +101,24 @@ export class CallEController {
   async getById(
     @Req() request: Request,
     @Param('callTaskId') callTaskId: string
-  ): Promise<ApiResponse<CallTaskResponseDto>> {
-    const task = await this.getCallUseCase.execute(callTaskId);
-    return envelope(toCallTaskDto(task), requestIdOf(request));
+  ): Promise<ApiResponse<CallTaskDetailDto>> {
+    const { task, outcome } = await this.getCallUseCase.execute(callTaskId);
+    return envelope(
+      {
+        ...toCallTaskDto(task),
+        outcome: outcome
+          ? {
+              structuredResult: outcome.structuredResult,
+              taskCompleted: outcome.taskCompleted,
+              confidenceScore: outcome.confidenceScore,
+              confidenceLabel: outcome.confidenceLabel,
+              validationFailed: outcome.validationFailed,
+              receivedAt: outcome.receivedAt.toISOString()
+            }
+          : null
+      },
+      requestIdOf(request)
+    );
   }
 }
 

@@ -50,9 +50,12 @@ describe('call query use cases', () => {
     await expect(
       get.execute('11111111-1111-4111-8111-111111119999')
     ).rejects.toBeInstanceOf(NotFoundError);
-    await expect(
-      get.execute('11111111-1111-4111-8111-111111111202')
-    ).resolves.toMatchObject({ incidentId: INCIDENT_B, simulated: true });
+    // The call detail now returns its outcome alongside the task, read in the
+    // same transaction so the two can never disagree.
+    const found = await get.execute('11111111-1111-4111-8111-111111111202');
+    expect(found.task).toMatchObject({ incidentId: INCIDENT_B, simulated: true });
+    // A task with no terminal webhook yet has no answer to show.
+    expect(found.outcome).toBeNull();
   });
 
   it('rejects invalid filters and page sizes', async () => {

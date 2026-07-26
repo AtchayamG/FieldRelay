@@ -19,10 +19,11 @@ Verified on 2026-07-26 with PostgreSQL 17 running: lint, strict typecheck, 258 t
 
 Structured outcome ingestion is **complete on the backend** — validation, persistence, webhook wiring and audit. Migration `0006_call_outcomes.sql` needs applying to any environment that predates it.
 
+The outcome is now exposed on `GET /api/v1/calls/:callTaskId` and rendered on call detail. Migration 0006 has been applied to the deployed Neon database.
+
 Remaining on this track, in order:
 
-1. Expose the outcome on `GET /api/v1/calls/:callTaskId` and render it on call detail.
-2. **Approvals** — the human decision gate over a validated outcome. This is what turns an AI phone call into an accountable business decision, and it is the screen judges score hardest.
+1. **Approvals** — the human decision gate over a validated outcome. This is what turns an AI phone call into an accountable business decision, and it is the screen judges score hardest.
 3. **Dispatch** — approved outcome to assigned technician.
 4. Mission Control: wire the metric cards and incident queue to real API data, keeping the orchestration flow and live-mission panel as clearly-labelled illustrations. Approved 2026-07-26. Note that demo-versus-live is a deployment-wide setting, not a per-user one, so mode-based switching would show judges sparse real data instead of the richer picture.
 

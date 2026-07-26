@@ -56,6 +56,8 @@ This is the most sensitive rule in the codebase.
 - The outcome is written **inside the same transaction** that accepts the callback, so a call task can never end up terminal with its answer missing. `outcomes` therefore lives on `UnitOfWork`, unlike the dial-target settings store which is deliberately outside it.
 - The audit trail records **field names only** — `fields: ['available', 'quoted_amount_text']` — never the answers. Those values came from a stranger on a telephone and do not belong in an append-only log. A test asserts the amount never appears in audit metadata.
 - `call.outcome.recorded` and `call.outcome.recorded_with_validation_failure` are distinct actions, so an operator can find calls that connected but produced nothing usable.
+- `GET /api/v1/calls/:callTaskId` returns `CallTaskDetailDto` with the outcome attached, read in the **same transaction** as the task so the two can never disagree. The list endpoint deliberately does not carry outcomes: a queue row has no space for one and most rows have none.
+- Call detail renders the outcome as a primary panel. A failed validation is **shown with a warning, not hidden** — the operator is told the answer is incomplete and to verify before acting, which is the opposite of silently presenting partial data as whole.
 
 ## Safety invariants — do not weaken these
 

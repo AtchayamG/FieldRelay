@@ -23,6 +23,26 @@ export interface CallTask {
   version: number;
 }
 
+// The answer a completed call produced, after validation against the schema
+// FieldRelay declared when placing it. No transcript, recording, summary or
+// phone number: a decision rests on the validated fields, not on prose from a
+// telephone conversation.
+export interface CallOutcome {
+  structuredResult: Record<string, unknown>;
+  taskCompleted: boolean;
+  confidenceScore: number | null;
+  confidenceLabel: string | null;
+  // True when the answer did not satisfy the declared schema. Shown rather than
+  // hidden: a call that connected and produced nothing usable is a fact the
+  // operator needs.
+  validationFailed: boolean;
+  receivedAt: string;
+}
+
+export interface CallTaskDetail extends CallTask {
+  outcome: CallOutcome | null;
+}
+
 export interface CallListResult {
   items: CallTask[];
   nextCursor: string | null;

@@ -1,9 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import type { ApiResponse, CallListDto, CallTaskResponseDto } from '@fieldrelay/contracts';
+import type {
+  ApiResponse,
+  CallListDto,
+  CallTaskDetailDto,
+  CallTaskResponseDto
+} from '@fieldrelay/contracts';
 import { CallPort } from '../application/call.port';
-import { CallTask, CallListResult, ListCallsQuery } from '../domain/call.model';
+import {
+  CallTask,
+  CallTaskDetail,
+  CallListResult,
+  ListCallsQuery
+} from '../domain/call.model';
 
 @Injectable()
 export class CallHttpAdapter implements CallPort {
@@ -35,10 +45,24 @@ export class CallHttpAdapter implements CallPort {
       );
   }
 
-  getById(id: string): Observable<CallTask> {
+  getById(id: string): Observable<CallTaskDetail> {
     return this.http
-      .get<ApiResponse<CallTaskResponseDto>>(`${this.baseUrl}/${id}`)
-      .pipe(map((response) => this.mapDtoToEntity(response.data)));
+      .get<ApiResponse<CallTaskDetailDto>>(`${this.baseUrl}/${id}`)
+      .pipe(
+        map((response) => ({
+          ...this.mapDtoToEntity(response.data),
+          outcome: response.data.outcome
+            ? {
+                structuredResult: response.data.outcome.structuredResult ?? {},
+                taskCompleted: response.data.outcome.taskCompleted,
+                confidenceScore: response.data.outcome.confidenceScore,
+                confidenceLabel: response.data.outcome.confidenceLabel,
+                validationFailed: response.data.outcome.validationFailed,
+                receivedAt: response.data.outcome.receivedAt
+              }
+            : null
+        }))
+      );
   }
 
   private mapDtoToEntity(dto: CallTaskResponseDto): CallTask {

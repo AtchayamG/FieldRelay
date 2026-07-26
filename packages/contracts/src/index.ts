@@ -56,6 +56,33 @@ export interface CallListDto {
   nextCursor: string | null;
 }
 
+// The answer a completed call produced, after validation against the schema
+// FieldRelay declared when it placed the call.
+//
+// Note what is absent: no transcript, no recording, no free-text summary and no
+// phone number. An approval decision rests on the schema-validated fields, not
+// on prose from a telephone conversation (security doc 08).
+export interface CallOutcomeDto {
+  // Keyed exactly as the purpose's declared result schema. Undeclared keys the
+  // provider volunteered were dropped, not stored.
+  structuredResult: Record<string, unknown>;
+  // CALL-E's judgment that the goal was achieved. Distinct from the call having
+  // connected: a call can complete while the task fails.
+  taskCompleted: boolean;
+  confidenceScore: number | null;
+  confidenceLabel: string | null;
+  // True when the answer did not satisfy the declared schema. The outcome is
+  // still shown, because a call that connected and produced nothing usable is
+  // something an operator must see rather than be shielded from.
+  validationFailed: boolean;
+  receivedAt: string;
+}
+
+export interface CallTaskDetailDto extends CallTaskResponseDto {
+  // Null until a terminal webhook delivers an answer.
+  outcome: CallOutcomeDto | null;
+}
+
 // --- Incidents -------------------------------------------------------------
 
 export type IncidentType =

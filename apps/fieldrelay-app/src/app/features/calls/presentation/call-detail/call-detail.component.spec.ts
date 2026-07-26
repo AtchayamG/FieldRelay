@@ -5,7 +5,7 @@ import { of, throwError } from 'rxjs';
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { CallDetailComponent } from './call-detail.component';
 import { CallPort } from '../../application/call.port';
-import { CallTask } from '../../domain/call.model';
+import { CallTaskDetail } from '../../domain/call.model';
 
 describe('CallDetailComponent', () => {
   let component: CallDetailComponent;
@@ -15,7 +15,8 @@ describe('CallDetailComponent', () => {
     getById: ReturnType<typeof vi.fn>;
   };
 
-  const mockCallSimulated: CallTask = {
+  const mockCallSimulated: CallTaskDetail = {
+    outcome: null,
     id: '11111111-1111-4111-a111-111111111111',
     displayId: 'CALL-0001',
     incidentId: '22222222-2222-4222-a222-222222222222',
@@ -31,7 +32,8 @@ describe('CallDetailComponent', () => {
     version: 1
   };
 
-  const mockCallOutcomeUnknown: CallTask = {
+  const mockCallOutcomeUnknown: CallTaskDetail = {
+    outcome: null,
     id: '33333333-3333-4333-a333-333333333333',
     displayId: 'CALL-0002',
     incidentId: '44444444-4444-4444-a444-444444444444',
@@ -75,6 +77,78 @@ describe('CallDetailComponent', () => {
 
     fixture = TestBed.createComponent(CallDetailComponent);
     component = fixture.componentInstance;
+  });
+
+  describe('structured outcome panel', () => {
+    const withOutcome = (
+      overrides: Partial<NonNullable<CallTaskDetail['outcome']>> = {}
+    ): CallTaskDetail => ({
+      ...mockCallSimulated,
+      status: 'completed',
+      outcome: {
+        structuredResult: { available: 'yes', quoted_amount_text: '$360' },
+        taskCompleted: true,
+        confidenceScore: 0.82,
+        confidenceLabel: 'high',
+        validationFailed: false,
+        receivedAt: '2026-07-26T10:03:00Z',
+        ...overrides
+      }
+    });
+
+    function renderWith(detail: CallTaskDetail): string {
+      mockCallPort.getById.mockReturnValue(of(detail));
+      fixture.detectChanges();
+      return (fixture.nativeElement as HTMLElement).textContent ?? '';
+    }
+
+    it('shows nothing when the call has produced no answer yet', () => {
+      const text = renderWith(mockCallSimulated);
+      expect(text).not.toContain('Structured Outcome');
+    });
+
+    it('renders the validated fields with readable labels', () => {
+      const text = renderWith(withOutcome());
+
+      expect(text).toContain('Structured Outcome');
+      expect(text).toContain('Available');
+      expect(text).toContain('yes');
+      expect(text).toContain('Quoted Amount Text');
+      expect(text).toContain('$360');
+    });
+
+    it('surfaces task completion and confidence', () => {
+      const text = renderWith(withOutcome());
+      expect(text).toContain('TASK COMPLETED');
+      expect(text).toContain('CONFIDENCE HIGH');
+    });
+
+    it('distinguishes a call that finished from a task that succeeded', () => {
+      // A call can connect and complete while the goal it was placed for fails.
+      const text = renderWith(withOutcome({ taskCompleted: false }));
+      expect(text).toContain('TASK NOT COMPLETED');
+    });
+
+    it('warns when part of the answer failed validation rather than hiding it', () => {
+      const text = renderWith(
+        withOutcome({ validationFailed: true, structuredResult: { available: 'yes' } })
+      );
+      expect(text).toContain('did not match the declared schema');
+      expect(text).toContain('verify before acting');
+    });
+
+    it('handles a terminal call that returned nothing usable', () => {
+      const text = renderWith(
+        withOutcome({ structuredResult: {}, validationFailed: true, taskCompleted: false })
+      );
+      expect(text).toContain('returned no usable field');
+    });
+
+    it('states that transcripts are not stored', () => {
+      // The absence is deliberate and should be legible to an operator rather
+      // than looking like missing data.
+      expect(renderWith(withOutcome())).toContain('Transcripts and recordings are not');
+    });
   });
 
   it('should load and render call detail for simulated call', () => {

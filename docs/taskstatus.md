@@ -61,4 +61,7 @@
 - Structured outcome ingestion COMPLETE on the backend: PostgreSQL and in-memory repositories on UnitOfWork, webhook translator carries the answer forward while still discarding transcripts, recordings, the recipient number and the provider summary, and ProcessProviderCallbackUseCase validates and stores it in the same transaction that accepts the callback
 - Outcome audit records field names only, never the answers; `call.outcome.recorded` and `call.outcome.recorded_with_validation_failure` are distinct actions so calls that connected but produced nothing usable are findable
 - Verification: lint, strict typecheck, 232 API tests (15 PostgreSQL-dependent skipped without a local database); run record in `docs/agent-runs/2026-07-26-structured-outcome-ingestion.md`
-- Next: expose the outcome on call detail, then Approvals, then Dispatch, then wire Mission Control metrics and incident queue to real data
+- Outcome exposed end to end: `GET /api/v1/calls/:callTaskId` returns `CallTaskDetailDto` with the outcome read in the same transaction as the task, and call detail renders it as a primary panel showing the validated fields, task completion, confidence, and an explicit warning when part of the answer failed validation
+- Migration 0006_call_outcomes applied to the deployed Neon database
+- Verification: lint, strict typecheck, 232 API and 107 app tests, production builds — all pass
+- Next: Approvals, then Dispatch, then wire Mission Control metrics and incident queue to real data

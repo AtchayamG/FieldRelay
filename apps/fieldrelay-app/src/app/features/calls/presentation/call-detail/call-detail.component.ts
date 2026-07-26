@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CallPort } from '../../application/call.port';
 import { CallHttpAdapter } from '../../data/call-http.adapter';
-import { CallTask } from '../../domain/call.model';
+import { CallOutcome, CallTaskDetail } from '../../domain/call.model';
 import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { callApiErrorMessage, callApiStatus } from '../../application/call-api-error';
@@ -98,6 +98,67 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
             </div>
           </div>
         </div>
+
+        <!-- Structured Outcome: what the call actually achieved -->
+        <section class="outcome-card" *ngIf="call.outcome as outcome">
+          <header class="outcome-head">
+            <div class="outcome-title-group">
+              <fr-icon
+                class="outcome-icon"
+                [name]="outcome.taskCompleted ? 'check-circle' : 'alert'"
+                [size]="20"
+              />
+              <div>
+                <h2 class="outcome-title">Structured Outcome</h2>
+                <p class="outcome-sub">
+                  Extracted by CALL-E against the schema FieldRelay declared when placing this call.
+                </p>
+              </div>
+            </div>
+            <div class="outcome-meta">
+              <span
+                class="outcome-pill"
+                [class.outcome-pill--ok]="outcome.taskCompleted"
+                [class.outcome-pill--warn]="!outcome.taskCompleted"
+              >
+                {{ outcome.taskCompleted ? 'TASK COMPLETED' : 'TASK NOT COMPLETED' }}
+              </span>
+              <span class="outcome-pill" *ngIf="outcome.confidenceLabel">
+                CONFIDENCE {{ outcome.confidenceLabel | uppercase }}
+                <span *ngIf="outcome.confidenceScore !== null" class="font-mono">
+                  · {{ outcome.confidenceScore }}
+                </span>
+              </span>
+            </div>
+          </header>
+
+          <!-- Shown, not hidden: a call that connected and produced nothing
+               usable is a fact the operator has to act on. -->
+          <p class="outcome-invalid" *ngIf="outcome.validationFailed" role="alert">
+            <fr-icon name="alert" [size]="15" />
+            <span>
+              Part of this answer did not match the declared schema and was discarded. Treat the
+              fields below as incomplete and verify before acting.
+            </span>
+          </p>
+
+          <dl class="outcome-fields" *ngIf="outcomeEntries(outcome).length; else noFields">
+            <div class="outcome-field" *ngFor="let entry of outcomeEntries(outcome)">
+              <dt>{{ formatFieldName(entry.key) }}</dt>
+              <dd class="font-mono">{{ entry.value }}</dd>
+            </div>
+          </dl>
+          <ng-template #noFields>
+            <p class="outcome-empty">
+              The call reached a terminal state but returned no usable field.
+            </p>
+          </ng-template>
+
+          <p class="outcome-footnote">
+            Received {{ outcome.receivedAt | date: 'medium' }}. Transcripts and recordings are not
+            stored: decisions rest on the validated fields above.
+          </p>
+        </section>
 
         <!-- API Field Inspection Grid -->
         <div class="detail-grid">
@@ -372,6 +433,106 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       font-size: 13px;
     }
 
+    /* The outcome is the point of the whole call, so it gets the visual weight
+       of a primary panel rather than another row in the field grid. */
+    .outcome-card {
+      background: var(--fr-color-surface);
+      border: 1px solid var(--fr-color-border);
+      border-left: 3px solid var(--fr-color-success);
+      border-radius: var(--fr-radius-lg);
+      padding: var(--fr-space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--fr-space-md);
+    }
+    .outcome-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--fr-space-md);
+      flex-wrap: wrap;
+    }
+    .outcome-title-group {
+      display: flex;
+      gap: var(--fr-space-sm);
+      align-items: flex-start;
+    }
+    .outcome-icon {
+      color: var(--fr-color-success);
+      margin-top: 2px;
+    }
+    .outcome-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--fr-color-text);
+    }
+    .outcome-sub {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--fr-color-muted);
+      max-width: 46ch;
+    }
+    .outcome-meta {
+      display: flex;
+      gap: var(--fr-space-xs);
+      flex-wrap: wrap;
+    }
+    .outcome-pill {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      padding: 4px 10px;
+      border-radius: var(--fr-radius-pill);
+      border: 1px solid var(--fr-color-border);
+      color: var(--fr-color-muted);
+      white-space: nowrap;
+    }
+    .outcome-pill--ok {
+      color: var(--fr-color-success);
+      border-color: var(--fr-color-success);
+    }
+    .outcome-pill--warn {
+      color: var(--fr-color-warning);
+      border-color: var(--fr-color-warning);
+    }
+    .outcome-invalid {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 0;
+      padding: var(--fr-space-sm) var(--fr-space-md);
+      border-radius: var(--fr-radius-sm);
+      background: var(--fr-color-warning-soft);
+      border: 1px solid var(--fr-color-warning);
+      color: var(--fr-color-warning);
+      font-size: 12px;
+    }
+    .outcome-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--fr-space-md);
+      margin: 0;
+    }
+    .outcome-field dt {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--fr-color-muted);
+    }
+    .outcome-field dd {
+      margin: 4px 0 0;
+      font-size: 15px;
+      color: var(--fr-color-text);
+      word-break: break-word;
+    }
+    .outcome-empty,
+    .outcome-footnote {
+      margin: 0;
+      font-size: 11px;
+      color: var(--fr-color-muted);
+    }
     .simulated-pill {
       background: var(--fr-color-warning-soft);
       color: var(--fr-color-warning);
@@ -463,7 +624,7 @@ export class CallDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private callPort = inject(CallPort);
 
-  call: CallTask | null = null;
+  call: CallTaskDetail | null = null;
   loading = false;
   errorMessage: string | null = null;
   isNotFound = false;
@@ -505,6 +666,19 @@ export class CallDetailComponent implements OnInit {
         }
       }
     });
+  }
+
+  // Renders in the order the provider returned, which follows the declared
+  // schema. Values are stringified rather than trusted to be primitives.
+  outcomeEntries(outcome: CallOutcome): Array<{ key: string; value: string }> {
+    return Object.entries(outcome.structuredResult).map(([key, value]) => ({
+      key,
+      value: typeof value === 'string' ? value : JSON.stringify(value)
+    }));
+  }
+
+  formatFieldName(key: string): string {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
   formatPurpose(purpose: string): string {
