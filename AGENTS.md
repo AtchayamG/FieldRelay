@@ -32,6 +32,15 @@ Read `docs/00_MASTER_BLUEPRINT.md` first, then **`docs/SYSTEM_STATE_FOR_AGENTS.m
 - Run focused tests and report commands/results. Treat generated demo data as fictional and deterministic.
 - Do not publish, deploy to production, open the upstream submission PR, or submit Devpost without explicit user approval.
 
+## Documentation is part of every step, not the end of the task
+
+Update the shared agent docs when each step completes, not once at the finish. A step is not done until they reflect it:
+
+- `docs/SYSTEM_STATE_FOR_AGENTS.md` — what now exists, and any new trap or boundary another agent could get wrong
+- `docs/taskstatus.md` — a dated line recording the outcome and its verification
+- `docs/handover.md` — current state, highest-priority next task, live blockers
+- `docs/agent-runs/` — a run record for a substantial slice
+
 ## Required handoff
 
 Report: result, files changed, decisions, commands/tests, known limitations, cleanup, risks, and the exact next task.

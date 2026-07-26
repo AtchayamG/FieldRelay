@@ -5,6 +5,7 @@ import {
   CallProviderConfigurationError,
   CallProviderError
 } from '../../application/errors';
+import { toProviderSchema } from '../../application/call-outcome';
 import { CallTask } from '../../domain/call-task.entity';
 import { asRecord, mapCalleStatus, readBoundedString } from './calle-status';
 
@@ -136,7 +137,10 @@ export class CalleApiAdapter implements CallEPort {
           locale: target.locale
         }
       ],
-      result_schema: brief.resultSchema,
+      // Stripped to the keywords CALL-E documents support for. FieldRelay's own
+      // acceptance rules are stricter, but sending a keyword the provider does
+      // not recognise risks the whole call being rejected.
+      result_schema: toProviderSchema(brief.resultSchema),
       metadata: {
         // Correlation only. No tenant, address, contact or incident free text.
         call_task_id: task.id,

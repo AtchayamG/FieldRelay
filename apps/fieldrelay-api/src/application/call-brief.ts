@@ -43,6 +43,10 @@ const BRIEFS: Record<CallPurpose, CallBrief> = {
         available: YES_NO_UNKNOWN,
         earliest_eta_minutes: {
           type: 'integer',
+          // Enforced by FieldRelay's own validation and stripped before the
+          // schema reaches CALL-E, whose documented feature list omits bounds.
+          minimum: 0,
+          maximum: 20160,
           description:
             'Earliest arrival in whole minutes from now, if the vendor states one. Omit the field entirely when no time is given.'
         },

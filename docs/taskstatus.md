@@ -53,3 +53,8 @@
 - Live judge environment: DEPLOYED to https://fieldrelay-pi.vercel.app (Vercel: static SPA + whole NestJS API in one serverless function + Neon PostgreSQL, five migrations applied, three seeded incidents)
 - Live verification: health 200, anonymous read 401, demo login issues an operator session, incidents load, call returns simulated, dial-target change returns 403, SPA deep links resolve, CSP present
 - Deployed environment cannot place a real call: CALL_E_MODE=demo, no CALL-E credential present, runtime dial-target changes refused
+
+- UI polish: 39-icon Material-style system replaced every emoji app-wide; password reveal toggle; sign-out icon made visible (it inherited an unset colour); call counter centred above the adapter card; mission waveform rebuilt as 28 fixed-width ticks with deterministic heights
+- Judge live calls: deployment switched to CALL_E_MODE=live with runtime dial-target changes enabled, so a judge can enter their own number in Settings and receive a real call; kill switch is CALL_E_MODE=demo, effective on the next request without redeploy
+- Call counter: reports calls PLACED, never remaining — CALL-E exposes no balance endpoint, its published allowance differs between sources (20 on Devpost, 200 on heycall-e.com), and it can be topped up; seeded with 3 calls made outside this deployment via CALLE_CALLS_PLACED_ELSEWHERE
+- Structured outcome ingestion (step 1 of the closed loop): migration 0006_call_outcomes, schema-validated acceptance that drops undeclared keys and refuses out-of-enum values, and toProviderSchema stripping locally-enforced bounds before transmission; 225 API tests pass

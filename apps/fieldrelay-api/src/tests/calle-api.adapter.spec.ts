@@ -1,4 +1,5 @@
 import { briefForPurpose } from '../application/call-brief';
+import { toProviderSchema } from '../application/call-outcome';
 import { DialTarget, DialTargetResolverPort } from '../application/dial-target.port';
 import {
   CallAuthorizationError,
@@ -87,7 +88,10 @@ describe('CalleApiAdapter', () => {
     });
     expect(String(sent.task)).toContain('automated assistant');
     expect(String(sent.task)).toContain('CALL-1042');
-    expect(sent.result_schema).toEqual(brief.resultSchema);
+    // The schema on the wire is stripped to the keywords CALL-E documents;
+    // FieldRelay's stricter bounds stay on its own side of the boundary.
+    expect(sent.result_schema).toEqual(toProviderSchema(brief.resultSchema));
+    expect(JSON.stringify(sent.result_schema)).not.toContain('minimum');
 
     expect(result).toEqual({ providerTaskId: 'call_abc123', status: 'queued', simulated: false });
   });

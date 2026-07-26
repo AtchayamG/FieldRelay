@@ -42,6 +42,18 @@ This is the most sensitive rule in the codebase.
 - `CALLE_ALLOW_RUNTIME_DIAL_TARGET` defaults to false. The judge environment sets it false so the published demo credentials cannot point the system at an arbitrary telephone.
 - Every number is bound to an authorized contact, so `StartCallUseCase`'s existing purpose checks still apply to whatever an operator nominates.
 
+## Structured call outcomes
+
+`docs/06` calls this the point where a phone call becomes a business decision, and it is now partially built.
+
+- `validateStructuredResult` in `application/call-outcome.ts` is a **trust boundary, not a formality**. The answer is produced by a language model transcribing a stranger on a telephone and it goes on to drive an approval about money.
+- Undeclared keys are **dropped, not stored**. A model that volunteers extra fields does not get to widen the contract.
+- A value outside a declared `enum` is refused rather than coerced. "maybe" never becomes a decision.
+- A partial answer is kept along with `validationFailed: true`: an operator can act on it, but must know it was partial. Silently discarding the whole outcome would hide that the call happened.
+- **FieldRelay's acceptance rules are deliberately stricter than the schema it sends CALL-E.** `minimum` and `maximum` are enforced locally but stripped by `toProviderSchema` before transmission, because CALL-E's documented feature list omits them and an unrecognised keyword risks the call being rejected outright. If you add a constraint, decide which side of that boundary it belongs on.
+- Transcripts, recordings and the provider's free-text summary are still **not** persisted. Security doc 08 requires access controls and retention rules that do not exist yet.
+- Migration `0006_call_outcomes.sql` stores one outcome per call task, keyed by `call_task_id`, so a redelivered terminal webhook overwrites rather than appending a second opinion.
+
 ## Safety invariants — do not weaken these
 
 1. The call task and its idempotency reservation commit **before** any provider I/O.
