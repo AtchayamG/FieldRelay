@@ -6,6 +6,7 @@ import { MissionControlData, PendingApproval, SystemStateMode } from '../domain/
 import { MetricCardComponent } from '../../../shared/components/metric-card/metric-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { StatusSwitchComponent } from '../../../shared/components/status-switch/status-switch.component';
+import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
@@ -16,7 +17,8 @@ import { Observable } from 'rxjs';
     CommonModule,
     MetricCardComponent,
     StatusBadgeComponent,
-    StatusSwitchComponent
+    StatusSwitchComponent,
+    IconComponent
   ],
   providers: [
     { provide: MissionControlPort, useClass: MissionControlDemoAdapter }
@@ -38,7 +40,8 @@ import { Observable } from 'rxjs';
               class="action-btn primary-btn"
               (click)="onNewIncident()"
             >
-              ⚡ New Incident Alert
+              <fr-icon name="bolt" [size]="16" [strokeWidth]="2" />
+              <span>New Incident Alert</span>
             </button>
           </div>
         </div>
@@ -54,12 +57,14 @@ import { Observable } from 'rxjs';
 
       <!-- Realtime Disconnected Banner -->
       <div class="alert-banner warning-banner" *ngIf="data.stateMode === 'realtime-disconnected'">
-        ⚠️ <strong>Realtime Gateway Disconnected:</strong> Displaying cached operational snapshot. Reconnecting in background...
+        <fr-icon name="alert" [size]="16" />
+        <span><strong>Realtime Gateway Disconnected:</strong> Displaying cached operational snapshot. Reconnecting in background...</span>
       </div>
 
       <!-- Service Degraded Banner -->
       <div class="alert-banner danger-banner" *ngIf="data.stateMode === 'degraded'">
-        🔴 <strong>Partial Service Degradation:</strong> Voice gateway high latency detected. Automated phone call tasks queued for manual review.
+        <fr-icon name="alert" [size]="16" />
+        <span><strong>Partial Service Degradation:</strong> Voice gateway high latency detected. Automated phone call tasks queued for manual review.</span>
       </div>
 
       <!-- Loading State -->
@@ -70,7 +75,7 @@ import { Observable } from 'rxjs';
 
       <!-- Empty State -->
       <div class="empty-state-container" *ngIf="data.stateMode === 'empty'">
-        <div class="empty-icon">✅</div>
+        <fr-icon class="empty-icon" name="check-circle" [size]="44" [strokeWidth]="1.4" />
         <h2>All Operational Queues Clear</h2>
         <p>No active incidents or pending calls at this time.</p>
       </div>
@@ -93,7 +98,7 @@ import { Observable } from 'rxjs';
         <section class="ops-card queue-section">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="card-icon">🚨</span>
+              <fr-icon class="card-icon" name="incidents" [size]="18" />
               <h2 class="card-title">Incident Command Queue</h2>
             </div>
             <span class="badge-count font-mono">{{ data.incidents.length }} Active</span>
@@ -153,7 +158,7 @@ import { Observable } from 'rxjs';
         <section class="ops-card call-mission-section" *ngIf="data.liveCall as call">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="card-icon cyan-pulse">📞</span>
+              <fr-icon class="card-icon cyan-pulse" name="phone-active" [size]="18" />
               <div>
                 <h2 class="card-title">Live CALL-E Mission</h2>
                 <div class="simulated-tag font-mono">
@@ -211,7 +216,7 @@ import { Observable } from 'rxjs';
         <section class="ops-card flow-section">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="card-icon">⚡</span>
+              <fr-icon class="card-icon" name="bolt" [size]="18" />
               <h2 class="card-title">Orchestration Flow</h2>
             </div>
             <span class="badge-count font-mono">INC-2026-9041 Pipeline</span>
@@ -237,7 +242,7 @@ import { Observable } from 'rxjs';
         <section class="ops-card approvals-section">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="card-icon">⚖️</span>
+              <fr-icon class="card-icon" name="approvals" [size]="18" />
               <h2 class="card-title">Pending Human Approvals</h2>
             </div>
             <span class="badge-count font-mono">{{ pendingApprovalCount(data.pendingApprovals) }} Pending</span>
@@ -259,14 +264,16 @@ import { Observable } from 'rxjs';
                   class="btn-approve"
                   (click)="onApprove(app.id)"
                 >
-                  ✓ Approve Expense
+                  <fr-icon name="check" [size]="15" [strokeWidth]="2.2" />
+                  <span>Approve Expense</span>
                 </button>
                 <button
                   type="button"
                   class="btn-reject"
                   (click)="onReject(app.id)"
                 >
-                  ✕ Reject
+                  <fr-icon name="close" [size]="15" [strokeWidth]="2.2" />
+                  <span>Reject</span>
                 </button>
               </div>
               <div class="approval-decided font-mono" *ngIf="app.status !== 'PENDING'" [class.approved]="app.status === 'APPROVED'">
@@ -280,7 +287,7 @@ import { Observable } from 'rxjs';
         <section class="ops-card activity-section">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="card-icon">📜</span>
+              <fr-icon class="card-icon" name="document" [size]="18" />
               <h2 class="card-title">System Activity Log</h2>
             </div>
           </div>
@@ -297,7 +304,7 @@ import { Observable } from 'rxjs';
         <section class="ops-card performance-section">
           <div class="card-header">
             <div class="card-title-group">
-              <span class="card-icon">📊</span>
+              <fr-icon class="card-icon" name="analytics" [size]="18" />
               <h2 class="card-title">Operational Performance</h2>
             </div>
           </div>
@@ -363,6 +370,9 @@ import { Observable } from 'rxjs';
       border-radius: var(--fr-radius-md);
       font-size: 13px;
       font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       cursor: pointer;
       box-shadow: var(--fr-shadow-primary);
       transition: background var(--fr-motion-fast);
@@ -394,6 +404,9 @@ import { Observable } from 'rxjs';
       padding: var(--fr-space-md);
       border-radius: var(--fr-radius-md);
       font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .warning-banner {
       background: var(--fr-color-warning-soft);
@@ -471,7 +484,7 @@ import { Observable } from 'rxjs';
       gap: var(--fr-space-xs);
     }
     .card-icon {
-      font-size: 18px;
+      color: var(--fr-color-primary-bright);
     }
     .card-title {
       font-size: 16px;
@@ -796,6 +809,9 @@ import { Observable } from 'rxjs';
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .btn-reject {
       background: transparent;
@@ -806,6 +822,9 @@ import { Observable } from 'rxjs';
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     .approval-decided {
       font-size: 11px;
