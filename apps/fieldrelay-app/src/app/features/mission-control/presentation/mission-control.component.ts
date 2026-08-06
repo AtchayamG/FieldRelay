@@ -36,7 +36,8 @@ import { Observable } from 'rxjs';
           <div class="header-titles">
             <h1 class="page-title">Mission Control</h1>
             <p class="page-subtitle">
-              Simulated operational picture • Human-approved emergency voice workflows
+              Live operational record • Every figure counted from a stored row • Human-approved
+              voice workflows
             </p>
           </div>
           <div class="header-actions">

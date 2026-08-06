@@ -162,7 +162,11 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
         <div class="auth-footer">
           <p class="security-note">
             <fr-icon name="lock" [size]="13" />
-            <span>Simulated Demo Environment • No real calls are placed</span>
+            <!-- True in both demo and live mode. The previous wording claimed
+                 no real call could ever be placed, which stopped being true the
+                 moment live mode was enabled — and contradicted the call
+                 counter on the next screen. -->
+            <span>Evaluator environment • Calls reach only operator-provisioned numbers</span>
           </p>
           <div class="theme-switch-row">
             <span>Theme Mode:</span>
