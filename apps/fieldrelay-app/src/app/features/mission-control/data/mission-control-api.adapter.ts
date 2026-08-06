@@ -207,9 +207,11 @@ export function buildOrchestration(state: MissionControlState): OrchestrationSte
     {
       stepIndex: 4,
       name: dialled ? 'Call placed' : 'Waiting to dial',
-      description: call.simulated
-        ? 'Placed through the demo adapter. No real line was used.'
-        : 'Placed through the live CALL-E adapter on a real line, opening with a disclosure.',
+      description: !dialled
+        ? 'Reserved and queued. Nothing has been dialled yet.'
+        : call.simulated
+          ? 'Placed through the demo adapter. No real line was used.'
+          : 'Placed through the live CALL-E adapter on a real line, opening with a disclosure.',
       status: dialled ? 'completed' : 'active'
     }
   ];
@@ -247,8 +249,12 @@ export function buildOrchestration(state: MissionControlState): OrchestrationSte
       ? `Returned as structured data, not a transcript: ${call.outcome.fields.join(', ') || 'no fields'}.`
       : unreachable
         ? `The call ended ${call.status.replace(/_/g, ' ')}. No answer was produced.`
-        : 'The call is in progress. Nothing has been returned yet.',
-    status: call.outcome ? 'completed' : unreachable ? 'completed' : settled ? 'completed' : 'active'
+        : dialled
+          ? 'The call is in progress. Nothing has been returned yet.'
+          : 'Nothing has been asked yet.',
+    // Only one step may be the frontier. While the task is still queued the
+    // active marker belongs to the dial, not to a question nobody has asked.
+    status: call.outcome || unreachable || settled ? 'completed' : dialled ? 'active' : 'pending'
   });
 
   steps.push({
