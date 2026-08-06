@@ -29,6 +29,15 @@ Remaining on this track, in order:
 3. **Dispatch** — approved outcome to assigned technician.
 4. Mission Control: wire the metric cards and incident queue to real API data, keeping the orchestration flow and live-mission panel as clearly-labelled illustrations. Approved 2026-07-26. Note that demo-versus-live is a deployment-wide setting, not a per-user one, so mode-based switching would show judges sparse real data instead of the richer picture.
 
+## Winning strategy (2026-08-06)
+
+`docs/WINNING_STRATEGY.md` applies evidence from the UiPath AgentHack 2026 **verified** winner set (14 winners of 203) to FieldRelay. Two findings change priorities:
+
+1. **Seven of fourteen winners led with what their AI would not do.** FieldRelay's refusal inventory is longer than any winner reviewed, and is currently invisible in the product's own voice. Positioning must lead with it.
+2. **The confirmed award winner built a dashboard specifically so judges could see invisible agent work.** FieldRelay's equivalent — Mission Control — still renders demo-adapter data. This makes wiring it to real data the highest-value remaining build, ahead of new routes.
+
+Scored 74.4/100. Every lost point is narrative or demo, not engineering.
+
 ## Highest-priority task
 
 Deploy the judge environment to a public URL and record the testing instructions on the Devpost form. `docker-compose.judge.yml` runs the whole stack and is already configured to be incapable of placing a call. After that: ingest structured call results so the approval and dispatch loop can begin, since that is what turns a completed call into a workflow.

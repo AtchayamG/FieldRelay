@@ -71,4 +71,9 @@
 - Approvals UI: `/approvals` route live in the sidebar and bottom navigation, status filters, each card showing why the decision is required alongside the answer being decided on, an optional operator note recorded against their name, and API refusals surfaced rather than swallowed
 - Seven of fifteen designed routes now built: sign-in, Mission Control, Incidents (list/detail/create), Calls (queue/detail), Settings, Approvals
 - Verification: lint, strict typecheck, 253 API and 116 app tests, production builds — all pass
-- Next: Dispatch, then wire Mission Control metrics and incident queue to real data
+- Winning-strategy research: analysed the UiPath AgentHack 2026 verified winner set (14 of 203 carry Devpost Winner tags) plus the confirmed Most Creative Solution page; recorded in `docs/WINNING_STRATEGY.md` and saved as the reusable `hackathon-winning-strategy` skill
+- Key finding: 7 of 14 winners led their pitch with what their AI refuses to do; FieldRelay's refusal inventory is longer than any winner reviewed but is invisible in the product's own voice
+- Key finding: the confirmed winner built a dashboard expressly so judges could see invisible agent work, and listed HMAC webhook authentication as future work — FieldRelay shipped that weeks ago
+- Scorecard: 74.4/100, with every lost point in narrative and demo rather than engineering
+- Priority change: wiring Mission Control to real data now outranks new routes, because it is the judge-visible surface
+- Next: Mission Control on real data plus a call lifecycle strip, then source problem statistics, then script the golden demo, then Dispatch
