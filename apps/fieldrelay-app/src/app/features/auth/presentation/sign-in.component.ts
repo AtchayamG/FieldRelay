@@ -231,12 +231,14 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
       color: var(--fr-color-muted);
       line-height: 1.4;
     }
+    /* The credentials panel is the first thing an evaluator reads, so it is a
+       proper tray rather than a banner with a coloured stripe. */
     .demo-access-banner {
       background: var(--fr-color-surface2);
-      border: 1px solid var(--fr-color-border);
-      border-left: 4px solid var(--fr-color-primary);
+      border: 1px solid var(--fr-hairline);
       padding: var(--fr-space-md);
-      border-radius: var(--fr-radius-md);
+      border-radius: var(--fr-tray-radius);
+      box-shadow: var(--fr-tray-inner-lip);
       display: flex;
       flex-direction: column;
       gap: var(--fr-space-sm);

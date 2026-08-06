@@ -172,11 +172,17 @@ import { Approval, ApprovalStatus } from '../domain/approval.model';
         border-color: var(--fr-color-primary);
       }
       .list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--fr-space-md); }
+      /* No side-tab. Every card in this list is an approval, so a warning bar on
+         all of them carried no information — it only announced the framework.
+         The reason text above the answer is what actually signals urgency. */
       .card {
-        background: var(--fr-color-surface); border: 1px solid var(--fr-color-border);
-        border-left: 3px solid var(--fr-color-warning); border-radius: var(--fr-radius-lg);
+        background: var(--fr-color-surface); border: 1px solid var(--fr-hairline);
+        border-radius: var(--fr-tray-radius);
+        box-shadow: var(--fr-shadow-tray), var(--fr-tray-inner-lip);
         padding: var(--fr-space-lg); display: grid; gap: var(--fr-space-md);
+        transition: border-color var(--fr-motion-normal) var(--fr-ease);
       }
+      .card:hover { border-color: var(--fr-hairline-strong); }
       .card__head { display: flex; justify-content: space-between; align-items: center; gap: var(--fr-space-md); flex-wrap: wrap; }
       .card__id { font-weight: 700; color: var(--fr-color-text); margin-right: var(--fr-space-sm); }
       .card__status {

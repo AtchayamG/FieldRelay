@@ -24,6 +24,31 @@
   --fr-motion-normal: 200ms;
   --fr-motion-workflow: 280ms;
 
+  /* Machined Graphite ------------------------------------------------------
+     The tray construction. A panel is an outer shell holding an inner core,
+     the way a glass plate sits in a machined aluminium tray. The inner radius
+     is the outer radius minus the shell padding, so the curves stay
+     concentric; eyeballing it reads as a mistake even when nobody can say why. */
+  --fr-tray-pad: 5px;
+  --fr-tray-radius: 16px;
+  --fr-tray-radius-inner: calc(var(--fr-tray-radius) - var(--fr-tray-pad));
+
+  /* Hairlines, not 1px solid gray. A gray border on a tinted surface is the
+     flattest thing in any interface. */
+  --fr-hairline: rgba(16, 18, 22, 0.1);
+  --fr-hairline-strong: rgba(16, 18, 22, 0.16);
+  --fr-tray-shell: rgba(16, 18, 22, 0.04);
+  --fr-tray-inner-lip: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* One easing for the whole product. Never linear, never ease-in-out, never
+     bounce - elastic easing reads as dated and is wrong for instrumentation. */
+  --fr-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Shadows tinted to the canvas hue. A pure-black drop shadow on a tinted
+     surface looks like dirt. */
+  --fr-shadow-tray: 0 1px 2px rgba(28, 32, 40, 0.06), 0 8px 24px -12px rgba(28, 32, 40, 0.14);
+  --fr-shadow-raised: 0 2px 4px rgba(28, 32, 40, 0.08), 0 16px 40px -16px rgba(28, 32, 40, 0.2);
+
   --fr-shell-desktop-sidebar: 270px;
   --fr-shell-tablet-rail: 86px;
   --fr-shell-topbar: 86px;
@@ -86,24 +111,37 @@
 }
 
 [data-theme='dark'] {
-  /* Colors - Dark Theme */
-  --fr-color-bg: #070A13;
-  --fr-color-surface: #0E1422;
-  --fr-color-surface2: #111A2A;
-  --fr-color-surface3: #151F32;
-  --fr-color-border: #24324D;
-  --fr-color-text: #F7F9FF;
-  --fr-color-muted: #91A0B8;
-  --fr-color-primary: #7C3AED;
-  --fr-color-primary-bright: #A855F7;
-  --fr-color-cyan: #06B6D4;
-  --fr-color-success: #14B8A6;
-  --fr-color-warning: #F59E0B;
-  --fr-color-danger: #F43F5E;
-  --fr-color-info: #3B82F6;
+  /* Colors - Dark Theme (Machined Graphite)
+     Neutrals are warm-neutral, not blue-black. The previous palette was tinted
+     toward #070A13, which reads as "tech product"; graphite reads as equipment.
+     Every accent is desaturated one step from its web-default so nothing on the
+     screen glows. */
+  --fr-color-bg: #0B0C0E;
+  --fr-color-surface: #121317;
+  --fr-color-surface2: #16181D;
+  --fr-color-surface3: #1C1F25;
+  --fr-color-border: #262931;
+  --fr-color-text: #F2F0ED;
+  --fr-color-muted: #8B8C8F;
+  --fr-color-primary: #C8894A;
+  --fr-color-primary-bright: #E8A33D;
+  --fr-color-cyan: #5E9EA8;
+  --fr-color-success: #4E9A6B;
+  --fr-color-warning: #C99039;
+  --fr-color-danger: #D4553F;
+  --fr-color-info: #6A8BA8;
 
   /* Machined Graphite signal — see the light-theme note above. */
   --fr-color-signal: #E8A33D;
+
+  /* Tray construction, dark. The shell is a lift out of the canvas rather than
+     a border, and the inner lip is the highlight you get along a machined edge. */
+  --fr-hairline: rgba(255, 255, 255, 0.07);
+  --fr-hairline-strong: rgba(255, 255, 255, 0.12);
+  --fr-tray-shell: rgba(255, 255, 255, 0.035);
+  --fr-tray-inner-lip: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --fr-shadow-tray: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px -14px rgba(0, 0, 0, 0.7);
+  --fr-shadow-raised: 0 2px 6px rgba(0, 0, 0, 0.5), 0 20px 50px -20px rgba(0, 0, 0, 0.8);
 
   /* Semantic Mapping */
   --fr-semantic-healthy: var(--fr-color-success);

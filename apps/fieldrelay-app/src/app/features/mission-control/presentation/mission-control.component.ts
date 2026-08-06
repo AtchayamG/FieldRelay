@@ -515,12 +515,15 @@ import { Observable } from 'rxjs';
     .card-icon {
       color: var(--fr-color-primary-bright);
     }
+    /* The guardrail panel deliberately carries no success-coloured edge. Some of
+       these refusals can be relaxed, and each row reports its own state — a
+       green bar across the whole panel would contradict an amber row inside it. */
     .guardrails {
       margin-top: var(--fr-space-lg);
       background: var(--fr-color-surface);
-      border: 1px solid var(--fr-color-border);
-      border-left: 3px solid var(--fr-color-success);
-      border-radius: var(--fr-radius-lg);
+      border: 1px solid var(--fr-hairline);
+      border-radius: var(--fr-tray-radius);
+      box-shadow: var(--fr-shadow-tray), var(--fr-tray-inner-lip);
       padding: var(--fr-space-lg);
     }
     .guardrails__head {
@@ -746,11 +749,13 @@ import { Observable } from 'rxjs';
         transform: scaleY(0.7);
       }
     }
+    /* Sits inside the mission card, so it uses the inner radius: concentric
+       curves rather than two competing corner scales. */
     .structured-outcome-panel {
       background: var(--fr-color-surface3);
-      border: 1px solid var(--fr-color-border);
-      border-left: 3px solid var(--fr-color-cyan);
-      border-radius: var(--fr-radius-md);
+      border: 1px solid var(--fr-hairline);
+      border-radius: var(--fr-tray-radius-inner);
+      box-shadow: var(--fr-tray-inner-lip);
       padding: var(--fr-space-md);
       display: flex;
       flex-direction: column;
@@ -887,9 +892,9 @@ import { Observable } from 'rxjs';
     }
     .approval-card {
       background: var(--fr-color-surface2);
-      border: 1px solid var(--fr-color-border);
-      border-left: 4px solid var(--fr-color-warning);
-      border-radius: var(--fr-radius-md);
+      border: 1px solid var(--fr-hairline);
+      border-radius: var(--fr-tray-radius-inner);
+      box-shadow: var(--fr-tray-inner-lip);
       padding: var(--fr-space-md);
       display: flex;
       flex-direction: column;

@@ -106,7 +106,10 @@ export interface NavItem {
       top: var(--fr-shell-topbar);
       padding: var(--fr-space-md) var(--fr-space-sm);
       gap: var(--fr-space-lg);
-      transition: width var(--fr-motion-normal);
+      /* Width is not animated. The rail/full switch happens at a media-query
+         breakpoint, so the transition never actually ran on a user action — it
+         only cost a layout-thrashing reflow on resize. Colour still eases. */
+      transition: border-color var(--fr-motion-normal) var(--fr-ease);
       user-select: none;
     }
 
@@ -157,10 +160,27 @@ export interface NavItem {
       color: var(--fr-color-text);
       background: var(--fr-color-surface2);
     }
+    /* The active row is marked by a short signal rule inset into the row, not a
+       slab bolted to its left edge. A full-height coloured border on a nav item
+       is the single most recognisable tell of generated UI, and it also fights
+       the row's own radius. */
     .nav-item.active {
-      color: var(--fr-color-primary-bright);
+      color: var(--fr-color-text);
       background: var(--fr-color-surface3);
-      border-left: 3px solid var(--fr-color-primary);
+      position: relative;
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 2px;
+      height: 14px;
+      border-radius: 1px;
+      background: var(--fr-color-signal);
+      /* Translate rather than animate height, and centre without a magic
+         number that breaks when the row padding changes. */
+      transform: translateY(-50%);
     }
     .nav-item.unavailable {
       cursor: not-allowed;

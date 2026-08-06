@@ -437,9 +437,11 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
        of a primary panel rather than another row in the field grid. */
     .outcome-card {
       background: var(--fr-color-surface);
-      border: 1px solid var(--fr-color-border);
-      border-left: 3px solid var(--fr-color-success);
-      border-radius: var(--fr-radius-lg);
+      border: 1px solid var(--fr-hairline);
+      /* No green side-tab. It read as "this answer is good" on a panel whose
+         whole job is to show an answer that may have failed validation. */
+      border-radius: var(--fr-tray-radius);
+      box-shadow: var(--fr-shadow-tray), var(--fr-tray-inner-lip);
       padding: var(--fr-space-lg);
       display: flex;
       flex-direction: column;
