@@ -1,7 +1,10 @@
 /* Centralized FieldRelay Design Tokens */
 :root, [data-theme='light'] {
-  --fr-font-primary: 'Inter', 'Segoe UI', Arial, sans-serif;
-  --fr-font-technical: 'JetBrains Mono', monospace;
+  /* Geist, not Inter. Inter is the most recognisable typographic tell of
+     generated UI, and Arial/Segoe fallbacks read as an unstyled document.
+     The stack degrades to the platform grotesque rather than to Arial. */
+  --fr-font-primary: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fr-font-technical: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
 
   --fr-radius-sm: 10px;
   --fr-radius-md: 12px;
@@ -43,6 +46,13 @@
   --fr-color-danger: #E11D48;
   --fr-color-info: #2563EB;
   --fr-color-on-accent: #FFFFFF;
+
+  /* Machined Graphite signal. The single accent that carries live state, and
+     the only colour in the logo mark. Deliberately amber rather than the
+     purple-to-cyan gradient this replaced: that gradient is the most
+     recognisable tell of generated UI. Used sparingly enough that when it
+     appears, it means something. */
+  --fr-color-signal: #B5761F;
 
   /* Semantic Mapping */
   --fr-semantic-healthy: var(--fr-color-success);
@@ -91,6 +101,9 @@
   --fr-color-warning: #F59E0B;
   --fr-color-danger: #F43F5E;
   --fr-color-info: #3B82F6;
+
+  /* Machined Graphite signal — see the light-theme note above. */
+  --fr-color-signal: #E8A33D;
 
   /* Semantic Mapping */
   --fr-semantic-healthy: var(--fr-color-success);

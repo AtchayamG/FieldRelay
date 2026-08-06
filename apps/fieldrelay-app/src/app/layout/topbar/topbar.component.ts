@@ -4,23 +4,17 @@ import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { LogoComponent } from '../../shared/components/logo/logo.component';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, IconComponent],
+  imports: [CommonModule, RouterModule, IconComponent, LogoComponent],
   template: `
     <header class="app-topbar" role="banner">
       <div class="topbar-left">
         <a routerLink="/mission-control" class="brand-link" aria-label="FieldRelay Home">
-          <div class="brand-icon">
-            <span class="pulse-ring"></span>
-            <fr-icon class="icon-inner" name="bolt" [size]="18" [strokeWidth]="2" />
-          </div>
-          <div class="brand-text">
-            <span class="brand-name">FIELD<span class="brand-accent">RELAY</span></span>
-            <span class="brand-sub">Neon Ops Enterprise</span>
-          </div>
+          <fr-logo [size]="26" [showWordmark]="true" subtitle="Operations Console" />
         </a>
 
         <div class="live-pill" aria-label="Simulated operations status">
@@ -100,36 +94,19 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
     .brand-link {
       display: flex;
       align-items: center;
-      gap: var(--fr-space-xs);
       text-decoration: none;
-      color: inherit;
+      /* The mark inherits this: strokes and gate are currentColor, so the logo
+         re-themes with the shell instead of carrying its own baked palette. */
+      color: var(--fr-color-text);
+      border-radius: var(--fr-radius-sm);
+      transition: opacity 240ms cubic-bezier(0.32, 0.72, 0, 1);
     }
-    .brand-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: var(--fr-radius-md);
-      background: linear-gradient(135deg, var(--fr-color-primary), var(--fr-color-cyan));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--fr-color-on-accent);
-      font-size: 18px;
-      position: relative;
+    .brand-link:hover {
+      opacity: 0.78;
     }
-    .brand-name {
-      font-weight: 800;
-      font-size: 16px;
-      letter-spacing: 0.5px;
-    }
-    .brand-accent {
-      color: var(--fr-color-primary-bright);
-    }
-    .brand-sub {
-      display: block;
-      font-size: 10px;
-      color: var(--fr-color-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
+    .brand-link:focus-visible {
+      outline: 2px solid var(--fr-color-signal, #e8a33d);
+      outline-offset: 4px;
     }
     .live-pill {
       display: flex;
