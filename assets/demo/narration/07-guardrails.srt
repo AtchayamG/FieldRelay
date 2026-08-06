@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:05,183
+Everything FieldRelay refuses to do, reported live from configuration.
+
+2
+00:00:05,184 --> 00:00:07,191
+Not a marketing list.
+
+3
+00:00:07,192 --> 00:00:09,915
+It won't redial an ambiguous outcome.
+
+4
+00:00:09,916 --> 00:00:13,303
+It can't call a number an operator didn't provision.
+
+5
+00:00:13,304 --> 00:00:17,004
+One authorised task can only ever place one call.
+
+6
+00:00:17,005 --> 00:00:20,377
+And when a guardrail is relaxed, it says so.
+

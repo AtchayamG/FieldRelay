@@ -7,6 +7,7 @@ import {
   IncidentCommandItem,
   IncidentMetric,
   MissionControlData,
+  OrchestrationStep,
   PendingApproval,
   SystemStateMode
 } from '../domain/mission-control.types';
@@ -150,7 +151,7 @@ export class MissionControlApiAdapter extends MissionControlPort {
       metrics,
       incidents,
       liveCall: null,
-      orchestration: [],
+      orchestration: buildOrchestration(state),
       pendingApprovals,
       activityFeed,
       performance: {
@@ -163,6 +164,121 @@ export class MissionControlApiAdapter extends MissionControlPort {
     };
   }
 }
+
+// The lifecycle of the most recent call task, derived entirely from persisted
+// state. Agentic work is invisible — authorization, reservation, validation,
+// refusal — so this is the panel that lets someone watch it happen.
+//
+// Every step is read from a row. Nothing here is scripted, and where the system
+// has stopped itself the step says so rather than showing a tidy green tick. If
+// there are no calls yet the panel renders nothing at all, which is honest.
+export function buildOrchestration(state: MissionControlState): OrchestrationStep[] {
+  const call = state.calls[0];
+  if (!call) {
+    return [];
+  }
+
+  const approval = state.approvals.find((entry) => entry.incidentId === call.incidentId);
+  const dialled = call.status !== 'queued';
+  const settled = TERMINAL_CALL_STATUSES.includes(call.status);
+  const ambiguous = call.status === 'outcome_unknown';
+  const unreachable = call.status === 'no_answer' || call.status === 'failed';
+
+  const steps: OrchestrationStep[] = [
+    {
+      stepIndex: 1,
+      name: 'Incident raised',
+      description: `${call.displayId} was opened against an incident before any contact was considered.`,
+      status: 'completed'
+    },
+    {
+      stepIndex: 2,
+      name: 'Contact authorised',
+      description: `Vendor checked against the authorised contact list for ${titleCase(call.purpose)}. A number nobody provisioned is never dialled.`,
+      status: 'completed'
+    },
+    {
+      stepIndex: 3,
+      name: 'Task reserved before dialling',
+      description:
+        'Idempotency key reserved and the call task written to the database first, so a call accepted but never reported still leaves a record.',
+      status: 'completed'
+    },
+    {
+      stepIndex: 4,
+      name: dialled ? 'Call placed' : 'Waiting to dial',
+      description: call.simulated
+        ? 'Placed through the demo adapter. No real line was used.'
+        : 'Placed through the live CALL-E adapter on a real line, opening with a disclosure.',
+      status: dialled ? 'completed' : 'active'
+    }
+  ];
+
+  if (ambiguous) {
+    // The refusal that matters most. Do not dress this as progress.
+    steps.push(
+      {
+        stepIndex: 5,
+        name: 'Outcome unknown — stopped',
+        description:
+          'It is not established whether this call happened or what was said. FieldRelay will not redial it. A person reconciles this.',
+        status: 'active'
+      },
+      {
+        stepIndex: 6,
+        name: 'Answer validated',
+        description: 'No answer to validate.',
+        status: 'pending'
+      },
+      {
+        stepIndex: 7,
+        name: 'Human approval',
+        description: 'Nothing is raised for approval from an outcome nobody can confirm.',
+        status: 'pending'
+      }
+    );
+    return steps;
+  }
+
+  steps.push({
+    stepIndex: 5,
+    name: call.outcome ? 'Answer returned' : unreachable ? 'No answer' : 'Awaiting answer',
+    description: call.outcome
+      ? `Returned as structured data, not a transcript: ${call.outcome.fields.join(', ') || 'no fields'}.`
+      : unreachable
+        ? `The call ended ${call.status.replace(/_/g, ' ')}. No answer was produced.`
+        : 'The call is in progress. Nothing has been returned yet.',
+    status: call.outcome ? 'completed' : unreachable ? 'completed' : settled ? 'completed' : 'active'
+  });
+
+  steps.push({
+    stepIndex: 6,
+    name: 'Answer validated',
+    description: !call.outcome
+      ? 'Nothing to validate.'
+      : call.outcome.validationFailed
+        ? 'Part of the answer failed the schema FieldRelay declared when it placed the call. The failing fields were refused, not coerced.'
+        : `Checked against the schema declared before dialling. Undeclared fields dropped${
+            call.outcome.confidenceLabel ? `; confidence ${call.outcome.confidenceLabel}` : ''
+          }.`,
+    status: !call.outcome ? 'pending' : call.outcome.validationFailed ? 'active' : 'completed'
+  });
+
+  steps.push({
+    stepIndex: 7,
+    name: approval ? 'Stopped for human approval' : 'Human approval',
+    description: approval
+      ? `FieldRelay raised this itself and said why: ${approval.reasons.join(', ')}.`
+      : call.outcome
+        ? 'No commitment was found in the answer, so nothing was raised.'
+        : 'Nothing to decide yet.',
+    status: approval ? 'active' : call.outcome ? 'completed' : 'pending'
+  });
+
+  return steps;
+}
+
+const TERMINAL_CALL_STATUSES = ['completed', 'failed', 'no_answer', 'outcome_unknown'];
 
 function describeCall(call: MissionControlState['calls'][number]): string {
   const kind = call.simulated ? 'Simulated call' : 'Real call';

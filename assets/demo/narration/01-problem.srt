@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:06,690
+A maintenance request is supposed to be acknowledged in twenty-four hours, and fixed in about forty-eight.
+
+2
+00:00:06,691 --> 00:00:09,751
+Almost none of that is spent fixing anything.
+
+3
+00:00:09,752 --> 00:00:14,154
+It's spent on the phone, chasing vendors who don't pick up.
+

@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:02,057
+FieldRelay stopped.
+
+2
+00:00:02,058 --> 00:00:07,324
+It raised this itself, and it says why: the vendor quoted a price.
+
+3
+00:00:07,325 --> 00:00:11,604
+CALL-E can find out that a job costs thirty-five dollars.
+
+4
+00:00:11,605 --> 00:00:14,426
+Only a person can agree to pay it.
+
+5
+00:00:14,427 --> 00:00:17,832
+That decision is recorded against my name.
+
+6
+00:00:17,833 --> 00:00:27,513
+And if the vendor's answer had changed since this was raised, the system would have refused my approval, because I'd be agreeing to something I never read.
+

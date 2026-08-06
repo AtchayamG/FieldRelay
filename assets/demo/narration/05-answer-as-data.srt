@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:01,863
+Not a transcript.
+
+2
+00:00:01,864 --> 00:00:03,903
+A validated answer.
+
+3
+00:00:03,904 --> 00:00:05,903
+Available: yes.
+
+4
+00:00:05,904 --> 00:00:08,393
+Quoted: thirty-five dollars.
+
+5
+00:00:08,394 --> 00:00:11,547
+Confidence: zero point eight two.
+
+6
+00:00:11,548 --> 00:00:15,735
+Anything the model volunteered that we didn't ask for was dropped.
+
+7
+00:00:15,736 --> 00:00:22,395
+And a value outside the declared options would have been refused, rather than turned into a decision.
+
+8
+00:00:22,396 --> 00:00:24,667
+No transcript is stored.
+
+9
+00:00:24,668 --> 00:00:27,467
+That's deliberate, not missing.
+

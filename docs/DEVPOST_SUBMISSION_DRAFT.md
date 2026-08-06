@@ -101,7 +101,7 @@ Angular · Ionic · TypeScript · NestJS · PostgreSQL · Neon · Vercel · CALL
 
 ## Pre-submission checklist
 
-- [ ] Upstream PR to `CALLE-AI/awesome-phone-call-agents` (**required**, `apps/` area)
+- [x] Upstream PR to `CALLE-AI/awesome-phone-call-agents` — **open**, [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107), contributed to `skills/` as `service-dispatch-call`
 - [ ] Public video under 3 minutes on YouTube or Vimeo
 - [ ] CALL-E account email
 - [ ] Age / country / conflict attestations

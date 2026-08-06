@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:02,514
+That's CALL-E, on a real line.
+
+2
+00:00:02,515 --> 00:00:09,235
+It opens with a disclosure, asks whether they can take the job, when, and roughly what it costs.
+
+3
+00:00:09,236 --> 00:00:12,780
+And it refers to the job only by reference number.
+
+4
+00:00:12,781 --> 00:00:17,039
+The vendor never hears the tenant's name, or their address.
+

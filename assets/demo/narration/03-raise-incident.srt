@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:13,037
+Kitchen sink leak at Oakridge, unit twelve B. FieldRelay authorises the contact, checks the purpose is one this vendor is allowed to be called about, and writes a queued call task to the database before it dials.
+
+2
+00:00:13,038 --> 00:00:17,936
+So if anything fails after this point, the record already exists.
+

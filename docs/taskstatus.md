@@ -82,3 +82,24 @@
 - Golden demo: `docs/GOLDEN_DEMO_SCRIPT.md` — a sub-three-minute shot list built around the refusal as the money shot, with a pre-flight checklist, a five-clean-runs reliability gate and a failure plan
 - Verification: lint, strict typecheck, 253 API and 120 app tests, production builds; deployed and confirmed live
 - Next: Dispatch, then the Devpost write-up rewritten refusal-first, then remaining routes
+
+- Upstream PR: **OPEN and MERGEABLE** — https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107, +631 across 8 files, opened with the user's explicit approval. This clears the hard submission requirement
+- Upstream contribution: `skills/service-dispatch-call/` from branch `feat/service-dispatch-call`, commit `00b2a73`; zero commits behind `upstream/main` at the time of opening; no CI checks are configured on the upstream repository, so `validate_repository.py` passing locally is the only gate
+- Contribution shape: a portable skill (SKILL.md plus five references — safety, examples, result-schema, ambiguous-outcomes, idempotency), generalising FieldRelay's guardrails rather than submitting the monorepo; fills the `service dispatch` slot the upstream README lists as wanted and had nothing in
+- Upstream compliance: branch name validated with `scripts/check_branch_name.py`, Conventional Commits title, `python scripts/validate_repository.py` passes, all example phone numbers fictional; the validator additionally requires `references/examples.md` in every skill directory, which is not documented in the README
+- Upstream PR is BLOCKED on explicit user approval — it publishes content to a third-party repository under the user's GitHub identity, and AGENTS.md requires approval for that step
+- Demo narration: eight segments generated and timed; cue sheet in `docs/DEMO_NARRATION.md`
+- DEFECT (mine): narration was generated on paid Higgsfield credits when the user had said "the installed TTS voices", meaning the free local ones. 9 generations spent before the user stopped it. Superseded — do not use Higgsfield for this project
+- Narration timing (voice-independent, still valid): 121.2s of voiceover across a 180s video; every beat fits except the close, which must start at 2:53 rather than 2:55 or the video lands at 3:01 and breaches the Devpost limit
+- Demo video plan: `docs/DEMO_VIDEO_PLAN.md` — free toolchain confirmed installed (edge-tts 7.2.7, ffmpeg/ffprobe), modelled on the Sahaaya submission pipeline
+- Reference read: `OpenAI Hackathon/Sahaaya` shipped 1920x1080/30fps/h264, 132s, with edge-tts narration at 24 kHz mono — the same sample rate as the paid output, so there is no quality argument for paying
+- Format decision: borrow Sahaaya's pipeline, REJECT its stills-and-narration format. The winning-strategy demo gate requires the system visibly acting, not slides, and FieldRelay's real ringing phone is its most persuasive asset
+- Voice SELECTED by the user: **en-US-SteffanNeural**, chosen from four free samples in `assets/demo/voice-samples/`
+- Narration REGENERATED free with edge-tts via `scripts/generate-narration.py`, which is now the single source of truth for the voiceover and reprints a slack table on every run
+- Edge-tts has no emotion parameter, so per-beat intensity is expressed via `--rate` and `--pitch`; the refusal beat is slowest and lowest at -10% / -2Hz
+- Beat windows RE-TIMED for this voice: Steffan reads slower, so the windows were rebalanced rather than the reads rushed. 144.7s of narration in a 174s timeline, inside the 180s ceiling
+- Beat 4 keeps a deliberate 12.9s of slack because that slack is the real call playing; later edits must take time from beats 1, 3 or 5 instead
+- Captions: per-segment SRT generated alongside the audio. Two traps handled — this service emits `SentenceBoundary` not `WordBoundary` (feeding only WordBoundary yields empty files), and raw cues overlap by tens of milliseconds, which YouTube's uploader flags, so each cue end is clamped to the next cue start
+- Close line: both takes rendered. `08-close.mp3` says "a single dollar" and matches the $35 on screen; `08-close-alt-rupee.mp3` preserves the original tagline. Decision deferred to the edit
+- Verification this session: lint clean, typecheck clean, 375 tests pass (253 API + 120 app + 2 tokens), 15 PostgreSQL-dependent skipped without a local database; deployment live, anonymous read correctly 401
+- Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)

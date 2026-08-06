@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:02,527
+FieldRelay makes those calls.
+
+2
+00:00:02,528 --> 00:00:06,553
+It gets a price and an arrival time back as structured data.
+
+3
+00:00:06,554 --> 00:00:11,190
+And then it refuses to act on any of it until a person says yes.
+

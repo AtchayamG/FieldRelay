@@ -247,14 +247,17 @@ import { Observable } from 'rxjs';
           </div>
         </section>
 
-        <!-- SECTION 4: Orchestration Flow -->
-        <section class="ops-card flow-section">
+        <!-- SECTION 4: Orchestration Flow
+             Read from the most recent real call task. Hidden entirely when there
+             are no calls, because an empty pipeline under a heading looks like a
+             defect and invites a reader to assume the rest is staged too. -->
+        <section class="ops-card flow-section" *ngIf="data.orchestration.length">
           <div class="card-header">
             <div class="card-title-group">
               <fr-icon class="card-icon" name="bolt" [size]="18" />
               <h2 class="card-title">Orchestration Flow</h2>
             </div>
-            <span class="badge-count font-mono">INC-2026-9041 Pipeline</span>
+            <span class="badge-count font-mono">Latest call task</span>
           </div>
 
           <div class="flow-stepper">

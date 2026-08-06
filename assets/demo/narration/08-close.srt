@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:04,709
+FieldRelay makes the calls a property manager doesn't have time to make.
+
+2
+00:00:04,710 --> 00:00:08,566
+And it refuses to commit a single dollar without them.
+
