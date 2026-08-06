@@ -11,6 +11,8 @@ import { requireSigningSecret } from './application/session-token';
 import { SettingsController } from './interfaces/settings.controller';
 import { CallUsageController } from './interfaces/call-usage.controller';
 import { ApprovalController } from './interfaces/approval.controller';
+import { MissionControlController } from './interfaces/mission-control.controller';
+import { GetMissionControlUseCase } from './application/get-mission-control.use-case';
 import { ListApprovalsUseCase } from './application/list-approvals.use-case';
 import { DecideApprovalUseCase } from './application/decide-approval.use-case';
 import {
@@ -89,7 +91,8 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     AuthController,
     SettingsController,
     CallUsageController,
-    ApprovalController
+    ApprovalController,
+    MissionControlController
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
@@ -144,6 +147,17 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
       inject: [DIAL_TARGET_PORT]
     },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
+    {
+      provide: GetMissionControlUseCase,
+      useFactory: (transactions: TransactionPort) =>
+        new GetMissionControlUseCase(
+          transactions,
+          readPriorCallCount(process.env.CALLE_CALLS_PLACED_ELSEWHERE),
+          (process.env.CALL_E_MODE ?? '').trim().toLowerCase() === 'live' ? 'live' : 'demo',
+          runtimeDialTargetChangesAllowed(process.env)
+        ),
+      inject: [TRANSACTION_PORT]
+    },
     {
       provide: ListApprovalsUseCase,
       useFactory: (transactions: TransactionPort) => new ListApprovalsUseCase(transactions),
