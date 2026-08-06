@@ -76,4 +76,9 @@
 - Key finding: the confirmed winner built a dashboard expressly so judges could see invisible agent work, and listed HMAC webhook authentication as future work — FieldRelay shipped that weeks ago
 - Scorecard: 74.4/100, with every lost point in narrative and demo rather than engineering
 - Priority change: wiring Mission Control to real data now outranks new routes, because it is the judge-visible surface
-- Next: Mission Control on real data plus a call lifecycle strip, then source problem statistics, then script the golden demo, then Dispatch
+- Mission Control on real data: `GET /api/v1/mission-control` assembles counts from rows that exist; the activity feed describes what calls actually returned; approve/reject replaced by a link to Approvals so money is never committed from a summary card
+- Guardrail panel shipped — "What FieldRelay refuses to do", reported from live configuration, with relaxed guardrails rendered in warning colour rather than hidden. This is the judge-visible surface the winning pattern calls for
+- Problem evidence: `docs/PROBLEM_EVIDENCE.md` records sourced figures in three confidence tiers, separating professional-body sources from vendor marketing; no FieldRelay time-saving claim is made because none has been measured
+- Golden demo: `docs/GOLDEN_DEMO_SCRIPT.md` — a sub-three-minute shot list built around the refusal as the money shot, with a pre-flight checklist, a five-clean-runs reliability gate and a failure plan
+- Verification: lint, strict typecheck, 253 API and 120 app tests, production builds; deployed and confirmed live
+- Next: Dispatch, then the Devpost write-up rewritten refusal-first, then remaining routes

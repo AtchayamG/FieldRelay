@@ -71,6 +71,16 @@ Winners use one memorable word plus a mechanism-and-contrast tagline. FieldRelay
 
 Every point lost is in **narrative and demo**, not engineering. That is the cheapest kind of gap to close.
 
+## 4a. Status of the three gaps (2026-08-06)
+
+| Gap | State |
+|---|---|
+| Judge-visible surface | **Closed.** Mission Control reads real state and opens with the guardrail panel |
+| Sourced numbers | **Closed.** `docs/PROBLEM_EVIDENCE.md`, tiered by source quality |
+| Rehearsed golden demo | **Scripted**, `docs/GOLDEN_DEMO_SCRIPT.md`. Still needs five clean runs and a fallback recording |
+
+Revised score: **~92/100**, with the remainder resting on rehearsal and the write-up rather than on code.
+
 ## 5. The three gaps
 
 ### Gap 1 — No judge-visible surface (12 points)
