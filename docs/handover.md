@@ -11,7 +11,7 @@ Last updated **2026-08-07**. If you are picking this up cold, read this file, th
 | Live | https://fieldrelay-pi.vercel.app — sign-in pre-filled, one click |
 | Repo | https://github.com/AtchayamG/FieldRelay |
 | Upstream PR | **[#107 — open and mergeable](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107)** |
-| Verification | lint clean, strict typecheck clean, **404 tests** (269 API + 133 app + 2 tokens), production build passes |
+| Verification | lint clean, strict typecheck clean, **410 tests** (275 API + 133 app + 2 tokens), production build passes |
 | Design detector | `npx impeccable detect apps/fieldrelay-app/src` reports **zero** |
 | Deadline | 2026-09-14 23:45 SGT |
 
@@ -53,17 +53,33 @@ There is a general rule in both: **a zero is not the absence of a number, it is 
 
 ## Where the work stands
 
-### Built (8 of 15 designed routes)
+### Built (9 of 15 designed routes)
 
-Sign-in · Mission Control · Incidents list/detail/create · Calls queue/detail · Approvals · **Dispatch Board** · Settings
+Sign-in · Mission Control · Incidents list/detail/create · Calls queue/detail · Approvals · **Dispatch Board** · **Vendors** · Settings
 
 **The loop is now closed end to end:** incident → call → validated answer → human approval → released dispatch. That is the story the demo narrates, and every step of it now exists.
 
 ### Not built — remaining, in priority order
 
-1. **Vendors** — the authorised contact list. Load-bearing for the refusal story, because "will not dial a number no operator provisioned" is currently only visible in config.
-2. **Technicians** — internal roster.
-3. **Analytics** — must report only measured figures. See the performance-panel defect above; do not repeat it.
+1. **Technicians** — internal roster.
+2. **Analytics** — must report only measured figures. See the performance-panel defect above; do not repeat it.
+
+### Vendors, and the invariant it must keep
+
+The screen exists to make two refusals legible without an operator having to trigger a failure: *"will not dial a number nobody provisioned"* and *"a contact authorised for one purpose cannot be called about another."*
+
+- **The endpoint returns whether a number exists, never the number.** `ListVendorsUseCase` coerces the resolver result to a boolean on the line it reads it, so nothing downstream is given the chance to read a digit. A test asserts no digits appear in the response. Do not relax this to "just the last four" — Settings already does that, and this screen has no reason to.
+- **Read-only, permanently.** Authorization is consent given by a vendor and recorded out of band. An endpoint that let an operator grant themselves permission to call somebody would defeat the boundary the screen displays.
+- **Non-callable contacts are shown, not filtered.** They are the evidence. The demo contact set deliberately covers authorised-with-number, authorised-without-number, pending, and revoked, so every refusal path is on screen. Live it reads **1 of 4 callable**.
+
+### Where the dialled number comes from
+
+Two sources, no third. Documented for judges in the README.
+
+1. **`CALLE_DIAL_TARGETS`** — the environment default, format `contactId=+E164|REGION|locale`. Set in Vercel production. Was missing until 2026-08-07, when the deployed default was living only in `runtime_settings` and a database reset would have left no call target at all.
+2. **Settings → Live call target** — the runtime override, gated by `CALLE_ALLOW_RUNTIME_DIAL_TARGET`. **`true` on the public demo** so a judge can point it at their own phone. The README previously claimed this was off; it was wrong and is fixed.
+
+The real number lives in `.env` and Vercel only. It is deliberately not in the repository, and the README documents how to configure without printing it.
 
 ### Dispatch, and why it is built the way it is
 

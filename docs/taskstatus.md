@@ -178,4 +178,20 @@
 - Migration 0008 APPLIED to the deployed Neon database
 - Verification: lint clean, strict typecheck clean, **404 tests** (269 API + 133 app + 2 tokens), production build, detector zero, token checker clean, deployed; live `GET /api/v1/dispatches` returns an empty board and an unknown approval is refused with 404
 - Next: Vendors (load-bearing for the refusal story), then Technicians, then Analytics
+
+## 2026-08-07 (continued) — call-target config, then Vendors
+
+- CALL-TARGET CONFIG CORRECTED: `CALLE_DIAL_TARGETS` was NOT set in Vercel production. The deployed default was living only in the `runtime_settings` table, so a database reset would have left the deployment with no call target at all. Now provisioned in the environment where the architecture always said it belonged, with the database override layered on top
+- README DEFECT FIXED: it claimed runtime dial-target changes were "off on the public demo". Verified against the live API that `runtimeChangesAllowed` is **true** — and deliberately so, since it is how a judge points the system at their own phone. The README was telling evaluators they could not do the one thing the demo exists for
+- README now documents both sources of the number, a per-deployment table of exactly where to change each (local `.env` / Vercel env vars / docker-compose), and what stays true either way. User chose NOT to print the actual digits — a judge wants to enter their own number, not ring the maintainer's, so printing them adds public exposure with no benefit
+- `.env.example` annotated to explain why the public demo sets `CALLE_ALLOW_RUNTIME_DIAL_TARGET=true` while the default is false
+- VENDORS SHIPPED — the authorization boundary is now visible. Two of the strongest refusals were previously provable only by triggering a failure: "will not dial a number nobody provisioned" and "a contact authorised for one purpose cannot be called about another"
+- Each contact shows what it may be called about AND what it is refused for, struck through rather than omitted, with the decisive refusal reason stated ABOVE the permissions. Non-callable contacts are dimmed, never hidden — they are the evidence
+- Demo contact data extended from 2 to 4 entries so every refusal path is represented: authorised-with-number (callable), authorised-but-no-number (reaches nobody), pending, and revoked. A screen showing only working contacts would prove nothing
+- Live result: **1 of 4 callable**, three different stated reasons
+- PRIVACY INVARIANT: the endpoint returns whether a number exists, never the number. The resolver result is coerced to a boolean on the line it is read, so nothing downstream can read a digit, and a test asserts no digits appear in the response
+- Read-only by design. An endpoint that let an operator grant themselves permission to call somebody would defeat the boundary it displays
+- `ContactAuthorizationPort` gained `list()`; three test doubles updated
+- Verification: lint clean, strict typecheck clean, **410 tests** (275 API + 133 app + 2 tokens), production build, detector zero, deployed and verified live
+- Next: Technicians, then Analytics. Analytics must report only measured figures — see the `SLA Compliance (0%)` defect above and do not repeat it
 - Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)
