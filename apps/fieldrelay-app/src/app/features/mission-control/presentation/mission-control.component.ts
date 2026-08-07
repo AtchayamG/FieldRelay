@@ -286,6 +286,18 @@ import { Observable } from 'rxjs';
             <span class="badge-count font-mono">{{ pendingApprovalCount(data.pendingApprovals) }} Pending</span>
           </div>
 
+          <!-- An empty approvals queue is the good state, not a missing one, so
+               it says so rather than leaving a blank panel that reads as a
+               failed fetch. -->
+          <div class="approvals-empty" *ngIf="!data.pendingApprovals.length">
+            <fr-icon name="approvals" [size]="20" />
+            <p class="approvals-empty__title">Nothing is waiting on you</p>
+            <p class="approvals-empty__body">
+              An approval appears here the moment a call comes back with a cost, a
+              commitment, or an answer FieldRelay could not fully validate.
+            </p>
+          </div>
+
           <div class="approvals-list">
             <div class="approval-card" *ngFor="let app of data.pendingApprovals">
               <div class="approval-top">
@@ -329,36 +341,47 @@ import { Observable } from 'rxjs';
           </div>
         </section>
 
-        <!-- SECTION 7: Operational Performance -->
+        <!-- SECTION 7: Operational Performance
+
+             These three rates rendered as "SLA Compliance (0%)" above empty
+             bars. Nothing had measured them — the figure was a struct default.
+             A zero is not the absence of a number, it is a claim, and that one
+             said this system meets its SLA zero percent of the time.
+
+             Rates need a denominator. One incident and one call is not a
+             denominator, so the panel says what it knows and what it does not
+             instead of drawing three empty bars. -->
         <section class="ops-card performance-section">
           <div class="card-header">
             <div class="card-title-group">
               <fr-icon class="card-icon" name="analytics" [size]="18" />
               <h2 class="card-title">Operational Performance</h2>
             </div>
+            <span class="badge-count font-mono">Not yet measurable</span>
           </div>
 
-          <div class="perf-metrics-container font-mono">
-            <div class="perf-bar-group">
-              <div class="perf-label">SLA Compliance ({{ data.performance.slaCompliancePercent }}%)</div>
-              <div class="bar-bg">
-                <div class="bar-fill success" [style.width.%]="data.performance.slaCompliancePercent"></div>
-              </div>
-            </div>
-
-            <div class="perf-bar-group">
-              <div class="perf-label">Automated Resolution ({{ data.performance.automatedResolutionRate }}%)</div>
-              <div class="bar-bg">
-                <div class="bar-fill primary" [style.width.%]="data.performance.automatedResolutionRate"></div>
-              </div>
-            </div>
-
-            <div class="perf-bar-group">
-              <div class="perf-label">Vendor Dispatch Success ({{ data.performance.dispatchSuccessRate }}%)</div>
-              <div class="bar-bg">
-                <div class="bar-fill cyan" [style.width.%]="data.performance.dispatchSuccessRate"></div>
-              </div>
-            </div>
+          <div class="perf-pending">
+            <p class="perf-pending__lead">
+              FieldRelay does not have enough completed work to report a rate.
+            </p>
+            <ul class="perf-pending__list">
+              <li>
+                <span class="perf-pending__metric">SLA compliance</span>
+                needs resolved incidents with a target to compare against.
+              </li>
+              <li>
+                <span class="perf-pending__metric">Automated resolution</span>
+                needs calls that closed without a person intervening.
+              </li>
+              <li>
+                <span class="perf-pending__metric">Vendor dispatch success</span>
+                needs dispatched jobs with a confirmed attendance.
+              </li>
+            </ul>
+            <p class="perf-pending__note">
+              Every other figure on this screen is counted from a stored row. These
+              would have to be invented, so they are not shown.
+            </p>
           </div>
         </section>
       </div>
@@ -890,6 +913,68 @@ import { Observable } from 'rxjs';
       flex-direction: column;
       gap: var(--fr-space-md);
     }
+    .approvals-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      padding: var(--fr-space-lg) 0 var(--fr-space-md);
+      color: var(--fr-color-muted);
+    }
+    .approvals-empty fr-icon {
+      opacity: 0.4;
+      margin-bottom: 2px;
+    }
+    .approvals-empty__title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fr-color-text);
+    }
+    .approvals-empty__body {
+      margin: 0;
+      font-size: 12.5px;
+      line-height: 1.55;
+      max-width: 46ch;
+    }
+
+    .perf-pending {
+      display: flex;
+      flex-direction: column;
+      gap: var(--fr-space-sm);
+    }
+    .perf-pending__lead {
+      margin: 0;
+      font-size: 13px;
+      color: var(--fr-color-text);
+    }
+    .perf-pending__list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--fr-color-muted);
+    }
+    .perf-pending__list li {
+      padding-left: var(--fr-space-sm);
+      border-left: 1px solid var(--fr-hairline);
+    }
+    .perf-pending__metric {
+      color: var(--fr-color-text);
+      font-weight: 500;
+    }
+    .perf-pending__note {
+      margin: 0;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--fr-color-muted);
+      opacity: 0.85;
+    }
+
     .approval-card {
       background: var(--fr-color-surface2);
       border: 1px solid var(--fr-hairline);
