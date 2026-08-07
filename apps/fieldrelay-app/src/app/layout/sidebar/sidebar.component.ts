@@ -279,7 +279,7 @@ export class SidebarComponent implements OnInit {
 
   secondaryNav: NavItem[] = [
     { path: '/technicians', label: 'Technicians', icon: 'technicians' },
-    { path: '/vendors', label: 'Vendors', icon: 'building' },
+    { path: '/vendors', label: 'Vendors', icon: 'building', available: true },
     { path: '/analytics', label: 'Analytics', icon: 'analytics' },
     { path: '/settings', label: 'Settings', icon: 'settings', available: true }
   ];

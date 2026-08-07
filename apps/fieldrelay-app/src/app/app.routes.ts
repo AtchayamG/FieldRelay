@@ -77,6 +77,13 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'vendors',
+        loadComponent: () =>
+          import('./features/vendors/presentation/vendors.component').then(
+            (m) => m.VendorsComponent
+          )
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/presentation/settings.component').then(

@@ -16,6 +16,8 @@ import { GetMissionControlUseCase } from './application/get-mission-control.use-
 import { ListApprovalsUseCase } from './application/list-approvals.use-case';
 import { DecideApprovalUseCase } from './application/decide-approval.use-case';
 import { DispatchController } from './interfaces/dispatch.controller';
+import { VendorController } from './interfaces/vendor.controller';
+import { ListVendorsUseCase } from './application/list-vendors.use-case';
 import {
   AdvanceDispatchUseCase,
   ListDispatchesUseCase,
@@ -99,6 +101,7 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     CallUsageController,
     ApprovalController,
     DispatchController,
+    VendorController,
     MissionControlController
   ],
   providers: [
@@ -154,6 +157,14 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
       inject: [DIAL_TARGET_PORT]
     },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
+    {
+      // Reads the authorization boundary for display. It asks the dial-target
+      // resolver only whether a number exists, never what it is.
+      provide: ListVendorsUseCase,
+      useFactory: (contacts: ContactAuthorizationPort, dialTargets: DialTargetResolverPort) =>
+        new ListVendorsUseCase(contacts, dialTargets),
+      inject: [CONTACT_AUTH_PORT, DIAL_TARGET_PORT]
+    },
     {
       provide: GetMissionControlUseCase,
       useFactory: (transactions: TransactionPort) =>

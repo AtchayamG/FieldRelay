@@ -60,6 +60,7 @@ describe('FieldRelay HTTP API', () => {
       simulated: true
     });
     const contacts: ContactAuthorizationPort = {
+      list: jest.fn().mockResolvedValue([]),
       resolve: jest.fn().mockResolvedValue({
         contactId: 'CNS-4491',
         authorizationStatus: 'authorized',

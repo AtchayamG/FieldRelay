@@ -37,7 +37,7 @@ describe('StartCallUseCase', () => {
       describe: jest.fn().mockReturnValue({ mode: 'demo', simulated: true }),
       startCall: jest.fn()
     };
-    mockContacts = { resolve: jest.fn() };
+    mockContacts = { resolve: jest.fn(), list: jest.fn() };
     mockContacts.resolve.mockResolvedValue({
       contactId: MOCK_CONTACT_ID,
       authorizationStatus: 'authorized',

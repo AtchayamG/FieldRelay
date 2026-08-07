@@ -13,4 +13,9 @@ export interface AuthorizedContact {
 
 export interface ContactAuthorizationPort {
   resolve(contactId: string): Promise<AuthorizedContact | null>;
+  // Reading the whole list is what makes the authorization boundary visible to
+  // an operator instead of buried in configuration. It returns identifiers and
+  // decisions only — the phone number stays behind this boundary, as it does
+  // for resolve().
+  list(): Promise<AuthorizedContact[]>;
 }

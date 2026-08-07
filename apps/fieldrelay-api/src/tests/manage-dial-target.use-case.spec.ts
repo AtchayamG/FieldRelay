@@ -16,6 +16,7 @@ const AUTHORIZED: AuthorizedContact = {
 };
 
 const contacts: ContactAuthorizationPort = {
+  list: async () => [AUTHORIZED],
   resolve: async (contactId) =>
     contactId === 'CNS-4491'
       ? AUTHORIZED
