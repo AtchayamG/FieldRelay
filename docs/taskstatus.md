@@ -194,4 +194,18 @@
 - `ContactAuthorizationPort` gained `list()`; three test doubles updated
 - Verification: lint clean, strict typecheck clean, **410 tests** (275 API + 133 app + 2 tokens), production build, detector zero, deployed and verified live
 - Next: Technicians, then Analytics. Analytics must report only measured figures — see the `SLA Compliance (0%)` defect above and do not repeat it
+
+## 2026-08-07 (final) — Technicians and Analytics; every nav route now works
+
+- TECHNICIANS and ANALYTICS SHIPPED. **There are no disabled navigation items left in the app**
+- Both were the screens most likely to be padded with invented data, so both are built the other way round. Do not "improve" them later by adding figures
+- Technicians derives its roster ENTIRELY from `reportedBy` on incidents that exist. Everyone listed has really done something and every number is a count of rows. Somebody who has not raised an incident does not appear, and the screen states that limitation rather than papering over it with placeholder names
+- The rejected alternative was a seeded list of fictional staff with fictional availability and utilisation bars. It would have filled the screen and meant nothing — the same mistake as `SLA Compliance (0%)`
+- Analytics returns COUNTS and refuses to compute a rate. No percentage, average or projection appears anywhere in the response, and `insights.spec.ts` **fails if a percent sign ever appears in the payload**. That test is the guard against repeating the defect
+- What cannot yet be measured is NAMED alongside what it is waiting on (SLA compliance, automated resolution, time to first contact, dispatch success). A missing metric reads as an oversight; a stated one reads as a boundary
+- Simulated calls counted apart from real ones so they can never inflate a figure about real work; a call that connected but produced an unusable answer counted apart from one that returned nothing, because the remedies differ
+- Both use cases scan with an explicit bound and return `truncated`, so a count that stopped at a page boundary announces itself rather than quietly under-reporting
+- Shared panel styles extracted to `shared-insights.css.ts` rather than duplicated — the two screens are the same construction with different content, and letting them drift would be the first crack in the shape-consistency rule
+- Verification: lint clean, strict typecheck clean, **418 tests** (283 API + 133 app + 2 tokens), production build, detector zero, token checker clean, deployed and verified live
+- REMAINING BEFORE SUBMISSION: record the demo video (still the single largest scoring gap — a full quarter of the official criteria), architecture diagram, gallery screenshots, the Most Valuable Feedback survey, and the user-only items (CALL-E account email, attestations, video upload, final submit)
 - Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)

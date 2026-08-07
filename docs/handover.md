@@ -11,7 +11,7 @@ Last updated **2026-08-07**. If you are picking this up cold, read this file, th
 | Live | https://fieldrelay-pi.vercel.app — sign-in pre-filled, one click |
 | Repo | https://github.com/AtchayamG/FieldRelay |
 | Upstream PR | **[#107 — open and mergeable](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107)** |
-| Verification | lint clean, strict typecheck clean, **410 tests** (275 API + 133 app + 2 tokens), production build passes |
+| Verification | lint clean, strict typecheck clean, **418 tests** (283 API + 133 app + 2 tokens), production build passes |
 | Design detector | `npx impeccable detect apps/fieldrelay-app/src` reports **zero** |
 | Deadline | 2026-09-14 23:45 SGT |
 
@@ -53,16 +53,22 @@ There is a general rule in both: **a zero is not the absence of a number, it is 
 
 ## Where the work stands
 
-### Built (9 of 15 designed routes)
+### Built — every route in the navigation now works
 
-Sign-in · Mission Control · Incidents list/detail/create · Calls queue/detail · Approvals · **Dispatch Board** · **Vendors** · Settings
+Sign-in · Mission Control · Incidents list/detail/create · Calls queue/detail · Approvals · **Dispatch Board** · **Technicians** · **Vendors** · **Analytics** · Settings
 
-**The loop is now closed end to end:** incident → call → validated answer → human approval → released dispatch. That is the story the demo narrates, and every step of it now exists.
+**There are no disabled navigation items left.** The loop is closed end to end: incident → call → validated answer → human approval → released dispatch.
 
-### Not built — remaining, in priority order
+### Technicians and Analytics — why they look sparse, on purpose
 
-1. **Technicians** — internal roster.
-2. **Analytics** — must report only measured figures. See the performance-panel defect above; do not repeat it.
+These were the two screens most likely to be padded with invented data, so both are built the other way round. Do not "improve" them by adding figures.
+
+- **Technicians derives its roster from `reportedBy` on real incidents.** Everyone listed has actually done something; every number is a count of rows. Somebody who has not raised an incident does not appear, and the screen says so. The alternative — a seeded list of fictional staff with availability and utilisation bars — would have filled the screen and meant nothing.
+- **Analytics returns counts and refuses to compute a rate.** No percentage, average or projection appears anywhere in the response, and `insights.spec.ts` **fails if a percent sign ever shows up in the payload**. This is the corrected form of the `SLA Compliance (0%)` defect.
+- **What cannot be measured is named**, with what it is waiting on, because a missing metric reads as an oversight while a stated one reads as a boundary.
+- Simulated calls are counted apart from real ones so they can never inflate a figure about real work, and a call that connected but produced an unusable answer is counted apart from one that returned nothing.
+
+When there is enough history to divide by, add the rate **with its denominator beside it** — never a bare percentage.
 
 ### Vendors, and the invariant it must keep
 
