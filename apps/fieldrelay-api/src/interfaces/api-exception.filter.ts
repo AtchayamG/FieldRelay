@@ -18,6 +18,7 @@ import {
   OperationInProgressError
 } from '../application/errors';
 import { IncidentInvariantError } from '../domain/incident.entity';
+import { DispatchInvariantError } from '../domain/dispatch.entity';
 import { requestIdOf } from './request-context';
 
 // Single place where application and domain errors become HTTP. Keeping the
@@ -74,6 +75,16 @@ export class ApiExceptionFilter implements ExceptionFilter {
     }
     if (exception instanceof NotFoundError) {
       return { status: HttpStatus.NOT_FOUND, code: 'NOT_FOUND', message: exception.message };
+    }
+    // A refused dispatch is a conflict, not a bad request: the request was
+    // well-formed and the caller is not at fault. The state said no — an
+    // approval that was never approved, or a job that has already finished.
+    if (exception instanceof DispatchInvariantError) {
+      return {
+        status: HttpStatus.CONFLICT,
+        code: 'OPERATION_IN_PROGRESS',
+        message: exception.message
+      };
     }
     if (exception instanceof IdempotencyConflictError) {
       return {

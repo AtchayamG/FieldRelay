@@ -15,6 +15,12 @@ import { MissionControlController } from './interfaces/mission-control.controlle
 import { GetMissionControlUseCase } from './application/get-mission-control.use-case';
 import { ListApprovalsUseCase } from './application/list-approvals.use-case';
 import { DecideApprovalUseCase } from './application/decide-approval.use-case';
+import { DispatchController } from './interfaces/dispatch.controller';
+import {
+  AdvanceDispatchUseCase,
+  ListDispatchesUseCase,
+  ReleaseDispatchUseCase
+} from './application/dispatch.use-cases';
 import {
   GetCallUsageUseCase,
   readPriorCallCount
@@ -92,6 +98,7 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     SettingsController,
     CallUsageController,
     ApprovalController,
+    DispatchController,
     MissionControlController
   ],
   providers: [
@@ -166,6 +173,21 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     {
       provide: DecideApprovalUseCase,
       useFactory: (transactions: TransactionPort) => new DecideApprovalUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: ListDispatchesUseCase,
+      useFactory: (transactions: TransactionPort) => new ListDispatchesUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: ReleaseDispatchUseCase,
+      useFactory: (transactions: TransactionPort) => new ReleaseDispatchUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: AdvanceDispatchUseCase,
+      useFactory: (transactions: TransactionPort) => new AdvanceDispatchUseCase(transactions),
       inject: [TRANSACTION_PORT]
     },
     {

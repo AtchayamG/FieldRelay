@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { ApprovalsComponent } from './approvals.component';
 import { ApprovalHttpAdapter } from '../data/approval-http.adapter';
+import { DispatchHttpAdapter } from '../../dispatch/data/dispatch-http.adapter';
 import { Approval } from '../domain/approval.model';
 
 const PENDING: Approval = {
@@ -35,16 +36,24 @@ describe('ApprovalsComponent', () => {
   let fixture: ComponentFixture<ApprovalsComponent>;
   let component: ApprovalsComponent;
   let api: { list: ReturnType<typeof vi.fn>; decide: ReturnType<typeof vi.fn> };
+  let dispatchApi: { release: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     api = {
       list: vi.fn().mockReturnValue(of({ items: [PENDING], nextCursor: null, pendingCount: 1 })),
       decide: vi.fn().mockReturnValue(of({ ...PENDING, status: 'approved' }))
     };
+    dispatchApi = {
+      release: vi.fn().mockReturnValue(of({ id: 'dsp-1', displayId: 'DSP-2042-0001' }))
+    };
 
     await TestBed.configureTestingModule({
       imports: [ApprovalsComponent],
-      providers: [provideRouter([]), { provide: ApprovalHttpAdapter, useValue: api }]
+      providers: [
+        provideRouter([]),
+        { provide: ApprovalHttpAdapter, useValue: api },
+        { provide: DispatchHttpAdapter, useValue: dispatchApi }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ApprovalsComponent);
@@ -59,6 +68,45 @@ describe('ApprovalsComponent', () => {
   it('defaults to the pending queue, which is what an operator opens this for', () => {
     fixture.detectChanges();
     expect(api.list).toHaveBeenCalledWith('pending');
+  });
+
+  it('offers no release control while a decision is still pending', () => {
+    // Releasing sends a vendor. It must not be reachable until somebody has
+    // actually agreed to the cost.
+    expect(text()).not.toContain('Release to vendor');
+  });
+
+  it('offers release only once the decision is approved, and sends only the id', () => {
+    api.list.mockReturnValue(
+      of({
+        items: [{ ...PENDING, status: 'approved', decidedBy: 'ops.demo@fieldrelay.io', decidedAt: '2026-07-26T11:00:00Z' }],
+        nextCursor: null,
+        pendingCount: 0
+      })
+    );
+    component.setStatus('approved');
+
+    expect(text()).toContain('Release to vendor');
+
+    component.release({ ...PENDING, status: 'approved' } as Approval);
+    // The vendor and the amount are read from rows on the server; nothing in
+    // this call can redirect the job somewhere else.
+    expect(dispatchApi.release).toHaveBeenCalledWith(PENDING.id);
+  });
+
+  it('surfaces a refused release rather than pretending the vendor was sent', () => {
+    dispatchApi.release.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 409,
+            error: { error: { message: 'Cannot dispatch against an approval that is rejected.' } }
+          })
+      )
+    );
+
+    component.release({ ...PENDING, status: 'approved' } as Approval);
+    expect(component.decisionError()[PENDING.id]).toContain('rejected');
   });
 
   it('explains why each decision is being asked for', () => {

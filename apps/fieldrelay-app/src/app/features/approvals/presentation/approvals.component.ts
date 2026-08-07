@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
+import { DispatchHttpAdapter } from '../../dispatch/data/dispatch-http.adapter';
 import { ApprovalHttpAdapter } from '../data/approval-http.adapter';
 import { Approval, ApprovalStatus } from '../domain/approval.model';
 
@@ -135,6 +136,24 @@ import { Approval, ApprovalStatus } from '../domain/approval.model';
                   <ng-container *ngIf="approval.decisionNote">— “{{ approval.decisionNote }}”</ng-container>
                 </span>
               </p>
+
+              <!-- Approving records a decision; it does not send anyone. Releasing
+                   the vendor is a separate, deliberate second action, so nobody
+                   travels because a button did two things at once. -->
+              <div class="release" *ngIf="approval.status === 'approved'">
+                <button
+                  type="button"
+                  class="btn btn--release"
+                  [disabled]="releasing() === approval.id"
+                  (click)="release(approval)"
+                >
+                  <fr-icon name="dispatch" [size]="15" [strokeWidth]="2" />
+                  <span>{{ releasing() === approval.id ? 'Releasing…' : 'Release to vendor' }}</span>
+                </button>
+                <span class="release__hint">
+                  Sends this job to the Dispatch Board. Releasing twice cannot send two vendors.
+                </span>
+              </div>
             }
 
             <p class="card__error" *ngIf="decisionError()[approval.id]" role="alert">
@@ -193,6 +212,20 @@ import { Approval, ApprovalStatus } from '../domain/approval.model';
       .card__status--pending { color: var(--fr-color-warning); border-color: var(--fr-color-warning); }
       .card__status--approved { color: var(--fr-color-success); border-color: var(--fr-color-success); }
       .card__status--rejected { color: var(--fr-color-danger); border-color: var(--fr-color-danger); }
+      .release {
+        display: flex; align-items: center; gap: var(--fr-space-sm);
+        flex-wrap: wrap; margin-top: var(--fr-space-xs);
+      }
+      .btn--release {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: var(--fr-color-primary); color: var(--fr-color-on-accent);
+        border: none; padding: 8px 15px; border-radius: var(--fr-radius-sm);
+        font-size: 12.5px; font-weight: 600; cursor: pointer;
+        box-shadow: var(--fr-shadow-primary);
+        transition: background var(--fr-motion-fast) var(--fr-ease);
+      }
+      .btn--release:disabled { opacity: 0.6; cursor: not-allowed; }
+      .release__hint { font-size: 11.5px; color: var(--fr-color-muted); }
       .card__link {
         display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
         color: var(--fr-color-primary-bright); text-decoration: none; font-weight: 600;
@@ -257,6 +290,8 @@ import { Approval, ApprovalStatus } from '../domain/approval.model';
 })
 export class ApprovalsComponent implements OnInit {
   private readonly api = inject(ApprovalHttpAdapter);
+  private readonly dispatchApi = inject(DispatchHttpAdapter);
+  private readonly router = inject(Router);
 
   readonly filters: Array<{ label: string; value: ApprovalStatus }> = [
     { label: 'Pending', value: 'pending' },
@@ -270,6 +305,7 @@ export class ApprovalsComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly deciding = signal<string | null>(null);
+  readonly releasing = signal<string | null>(null);
   readonly notes = signal<Record<string, string>>({});
   readonly decisionError = signal<Record<string, string>>({});
 
@@ -299,6 +335,31 @@ export class ApprovalsComponent implements OnInit {
 
   label(key: string): string {
     return key.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  // Releasing is separate from approving on purpose. Approving records that a
+  // person agreed to the cost; releasing is what actually sends someone. Doing
+  // both on one click would mean a vendor travels the instant a box is ticked.
+  release(approval: Approval): void {
+    this.releasing.set(approval.id);
+    this.decisionError.update((current) => ({ ...current, [approval.id]: '' }));
+
+    this.dispatchApi.release(approval.id).subscribe({
+      next: () => {
+        this.releasing.set(null);
+        void this.router.navigate(['/dispatch']);
+      },
+      error: (error: unknown) => {
+        this.releasing.set(null);
+        this.decisionError.update((current) => ({
+          ...current,
+          [approval.id]:
+            error instanceof HttpErrorResponse
+              ? (error.error?.error?.message ?? 'The job could not be released.')
+              : 'The job could not be released.'
+        }));
+      }
+    });
   }
 
   decide(approval: Approval, decision: 'approved' | 'rejected'): void {

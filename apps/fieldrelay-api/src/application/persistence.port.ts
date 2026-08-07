@@ -2,6 +2,7 @@ import type { Incident, IncidentStatus } from '../domain/incident.entity';
 import type { CallStatus, ProviderCallStatus, CallTask } from '../domain/call-task.entity';
 import type { CallOutcomeRepositoryPort } from './call-outcome';
 import type { ApprovalRepositoryPort } from './approval.port';
+import type { DispatchRepositoryPort } from './dispatch.port';
 
 export const TRANSACTION_PORT = Symbol('TRANSACTION_PORT');
 
@@ -142,6 +143,9 @@ export interface UnitOfWork {
   // An approval is raised in the same transaction as the outcome that triggered
   // it, so a call can never land with a pending decision that nobody recorded.
   approvals: ApprovalRepositoryPort;
+  // A dispatch is the only object here that creates an obligation to pay
+  // someone, and it can only ever come from an approved approval.
+  dispatches: DispatchRepositoryPort;
   audit: AuditEventPort;
   idempotency: IdempotencyStorePort;
 }

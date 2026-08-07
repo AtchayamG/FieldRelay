@@ -27,7 +27,13 @@ import type {
   ApprovalRepositoryPort,
   ListApprovalsQuery
 } from '../../../application/approval.port';
+import type {
+  DispatchPage,
+  DispatchRepositoryPort,
+  ListDispatchesQuery
+} from '../../../application/dispatch.port';
 import { Approval } from '../../../domain/approval.entity';
+import { Dispatch } from '../../../domain/dispatch.entity';
 import { CallTask } from '../../../domain/call-task.entity';
 import { Incident } from '../../../domain/incident.entity';
 
@@ -54,6 +60,8 @@ export class InMemoryDatabase {
   public readonly outcomes = new Map<string, CallOutcome>();
   public readonly approvals: Approval[] = [];
   public approvalDisplaySequence = 0;
+  public readonly dispatches: Dispatch[] = [];
+  public dispatchDisplaySequence = 0;
   public readonly auditEvents: AuditEventInput[] = [];
   public readonly idempotency = new Map<string, StoredIdempotency>();
   public displaySequence = 0;
@@ -91,6 +99,7 @@ class StagedUnitOfWork implements UnitOfWork {
   public readonly callbacks: ProviderCallbackRepositoryPort;
   public readonly outcomes: CallOutcomeRepositoryPort;
   public readonly approvals: ApprovalRepositoryPort;
+  public readonly dispatches: DispatchRepositoryPort;
   public readonly audit: AuditEventPort;
   public readonly idempotency: IdempotencyStorePort;
 
@@ -103,6 +112,7 @@ class StagedUnitOfWork implements UnitOfWork {
     this.callbacks = new InMemoryProviderCallbackRepository(db, stage);
     this.outcomes = new InMemoryCallOutcomeRepository(db, stage);
     this.approvals = new InMemoryApprovalRepository(db, stage);
+    this.dispatches = new InMemoryDispatchRepository(db, stage);
     this.audit = new InMemoryAuditRepository(db, stage);
     this.idempotency = new InMemoryIdempotencyStore(db, stage);
   }
@@ -338,6 +348,78 @@ class InMemoryApprovalRepository implements ApprovalRepositoryPort {
         nextOffset < rows.length
           ? Buffer.from(String(nextOffset)).toString('base64url')
           : null
+    };
+  }
+}
+
+class InMemoryDispatchRepository implements DispatchRepositoryPort {
+  private readonly inserted: Dispatch[] = [];
+  private readonly updated = new Map<string, Dispatch>();
+
+  constructor(
+    private readonly db: InMemoryDatabase,
+    private readonly stage: Stage
+  ) {}
+
+  private all(): Dispatch[] {
+    const byId = new Map(
+      [...this.db.dispatches, ...this.inserted, ...this.updated.values()].map((d) => [d.id, d])
+    );
+    return [...byId.values()];
+  }
+
+  public async nextDisplayId(): Promise<string> {
+    this.db.dispatchDisplaySequence += 1;
+    return `DSP-2042-${String(this.db.dispatchDisplaySequence).padStart(4, '0')}`;
+  }
+
+  public async insert(dispatch: Dispatch): Promise<void> {
+    this.inserted.push(dispatch);
+    this.stage(() => this.db.dispatches.push(dispatch));
+  }
+
+  public async update(dispatch: Dispatch): Promise<void> {
+    this.updated.set(dispatch.id, dispatch);
+    this.stage(() => {
+      const index = this.db.dispatches.findIndex((d) => d.id === dispatch.id);
+      if (index >= 0) {
+        this.db.dispatches[index] = dispatch;
+      } else {
+        this.db.dispatches.push(dispatch);
+      }
+    });
+  }
+
+  public async findById(id: string): Promise<Dispatch | null> {
+    return this.all().find((d) => d.id === id) ?? null;
+  }
+
+  // Mirrors the UNIQUE constraint on approval_id. Both exist: the constraint is
+  // the guarantee, this is what turns a repeat release into a no-op instead of
+  // a database error the user has to read.
+  public async findByApprovalId(approvalId: string): Promise<Dispatch | null> {
+    return this.all().find((d) => d.approvalId === approvalId) ?? null;
+  }
+
+  public async countActive(): Promise<number> {
+    return this.all().filter((d) => d.status !== 'completed' && d.status !== 'cancelled').length;
+  }
+
+  public async list(query: ListDispatchesQuery): Promise<DispatchPage> {
+    let rows = this.all().sort((a, b) => b.dispatchedAt.getTime() - a.dispatchedAt.getTime());
+    if (query.status) {
+      rows = rows.filter((d) => d.status === query.status);
+    }
+    if (query.incidentId) {
+      rows = rows.filter((d) => d.incidentId === query.incidentId);
+    }
+    const offset = query.cursor ? Number(Buffer.from(query.cursor, 'base64url').toString()) : 0;
+    const page = rows.slice(offset, offset + query.limit);
+    const nextOffset = offset + page.length;
+    return {
+      items: page,
+      nextCursor:
+        nextOffset < rows.length ? Buffer.from(String(nextOffset)).toString('base64url') : null
     };
   }
 }

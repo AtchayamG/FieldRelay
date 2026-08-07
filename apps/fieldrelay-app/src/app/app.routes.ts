@@ -70,6 +70,13 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'dispatch',
+        loadComponent: () =>
+          import('./features/dispatch/presentation/dispatch-board.component').then(
+            (m) => m.DispatchBoardComponent
+          )
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/presentation/settings.component').then(

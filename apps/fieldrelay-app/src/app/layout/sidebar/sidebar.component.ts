@@ -273,7 +273,7 @@ export class SidebarComponent implements OnInit {
     },
     { path: '/incidents', label: 'Incidents', icon: 'incidents', available: true },
     { path: '/calls', label: 'Calls & AI Ops', icon: 'phone', available: true },
-    { path: '/dispatch', label: 'Dispatch Board', icon: 'dispatch' },
+    { path: '/dispatch', label: 'Dispatch Board', icon: 'dispatch', available: true },
     { path: '/approvals', label: 'Approvals', icon: 'approvals', available: true }
   ];
 

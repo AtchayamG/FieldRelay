@@ -32,7 +32,13 @@ import type {
   ApprovalRepositoryPort,
   ListApprovalsQuery
 } from '../../../application/approval.port';
+import type {
+  DispatchPage,
+  DispatchRepositoryPort,
+  ListDispatchesQuery
+} from '../../../application/dispatch.port';
 import { Approval, ApprovalReason, ApprovalStatus } from '../../../domain/approval.entity';
+import { Dispatch, DispatchProps } from '../../../domain/dispatch.entity';
 import {
   CallFailureCode,
   CallPurpose,
@@ -103,6 +109,7 @@ export class PgTransactionManager implements TransactionPort {
         callbacks: new PgProviderCallbackRepository(client),
         outcomes: new PgCallOutcomeRepository(client),
         approvals: new PgApprovalRepository(client),
+        dispatches: new PgDispatchRepository(client),
         audit: new PgAuditEventRepository(client),
         idempotency: new PgIdempotencyStore(client)
       });
@@ -439,6 +446,159 @@ class PgApprovalRepository implements ApprovalRepositoryPort {
           : null
     };
   }
+}
+
+class PgDispatchRepository implements DispatchRepositoryPort {
+  constructor(private readonly client: PoolClient) {}
+
+  public async nextDisplayId(): Promise<string> {
+    const result = await this.client.query<{ n: string }>(
+      "SELECT nextval('dispatch_display_seq') AS n"
+    );
+    return `DSP-2042-${String(result.rows[0].n).padStart(4, '0')}`;
+  }
+
+  public async insert(dispatch: Dispatch): Promise<void> {
+    const props = dispatch.toProps();
+    await this.client.query(
+      `INSERT INTO dispatches
+         (id, display_id, incident_id, call_task_id, approval_id, contact_id, status,
+          quoted_amount_text, scheduled_for, dispatched_by, dispatched_at,
+          cancelled_reason, version)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      [
+        props.id,
+        props.displayId,
+        props.incidentId,
+        props.callTaskId,
+        props.approvalId,
+        props.contactId,
+        props.status,
+        props.quotedAmountText,
+        props.scheduledFor,
+        props.dispatchedBy,
+        props.dispatchedAt,
+        props.cancelledReason,
+        props.version
+      ]
+    );
+  }
+
+  public async update(dispatch: Dispatch): Promise<void> {
+    const props = dispatch.toProps();
+    // Optimistic concurrency, same reasoning as approvals: two operators moving
+    // the same job at once must not both succeed, or the board would show a
+    // state neither of them chose.
+    const result = await this.client.query(
+      `UPDATE dispatches
+          SET status = $2, cancelled_reason = $3, scheduled_for = $4, version = $5
+        WHERE id = $1 AND version = $6`,
+      [
+        props.id,
+        props.status,
+        props.cancelledReason,
+        props.scheduledFor,
+        props.version,
+        props.version - 1
+      ]
+    );
+    if (result.rowCount === 0) {
+      throw new Error(`Dispatch ${props.id} was modified concurrently`);
+    }
+  }
+
+  public async findById(id: string): Promise<Dispatch | null> {
+    const result = await this.client.query<DispatchRow>(
+      'SELECT * FROM dispatches WHERE id = $1',
+      [id]
+    );
+    return result.rows[0] ? toDispatch(result.rows[0]) : null;
+  }
+
+  public async findByApprovalId(approvalId: string): Promise<Dispatch | null> {
+    const result = await this.client.query<DispatchRow>(
+      'SELECT * FROM dispatches WHERE approval_id = $1',
+      [approvalId]
+    );
+    return result.rows[0] ? toDispatch(result.rows[0]) : null;
+  }
+
+  public async countActive(): Promise<number> {
+    const result = await this.client.query<{ n: string }>(
+      "SELECT count(*) AS n FROM dispatches WHERE status NOT IN ('completed', 'cancelled')"
+    );
+    return Number(result.rows[0]?.n ?? 0);
+  }
+
+  public async list(query: ListDispatchesQuery): Promise<DispatchPage> {
+    const conditions: string[] = [];
+    const params: unknown[] = [];
+    if (query.status) {
+      params.push(query.status);
+      conditions.push(`status = $${params.length}`);
+    }
+    if (query.incidentId) {
+      params.push(query.incidentId);
+      conditions.push(`incident_id = $${params.length}`);
+    }
+    if (query.cursor) {
+      params.push(new Date(Buffer.from(query.cursor, 'base64url').toString()));
+      conditions.push(`dispatched_at < $${params.length}`);
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    // Newest first: unlike approvals, a dispatch board is read as "what is
+    // happening now", not "what has been waiting longest".
+    params.push(query.limit + 1);
+    const result = await this.client.query<DispatchRow>(
+      `SELECT * FROM dispatches ${where} ORDER BY dispatched_at DESC, id DESC LIMIT $${params.length}`,
+      params
+    );
+
+    const rows = result.rows.slice(0, query.limit);
+    const hasMore = result.rows.length > query.limit;
+    return {
+      items: rows.map(toDispatch),
+      nextCursor:
+        hasMore && rows.length
+          ? Buffer.from(rows[rows.length - 1].dispatched_at.toISOString()).toString('base64url')
+          : null
+    };
+  }
+}
+
+interface DispatchRow {
+  id: string;
+  display_id: string;
+  incident_id: string;
+  call_task_id: string;
+  approval_id: string;
+  contact_id: string;
+  status: string;
+  quoted_amount_text: string | null;
+  scheduled_for: Date | null;
+  dispatched_by: string;
+  dispatched_at: Date;
+  cancelled_reason: string | null;
+  version: number;
+}
+
+function toDispatch(row: DispatchRow): Dispatch {
+  return Dispatch.rehydrate({
+    id: row.id,
+    displayId: row.display_id,
+    incidentId: row.incident_id,
+    callTaskId: row.call_task_id,
+    approvalId: row.approval_id,
+    contactId: row.contact_id,
+    status: row.status as DispatchProps['status'],
+    quotedAmountText: row.quoted_amount_text,
+    scheduledFor: row.scheduled_for,
+    dispatchedBy: row.dispatched_by,
+    dispatchedAt: row.dispatched_at,
+    cancelledReason: row.cancelled_reason,
+    version: row.version
+  });
 }
 
 class PgCallOutcomeRepository implements CallOutcomeRepositoryPort {
