@@ -36,13 +36,13 @@ describe('validateStructuredResult', () => {
     // answer. A model that volunteers extra fields does not get to widen the
     // contract.
     const result = validateStructuredResult(
-      { available: 'yes', tenant_phone_number: '+919094713923', notes: 'call back later' },
+      { available: 'yes', tenant_phone_number: '+919999900000', notes: 'call back later' },
       SCHEMA
     );
 
     expect(result.structuredResult).toEqual({ available: 'yes' });
     expect(result.validationFailed).toBe(true);
-    expect(JSON.stringify(result)).not.toContain('919094713923');
+    expect(JSON.stringify(result)).not.toContain('919999900000');
   });
 
   it('rejects a value outside a declared enum', () => {

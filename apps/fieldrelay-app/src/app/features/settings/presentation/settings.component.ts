@@ -61,7 +61,7 @@ import { DialTargetSettings } from '../domain/dial-target.model';
                 <span>Mobile number (E.164)</span>
                 <input
                   formControlName="phoneE164"
-                  placeholder="+919094713923"
+                  placeholder="+919999900000"
                   autocomplete="off"
                   inputmode="tel"
                 />

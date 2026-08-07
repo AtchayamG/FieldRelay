@@ -33,7 +33,7 @@ function build(runtimeAllowed: boolean) {
 
 const VALID = {
   contactId: 'CNS-4491',
-  phoneE164: '+919094713923',
+  phoneE164: '+919999900000',
   region: 'IN',
   locale: 'en-IN',
   actor: 'ops.demo@fieldrelay.io',
@@ -62,14 +62,14 @@ describe('ManageDialTargetUseCase', () => {
       updatedBy: 'ops.demo@fieldrelay.io'
     });
     // The full number is never returned by the API.
-    expect(view.maskedPhone).toBe('••• ••• 3923');
-    expect(JSON.stringify(view)).not.toContain('919094713923');
+    expect(view.maskedPhone).toBe('••• ••• 0000');
+    expect(JSON.stringify(view)).not.toContain('919999900000');
   });
 
   it('normalises spacing and punctuation in the number', async () => {
     const { settings, useCase } = build(true);
-    await useCase.set({ ...VALID, phoneE164: '+91 (909) 471-3923' });
-    await expect(settings.read()).resolves.toMatchObject({ phoneE164: '+919094713923' });
+    await useCase.set({ ...VALID, phoneE164: '+91 (999) 990-0000' });
+    await expect(settings.read()).resolves.toMatchObject({ phoneE164: '+919999900000' });
   });
 
   it('audits the change without recording the number', async () => {
@@ -81,11 +81,11 @@ describe('ManageDialTargetUseCase', () => {
     );
     // The audit event body is asserted through the metadata contract rather
     // than the store internals; what matters is that the raw number is absent.
-    expect(JSON.stringify(events)).not.toContain('919094713923');
+    expect(JSON.stringify(events)).not.toContain('919999900000');
   });
 
   it.each([
-    ['a non-E.164 number', { phoneE164: '09094713923' }],
+    ['a non-E.164 number', { phoneE164: '09999900000' }],
     ['an empty number', { phoneE164: '' }],
     ['an unsupported region', { region: 'ZZ' }],
     ['a malformed locale', { locale: 'english' }]
@@ -128,7 +128,7 @@ describe('ManageDialTargetUseCase', () => {
 
 describe('maskPhone', () => {
   it('reveals only the last four digits', () => {
-    expect(maskPhone('+919094713923')).toBe('••• ••• 3923');
+    expect(maskPhone('+919999900000')).toBe('••• ••• 0000');
     expect(maskPhone('+6512345678')).not.toContain('1234');
   });
 });
@@ -150,7 +150,7 @@ describe('LayeredDialTargetResolver', () => {
     const settings = new InMemoryDialTargetSettings();
     await settings.write({
       contactId: 'CNS-4491',
-      phoneE164: '+919094713923',
+      phoneE164: '+919999900000',
       region: 'IN',
       locale: 'en-IN',
       updatedAt: new Date(),
@@ -159,7 +159,7 @@ describe('LayeredDialTargetResolver', () => {
 
     const resolver = new LayeredDialTargetResolver(settings, environment);
     await expect(resolver.resolve('CNS-4491')).resolves.toMatchObject({
-      phoneE164: '+919094713923',
+      phoneE164: '+919999900000',
       region: 'IN'
     });
   });
@@ -168,7 +168,7 @@ describe('LayeredDialTargetResolver', () => {
     const settings = new InMemoryDialTargetSettings();
     await settings.write({
       contactId: 'CNS-4491',
-      phoneE164: '+919094713923',
+      phoneE164: '+919999900000',
       region: 'IN',
       locale: 'en-IN',
       updatedAt: new Date(),

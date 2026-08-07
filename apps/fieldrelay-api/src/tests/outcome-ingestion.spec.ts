@@ -50,7 +50,7 @@ async function ingest(structuredResult: unknown, taskCompleted = true) {
       task_completed: taskCompleted,
       completion_confidence: { score: 0.82, label: 'high' },
       summary: 'The vendor can attend tomorrow morning.',
-      recipients: [{ phones: ['+919094713923'], attempts: [{ transcript_turns: [] }] }]
+      recipients: [{ phones: ['+919999900000'], attempts: [{ transcript_turns: [] }] }]
     }
   });
 
@@ -101,7 +101,7 @@ describe('structured outcome ingestion', () => {
       outcome: stored,
       audit: database.auditEvents
     });
-    expect(everythingStored).not.toContain('919094713923');
+    expect(everythingStored).not.toContain('919999900000');
     expect(everythingStored).not.toContain('tomorrow morning');
   });
 

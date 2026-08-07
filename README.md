@@ -20,7 +20,7 @@ The live demo can place a real call to a number you nominate, so you can hear Fi
 
 1. Sign in and open **Settings**.
 2. Under **Live call target**, enter:
-   - **Mobile number** in E.164 form — country code first, e.g. `+14155550123`, `+919094713923`, `+6598765432`. Spaces and dashes are fine.
+   - **Mobile number** in E.164 form — country code first, e.g. `+14155550123`, `+919999900000`, `+6598765432`. Spaces and dashes are fine.
    - **Region** — pick yours from the list. CALL-E supports US, SG, MY, IN, AE, AU, CA, GB, VN, DE, JP, FR, MX, BR, ID, PH and KE.
    - **Language locale** — e.g. `en-US`, `en-IN`, `en-GB`.
    - **Authorized contact** — leave as `CNS-4491`.
