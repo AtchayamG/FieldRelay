@@ -1,4 +1,49 @@
-# Design System — Machined Graphite
+# Design System — Cobalt Ops
+
+> **Correction, 2026-08-07.** An earlier pass ("Machined Graphite") drained this
+> palette to near-greyscale in the name of rationing the accent. That was wrong
+> twice over: it made the product look austere rather than premium, and in an
+> operations console **status colour is functional** — an operator has to tell
+> `CRITICAL` from `DISPATCHED` by hue at a glance, without reading the label.
+> Removing that was a usability regression dressed up as restraint.
+>
+> Colour is back and it has a job. The craft rules below survive unchanged; only
+> the palette section was rewritten. Read `## Palette` for what is current — the
+> Machined Graphite notes are kept only where they explain a rule that still
+> holds.
+
+## Palette
+
+**Cobalt Ops.** Cobalt carries actions, links and focus. The status ramp runs at
+full strength in both themes.
+
+Cobalt specifically, because a screen full of red, amber and green has a
+**blue-shaped hole in it** — the accent never collides with a state colour.
+
+| Role | Light | Dark |
+|---|---|---|
+| Canvas | `#F7F8FA` | `#0C0E13` |
+| Surface | `#FFFFFF` | `#141821` |
+| Text | `#12151C` | `#EDEFF2` |
+| **Action / signal** | `#2563EB` | `#3B7DFF` |
+| Critical | `#D22F3A` | `#F2555A` |
+| Warning | `#B45309` | `#F5A524` |
+| Success | `#12855F` | `#2DC78C` |
+
+Status colours run **brighter in dark theme than in light**. A pill nobody can
+read at a glance is decoration, not information.
+
+`--fr-color-signal` and `--fr-color-primary` are the same family on purpose:
+"the system is working" and "you can act here" should feel related, not like two
+brands.
+
+**What is not coming back:** the purple-to-blue gradient. One flat accent, no
+gradient, no glow. The only accent-tinted shadow is a faint lift under the
+primary button.
+
+---
+
+# Design System — original notes
 
 The committed visual direction for FieldRelay. Any agent touching the UI reads this first.
 
@@ -41,29 +86,19 @@ Applying landing-page rules to a dense ops console is exactly the mistake these 
 | Shadow | Tinted to canvas hue. Never `rgba(0,0,0,·)` |
 | Motion | `cubic-bezier(0.32, 0.72, 0, 1)` |
 
-**The signal colour is rationed.** It marks live state and nothing else. If amber appears on a screen more than twice, something is wrong.
+### Accent discipline, corrected
 
-### Action colour is ink, not signal
+The original rule was "the signal colour is rationed — it marks live state and nothing else." Taken literally it produced a greyscale product, so it now reads:
 
-`--fr-color-primary` fills every primary button in the app and is deliberately **ink** — `#1A1B1F` light, `#EDEBE8` dark.
+**The accent is used deliberately, not sparingly.** It carries actions, links, focus and live state — the things a user acts on or waits for. It does not appear as decoration, and it never appears as a gradient.
 
-It was briefly bronze, which spent the signal amber on "New Incident": a control that is always present and never urgent. That quietly destroys the rationing rule, because once the accent appears on furniture it stops meaning anything when it appears on state. Ink also gives the strongest available contrast on the control users look for most.
+**Status colour is not rationed at all.** It is the fastest channel an operator has, and every status pill should be legible by hue alone.
 
-`--fr-semantic-ai-action` reads from `--fr-color-signal` directly, not from primary — pointing it at primary would render it ink and indistinguishable from ordinary UI.
+### Both themes are one product
 
-### Light theme is the counterpart, not a different product
+The light palette was once missed entirely — only the dark block was converted in the first pass — leaving `#6D28D9` purple and mismatched neutrals behind. Whatever changes in one theme changes in both, in the same commit.
 
-Both themes are warm graphite. The light palette was originally missed — only the dark block was converted in the first pass — leaving `#6D28D9` purple and blue-tinted neutrals behind. A blue-grey light theme beside a warm-graphite dark theme reads as two applications.
-
-| | Light | Dark |
-|---|---|---|
-| Canvas | `#F4F3F1` | `#0B0C0E` |
-| Surface | `#FCFBFA` | `#121317` |
-| Text | `#16171A` | `#F2F0ED` |
-| Signal | `#B5761F` | `#E8A33D` |
-| Action | `#1A1B1F` | `#EDEBE8` |
-
-Shadows in both are tinted to the canvas hue. **Nothing glows** — there is no coloured accent shadow anywhere.
+Shadows in both are tinted to the canvas hue, never pure black. The single exception is a faint accent-tinted lift under the primary button, so the one control users look for sits slightly proud of the page.
 
 ### Never give `var()` a fallback for a token you own
 

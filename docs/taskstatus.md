@@ -144,4 +144,19 @@
 - NEW TOOL: `scripts/check-tokens.mjs` finds referenced-but-undefined CSS custom properties and flags those masked by a `var()` fallback. Written because a fallback hides a typo rather than surfacing it. Currently 66 defined, 57 referenced, all resolving
 - Verified visually on the live deployment in both themes, not just in fixtures
 - Verification: lint clean, strict typecheck clean, 130 app tests, detector zero, token checker clean, deployed and live
+
+## 2026-08-07 (later still) — colour restored, Cobalt Ops
+
+- USER-REPORTED and CORRECT: the app had been reduced to black and white and looked like "an old age black and white movie". This was my error, not a hallucination — a deliberate but wrong design call
+- ROOT CAUSE: I wrote a rule that the accent should be "rationed", then applied it literally. Desaturating every semantic colour and then making primary buttons pure ink drained the product to greyscale with a single amber dot
+- WHY IT WAS WRONG TWICE: austere is not premium, and in an operations console **status colour is functional** — an operator must tell CRITICAL from DISPATCHED by hue at a glance without reading the label. Removing that was a usability regression dressed as restraint
+- DIRECTION SELECTED by the user from three rendered options: **Cobalt Ops**. Cobalt carries actions, links and focus; the status ramp runs at full strength in both themes
+- Cobalt chosen specifically because a screen full of red, amber and green has a blue-shaped hole in it — the accent never collides with a state colour
+- Status colours run brighter in dark theme than light, because a pill nobody can read at a glance is decoration rather than information
+- `--fr-color-signal` and `--fr-color-primary` are deliberately the same family: "the system is working" and "you can act here" should feel related, not like two brands
+- KEPT from the previous passes: the Signal and Gate mark, Geist and Geist Mono, no side-tab borders, concentric tray radii, shadows tinted to the canvas hue, one easing curve, and the honest empty states. Only the palette was rewritten
+- NOT coming back: the purple-to-blue gradient. One flat accent, no gradient, no glow. The single accent-tinted shadow is a faint lift under the primary button
+- Favicon, `theme-color` and the web manifest all moved to the cobalt canvas so the browser chrome matches
+- The accent rule in `docs/DESIGN_SYSTEM.md` now reads "used deliberately, not sparingly", and states explicitly that status colour is not rationed at all
+- Verification: token checker clean (66 defined, 57 referenced), lint clean, strict typecheck clean, 130 app tests, detector zero, deployed and verified visually in both themes
 - Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)
