@@ -16,18 +16,24 @@ Suggested path: Mission Control → Incidents → open an incident → Calls & A
 
 ### Making CALL-E call *your* phone
 
-The live demo can place a real call to a number you nominate, so you can hear FieldRelay work end to end rather than take our word for it.
+**FieldRelay dials exactly one number, and it is always a number somebody deliberately provisioned.** There is no code path that accepts a phone number from a request body, a database row, or a call transcript. That is the point of the product, so it is also the point of this section.
+
+The live demo **ships with a working call target already configured** — a maintainer's phone — so a real call can be placed the moment you sign in, without setting anything up. Settings shows it masked to its last four digits, which is all the API will ever return.
+
+**To make the call ring *your* phone instead** (recommended — hearing it is the whole demo):
 
 1. Sign in and open **Settings**.
 2. Under **Live call target**, enter:
-   - **Mobile number** in E.164 form — country code first, e.g. `+14155550123`, `+919999900000`, `+6598765432`. Spaces and dashes are fine.
+   - **Mobile number** in E.164 form — country code first, e.g. `+14155550123`, `+6598765432`. Spaces and dashes are fine.
    - **Region** — pick yours from the list. CALL-E supports US, SG, MY, IN, AE, AU, CA, GB, VN, DE, JP, FR, MX, BR, ID, PH and KE.
    - **Language locale** — e.g. `en-US`, `en-IN`, `en-GB`.
    - **Authorized contact** — leave as `CNS-4491`.
-3. **Save call target.** Only the last four digits are shown back; the full number is never returned by the API or written to the audit trail.
-4. Go to an incident and start a vendor-availability call. **Your phone will ring**, an AI agent will ask about a fictional plumbing job, and the structured answer comes back on the call record.
+3. **Save call target.** Takes effect on the next call. No redeploy, no restart.
+4. Open an incident and start a vendor-availability call. **Your phone will ring**, an AI agent will ask about a fictional plumbing job, and the validated answer appears on the call record.
 
-Your number replaces the previous target, so each judge can point it at their own phone. Remove it with **Remove** and the call target falls back to the environment configuration.
+Your number replaces the previous target rather than adding to it, so only ever one phone can ring. Press **Remove** and the target falls back to whatever the environment provisioned.
+
+> **This is deliberately a change, not an addition.** FieldRelay will not hold a list of numbers it may call. One target, replaced explicitly by a person, is the only shape that makes "it cannot dial a number nobody provisioned" a claim rather than a slogan.
 
 ### About the call counter
 
@@ -43,12 +49,39 @@ FieldRelay's first real call, including the structured result CALL-E returned, i
 
 Two different numbers are involved, and they are configured in two different places.
 
-**The number being called (the recipient).** FieldRelay owns this. Either:
+**The number being called (the recipient).** FieldRelay owns this. There are exactly two places it can come from, and no third.
 
-- **Settings → Live call target**, in the app, when the deployment sets `CALLE_ALLOW_RUNTIME_DIAL_TARGET=true`. Enter the number in E.164 form with a supported region and the authorized contact it belongs to. Off by default, and off on the public demo, so nobody signing in with the published credentials can point the system at an arbitrary phone.
-- **`CALLE_DIAL_TARGETS`** in the environment, format `contactId=+E164|REGION|locale`. This is the fallback and the only option when runtime changes are disabled.
+#### 1. `CALLE_DIAL_TARGETS` — the environment default
 
-Either way the number is validated, bound to a contact that is authorized for the specific call purpose, masked to its last four digits in every API response, and never written to the audit trail in full.
+```bash
+# Format: contactId=+E164|REGION|locale   (comma-separated for several contacts)
+CALLE_DIAL_TARGETS=CNS-4491=+6512345678|SG|en-SG
+```
+
+This is the provisioned default. It is read at boot, validated as E.164, and the deployment **fails to start** if `CALL_E_MODE=live` and this is malformed — a live deployment with an unusable call target is a worse failure than not starting.
+
+Set it wherever your environment lives:
+
+| Deployment | Where |
+|---|---|
+| Local | `.env` at the repository root (git-ignored) |
+| Vercel | Project → Settings → Environment Variables → `CALLE_DIAL_TARGETS` |
+| Docker | `docker-compose.judge.yml`, or `-e CALLE_DIAL_TARGETS=...` |
+
+The public demo has this set to a maintainer's number, so calls work out of the box.
+
+#### 2. Settings → Live call target — the runtime override
+
+Gated by `CALLE_ALLOW_RUNTIME_DIAL_TARGET`, which is **`false` by default** in `.env.example` and **`true` on the public demo**, deliberately, so a judge can point the system at their own phone without redeploying.
+
+When on, a number entered in Settings takes precedence over `CALLE_DIAL_TARGETS` for the contact it is bound to. It is still validated as E.164, still bound to an authorized contact, and still subject to that contact's allowed purposes. Turning it off is the switch that makes the environment the only authority.
+
+#### What is true of the number either way
+
+- Validated as E.164 before it is stored, never after.
+- Bound to a contact that is authorized **for that specific call purpose** — a contact authorized for status updates cannot be called for vendor availability.
+- **Masked to its last four digits in every API response.** The full number is never returned to the browser.
+- **Never written to the audit trail in full**, and never written to the database from a call outcome. If CALL-E returns a phone number in a structured answer, the webhook boundary drops it; there is a test asserting exactly that.
 
 **The number being called *from* (the caller ID).** CALL-E owns this, not FieldRelay. Configure it in the [CALL-E dashboard](https://dashboard.heycall-e.com) by purchasing a number on the platform or connecting a SIP trunk. Per CALL-E's documentation an existing personal number generally cannot be attached, because of telecom identity verification, and outbound calling requires KYC verification in some regions.
 
