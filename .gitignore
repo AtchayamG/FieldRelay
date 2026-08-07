@@ -36,3 +36,4 @@ __pycache__/
 *.pyc
 .vercel
 .env*
+"assets/demo/.build/"  
