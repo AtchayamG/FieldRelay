@@ -4,8 +4,8 @@
   "description": "Places the maintenance calls a property manager doesn't have time to make, returns the answer as validated data, and refuses to commit anything without a person.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0B0C0E",
-  "theme_color": "#0B0C0E",
+  "background_color": "#0C0E13",
+  "theme_color": "#0C0E13",
   "icons": [
     {
       "src": "/assets/icon-192.png",

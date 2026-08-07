@@ -35,9 +35,9 @@
 
   /* Hairlines, not 1px solid gray. A gray border on a tinted surface is the
      flattest thing in any interface. */
-  --fr-hairline: rgba(16, 18, 22, 0.1);
-  --fr-hairline-strong: rgba(16, 18, 22, 0.16);
-  --fr-tray-shell: rgba(16, 18, 22, 0.04);
+  --fr-hairline: rgba(16, 24, 40, 0.11);
+  --fr-hairline-strong: rgba(16, 24, 40, 0.18);
+  --fr-tray-shell: rgba(16, 24, 40, 0.04);
   --fr-tray-inner-lip: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 
   /* One easing for the whole product. Never linear, never ease-in-out, never
@@ -55,43 +55,41 @@
   --fr-shell-mobile-topbar: 72px;
   --fr-shell-mobile-bottom-nav: 66px;
 
-  /* Colors - Light Theme (Machined Graphite)
-     The counterpart of the dark palette, not a different product. Neutrals are
-     warm graphite rather than the blue-tinted #F4F7FC/#DCE5F2 they replaced —
-     a blue-grey light theme beside a warm-graphite dark theme reads as two
-     different applications.
+  /* Colors - Light Theme (Cobalt Ops)
+     ------------------------------------------------------------------------
+     A previous pass drained this palette to near-greyscale in the name of
+     "rationing" the accent. That was wrong twice over: it made the product
+     look austere rather than premium, and in an operations console status
+     colour is FUNCTIONAL - an operator has to read CRITICAL against
+     DISPATCHED by hue, at a glance, without reading the label.
 
-     There is no purple here. --fr-color-primary was #6D28D9, which survived the
-     first Machined Graphite pass because only the dark block was converted, and
-     it kept leaking the retired identity into light mode. */
-  --fr-color-bg: #F4F3F1;
-  --fr-color-surface: #FCFBFA;
-  --fr-color-surface2: #F0EEEB;
-  --fr-color-surface3: #E8E6E2;
-  --fr-color-border: #DBD8D3;
-  --fr-color-text: #16171A;
-  --fr-color-muted: #63656A;
-  /* Primary is the ACTION colour and it is deliberately ink, not bronze.
-     It fills every primary button in the app, and a bronze fill spent the
-     signal colour on "New Incident" — a button that is always present and
-     never urgent. Signal marks live state; actions are high-contrast neutral.
-     This also gives the strongest possible contrast ratio on the one control
-     the user is most likely to be looking for. */
-  --fr-color-primary: #1A1B1F;
-  --fr-color-primary-bright: #35373D;
-  --fr-color-cyan: #3B7683;
-  --fr-color-success: #3D7A51;
-  --fr-color-warning: #A06C1B;
-  --fr-color-danger: #AE4130;
-  --fr-color-info: #46647E;
-  --fr-color-on-accent: #FCFBFA;
+     So colour is back and it has a job. Cobalt carries actions, links and
+     focus; the status ramp runs at full strength. Cobalt is chosen partly
+     because it never collides with a state colour - a screen full of red,
+     amber and green has a blue-shaped hole in it.
 
-  /* Machined Graphite signal. The single accent that carries live state, and
-     the only colour in the logo mark. Deliberately amber rather than the
-     purple-to-cyan gradient this replaced: that gradient is the most
-     recognisable tell of generated UI. Used sparingly enough that when it
-     appears, it means something. */
-  --fr-color-signal: #B5761F;
+     What we do NOT do is the purple-to-blue gradient this originally replaced.
+     One flat accent, no gradient, no glow. */
+  --fr-color-bg: #F7F8FA;
+  --fr-color-surface: #FFFFFF;
+  --fr-color-surface2: #F1F3F7;
+  --fr-color-surface3: #E7EAF0;
+  --fr-color-border: #DBE0E9;
+  --fr-color-text: #12151C;
+  --fr-color-muted: #5C6373;
+  --fr-color-primary: #2563EB;
+  --fr-color-primary-bright: #3B7DFF;
+  --fr-color-cyan: #0E7490;
+  --fr-color-success: #12855F;
+  --fr-color-warning: #B45309;
+  --fr-color-danger: #D22F3A;
+  --fr-color-info: #2563EB;
+  --fr-color-on-accent: #FFFFFF;
+
+  /* The live-state accent, used for anything CALL-E is doing right now. It is
+     the same family as the action colour on purpose: "the system is working"
+     and "you can act here" should feel related, not like two brands. */
+  --fr-color-signal: #2563EB;
 
   /* Semantic Mapping */
   --fr-semantic-healthy: var(--fr-color-success);
@@ -111,13 +109,14 @@
   --fr-color-cyan-border: color-mix(in srgb, var(--fr-color-cyan) 30%, transparent);
   --fr-color-primary-soft: color-mix(in srgb, var(--fr-color-primary) 15%, transparent);
   --fr-color-success-soft: color-mix(in srgb, var(--fr-color-success) 15%, transparent);
-  /* Tinted to the canvas hue, never pure black. A #000000 shadow on a warm
+  /* Tinted to the canvas hue, never pure black. A #000000 shadow on a tinted
      surface reads as dirt rather than depth. */
-  --fr-shadow-card: 0 1px 2px rgba(28, 26, 22, 0.05), 0 6px 18px -10px rgba(28, 26, 22, 0.12);
-  --fr-shadow-elevated: 0 2px 6px rgba(28, 26, 22, 0.08), 0 18px 44px -18px rgba(28, 26, 22, 0.2);
-  --fr-shadow-bottom-nav: 0 -2px 12px rgba(28, 26, 22, 0.07);
-  /* No coloured accent glow. Nothing in this system glows. */
-  --fr-shadow-primary: 0 1px 2px rgba(28, 26, 22, 0.08), 0 8px 20px -12px rgba(28, 26, 22, 0.22);
+  --fr-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 18px -10px rgba(16, 24, 40, 0.12);
+  --fr-shadow-elevated: 0 2px 6px rgba(16, 24, 40, 0.08), 0 18px 44px -18px rgba(16, 24, 40, 0.18);
+  --fr-shadow-bottom-nav: 0 -2px 12px rgba(16, 24, 40, 0.07);
+  /* The primary button gets a faint accent-tinted lift, so the one control the
+     user is looking for sits slightly proud of the page. Still not a glow. */
+  --fr-shadow-primary: 0 1px 2px rgba(16, 24, 40, 0.1), 0 8px 20px -10px rgba(37, 99, 235, 0.35);
 
   /* Ionic Overrides */
   --ion-background-color: var(--fr-color-bg);
@@ -131,40 +130,41 @@
 }
 
 [data-theme='dark'] {
-  /* Colors - Dark Theme (Machined Graphite)
-     Neutrals are warm-neutral, not blue-black. The previous palette was tinted
-     toward #070A13, which reads as "tech product"; graphite reads as equipment.
-     Every accent is desaturated one step from its web-default so nothing on the
-     screen glows. */
-  --fr-color-bg: #0B0C0E;
-  --fr-color-surface: #121317;
-  --fr-color-surface2: #16181D;
-  --fr-color-surface3: #1C1F25;
-  --fr-color-border: #262931;
-  --fr-color-text: #F2F0ED;
-  --fr-color-muted: #8B8C8F;
-  /* Ink, inverted. See the light-theme note: primary is the action colour and
-     must not spend the signal amber on buttons that are always present. */
-  --fr-color-primary: #EDEBE8;
-  --fr-color-primary-bright: #FFFFFF;
-  --fr-color-on-accent: #0B0C0E;
-  --fr-color-cyan: #5E9EA8;
-  --fr-color-success: #4E9A6B;
-  --fr-color-warning: #C99039;
-  --fr-color-danger: #D4553F;
-  --fr-color-info: #6A8BA8;
+  /* Colors - Dark Theme (Cobalt Ops)
+     Neutrals carry a slight cool cast so cobalt sits in the same world as the
+     surfaces rather than on top of them. Status colours run brighter here than
+     in light theme because they have to hold up against a dark canvas - a
+     status pill nobody can read at a glance is decoration, not information. */
+  --fr-color-bg: #0C0E13;
+  --fr-color-surface: #141821;
+  --fr-color-surface2: #191E28;
+  --fr-color-surface3: #1F2531;
+  --fr-color-border: #2A3140;
+  --fr-color-text: #EDEFF2;
+  --fr-color-muted: #8E96A6;
+  --fr-color-primary: #3B7DFF;
+  --fr-color-primary-bright: #5C95FF;
+  --fr-color-on-accent: #FFFFFF;
+  --fr-color-cyan: #22B8CF;
+  --fr-color-success: #2DC78C;
+  --fr-color-warning: #F5A524;
+  --fr-color-danger: #F2555A;
+  --fr-color-info: #4C8DFF;
 
-  /* Machined Graphite signal — see the light-theme note above. */
-  --fr-color-signal: #E8A33D;
+  /* Live state. Same family as the action colour on purpose. */
+  --fr-color-signal: #4C8DFF;
 
   /* Tray construction, dark. The shell is a lift out of the canvas rather than
-     a border, and the inner lip is the highlight you get along a machined edge. */
-  --fr-hairline: rgba(255, 255, 255, 0.07);
-  --fr-hairline-strong: rgba(255, 255, 255, 0.12);
+     a border, and the inner lip is the highlight along a machined edge. */
+  --fr-hairline: rgba(255, 255, 255, 0.08);
+  --fr-hairline-strong: rgba(255, 255, 255, 0.14);
   --fr-tray-shell: rgba(255, 255, 255, 0.035);
   --fr-tray-inner-lip: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --fr-shadow-tray: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px -14px rgba(0, 0, 0, 0.7);
   --fr-shadow-raised: 0 2px 6px rgba(0, 0, 0, 0.5), 0 20px 50px -20px rgba(0, 0, 0, 0.8);
+  --fr-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --fr-shadow-elevated: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px -18px rgba(0, 0, 0, 0.7);
+  --fr-shadow-primary: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 22px -10px rgba(59, 125, 255, 0.45);
 
   /* Semantic Mapping */
   --fr-semantic-healthy: var(--fr-color-success);

@@ -297,9 +297,12 @@ import {
       padding: 10px 18px;
       border-radius: var(--fr-radius-md);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       text-decoration: none;
       cursor: pointer;
+      box-shadow: var(--fr-shadow-primary);
+      transition: background var(--fr-motion-fast) var(--fr-ease),
+        transform var(--fr-motion-fast) var(--fr-ease);
       box-shadow: var(--fr-shadow-primary);
       transition: background var(--fr-motion-fast);
     }
