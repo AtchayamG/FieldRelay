@@ -55,22 +55,30 @@
   --fr-shell-mobile-topbar: 72px;
   --fr-shell-mobile-bottom-nav: 66px;
 
-  /* Colors - Light Theme */
-  --fr-color-bg: #F4F7FC;
-  --fr-color-surface: #FFFFFF;
-  --fr-color-surface2: #F9FBFF;
-  --fr-color-surface3: #F1F5FB;
-  --fr-color-border: #DCE5F2;
-  --fr-color-text: #111827;
-  --fr-color-muted: #5E6B82;
-  --fr-color-primary: #6D28D9;
-  --fr-color-primary-bright: #8B5CF6;
-  --fr-color-cyan: #0891B2;
-  --fr-color-success: #0F9F8E;
-  --fr-color-warning: #D97706;
-  --fr-color-danger: #E11D48;
-  --fr-color-info: #2563EB;
-  --fr-color-on-accent: #FFFFFF;
+  /* Colors - Light Theme (Machined Graphite)
+     The counterpart of the dark palette, not a different product. Neutrals are
+     warm graphite rather than the blue-tinted #F4F7FC/#DCE5F2 they replaced —
+     a blue-grey light theme beside a warm-graphite dark theme reads as two
+     different applications.
+
+     There is no purple here. --fr-color-primary was #6D28D9, which survived the
+     first Machined Graphite pass because only the dark block was converted, and
+     it kept leaking the retired identity into light mode. */
+  --fr-color-bg: #F4F3F1;
+  --fr-color-surface: #FCFBFA;
+  --fr-color-surface2: #F0EEEB;
+  --fr-color-surface3: #E8E6E2;
+  --fr-color-border: #DBD8D3;
+  --fr-color-text: #16171A;
+  --fr-color-muted: #63656A;
+  --fr-color-primary: #8A5A1C;
+  --fr-color-primary-bright: #B5761F;
+  --fr-color-cyan: #3B7683;
+  --fr-color-success: #3D7A51;
+  --fr-color-warning: #A06C1B;
+  --fr-color-danger: #AE4130;
+  --fr-color-info: #46647E;
+  --fr-color-on-accent: #FCFBFA;
 
   /* Machined Graphite signal. The single accent that carries live state, and
      the only colour in the logo mark. Deliberately amber rather than the
@@ -94,10 +102,13 @@
   --fr-color-cyan-border: color-mix(in srgb, var(--fr-color-cyan) 30%, transparent);
   --fr-color-primary-soft: color-mix(in srgb, var(--fr-color-primary) 15%, transparent);
   --fr-color-success-soft: color-mix(in srgb, var(--fr-color-success) 15%, transparent);
-  --fr-shadow-card: 0 2px 8px color-mix(in srgb, #000000 4%, transparent);
-  --fr-shadow-elevated: 0 12px 32px color-mix(in srgb, #000000 15%, transparent);
-  --fr-shadow-bottom-nav: 0 -4px 12px color-mix(in srgb, #000000 8%, transparent);
-  --fr-shadow-primary: 0 4px 12px color-mix(in srgb, var(--fr-color-primary) 30%, transparent);
+  /* Tinted to the canvas hue, never pure black. A #000000 shadow on a warm
+     surface reads as dirt rather than depth. */
+  --fr-shadow-card: 0 1px 2px rgba(28, 26, 22, 0.05), 0 6px 18px -10px rgba(28, 26, 22, 0.12);
+  --fr-shadow-elevated: 0 2px 6px rgba(28, 26, 22, 0.08), 0 18px 44px -18px rgba(28, 26, 22, 0.2);
+  --fr-shadow-bottom-nav: 0 -2px 12px rgba(28, 26, 22, 0.07);
+  /* No coloured accent glow. Nothing in this system glows. */
+  --fr-shadow-primary: 0 1px 2px rgba(28, 26, 22, 0.08), 0 8px 20px -12px rgba(28, 26, 22, 0.22);
 
   /* Ionic Overrides */
   --ion-background-color: var(--fr-color-bg);

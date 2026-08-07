@@ -84,7 +84,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
         flex: none;
       }
       .mark-origin {
-        fill: var(--fr-color-signal, #e8a33d);
+        fill: var(--fr-color-signal);
       }
       .mark-wave {
         stroke: currentColor;
@@ -104,11 +104,16 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
         min-width: 0;
         line-height: 1;
       }
+      /* These read from the real token names. An earlier version referenced
+         --fr-color-text-primary and --fr-color-text-tertiary, which do not
+         exist in this system, so both silently fell back to their hardcoded
+         near-white defaults and the wordmark was invisible in light theme.
+         A var() fallback hides a typo instead of surfacing it. */
       .word-name {
         font-size: 13px;
         font-weight: 600;
         letter-spacing: 0.11em;
-        color: var(--fr-color-text-primary, #f2f0ed);
+        color: var(--fr-color-text);
         white-space: nowrap;
       }
       .word-sub {
@@ -117,7 +122,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
         font-weight: 500;
         letter-spacing: 0.16em;
         text-transform: uppercase;
-        color: var(--fr-color-text-tertiary, #6e6f73);
+        color: var(--fr-color-muted);
         white-space: nowrap;
       }
 

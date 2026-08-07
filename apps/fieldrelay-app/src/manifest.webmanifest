@@ -1,11 +1,11 @@
 {
-  "name": "FieldRelay Ops",
+  "name": "FieldRelay Operations Console",
   "short_name": "FieldRelay",
-  "description": "Autonomous Field Operations Mission Control",
+  "description": "Places the maintenance calls a property manager doesn't have time to make, returns the answer as validated data, and refuses to commit anything without a person.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#070A13",
-  "theme_color": "#7C3AED",
+  "background_color": "#0B0C0E",
+  "theme_color": "#0B0C0E",
   "icons": [
     {
       "src": "/assets/icon-192.png",
