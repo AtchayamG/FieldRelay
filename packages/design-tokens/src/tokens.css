@@ -71,8 +71,14 @@
   --fr-color-border: #DBD8D3;
   --fr-color-text: #16171A;
   --fr-color-muted: #63656A;
-  --fr-color-primary: #8A5A1C;
-  --fr-color-primary-bright: #B5761F;
+  /* Primary is the ACTION colour and it is deliberately ink, not bronze.
+     It fills every primary button in the app, and a bronze fill spent the
+     signal colour on "New Incident" — a button that is always present and
+     never urgent. Signal marks live state; actions are high-contrast neutral.
+     This also gives the strongest possible contrast ratio on the one control
+     the user is most likely to be looking for. */
+  --fr-color-primary: #1A1B1F;
+  --fr-color-primary-bright: #35373D;
   --fr-color-cyan: #3B7683;
   --fr-color-success: #3D7A51;
   --fr-color-warning: #A06C1B;
@@ -91,7 +97,10 @@
   --fr-semantic-healthy: var(--fr-color-success);
   --fr-semantic-waiting: var(--fr-color-warning);
   --fr-semantic-critical: var(--fr-color-danger);
-  --fr-semantic-ai-action: var(--fr-color-primary);
+  /* AI action is a live state, so it reads from signal rather than from the
+     action colour. Pointing it at primary made it ink and indistinguishable
+     from ordinary UI. */
+  --fr-semantic-ai-action: var(--fr-color-signal);
   --fr-semantic-live-comm: var(--fr-color-cyan);
   --fr-semantic-in-progress: var(--fr-color-info);
   --fr-color-danger-soft: color-mix(in srgb, var(--fr-color-danger) 15%, transparent);
@@ -134,8 +143,11 @@
   --fr-color-border: #262931;
   --fr-color-text: #F2F0ED;
   --fr-color-muted: #8B8C8F;
-  --fr-color-primary: #C8894A;
-  --fr-color-primary-bright: #E8A33D;
+  /* Ink, inverted. See the light-theme note: primary is the action colour and
+     must not spend the signal amber on buttons that are always present. */
+  --fr-color-primary: #EDEBE8;
+  --fr-color-primary-bright: #FFFFFF;
+  --fr-color-on-accent: #0B0C0E;
   --fr-color-cyan: #5E9EA8;
   --fr-color-success: #4E9A6B;
   --fr-color-warning: #C99039;
@@ -158,7 +170,10 @@
   --fr-semantic-healthy: var(--fr-color-success);
   --fr-semantic-waiting: var(--fr-color-warning);
   --fr-semantic-critical: var(--fr-color-danger);
-  --fr-semantic-ai-action: var(--fr-color-primary);
+  /* AI action is a live state, so it reads from signal rather than from the
+     action colour. Pointing it at primary made it ink and indistinguishable
+     from ordinary UI. */
+  --fr-semantic-ai-action: var(--fr-color-signal);
   --fr-semantic-live-comm: var(--fr-color-cyan);
   --fr-semantic-in-progress: var(--fr-color-info);
 
