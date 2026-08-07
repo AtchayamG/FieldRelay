@@ -159,4 +159,23 @@
 - Favicon, `theme-color` and the web manifest all moved to the cobalt canvas so the browser chrome matches
 - The accent rule in `docs/DESIGN_SYSTEM.md` now reads "used deliberately, not sparingly", and states explicitly that status colour is not rationed at all
 - Verification: token checker clean (66 defined, 57 referenced), lint clean, strict typecheck clean, 130 app tests, detector zero, deployed and verified visually in both themes
+
+## 2026-08-07 (later still) — privacy defect, then Dispatch Board
+
+- PRIVACY DEFECT FOUND AND FIXED: a real personal mobile number was the placeholder in the Settings call-target input, so it rendered in full on the PUBLIC deployment. It was also in the README and four test fixtures in a PUBLIC repository. AGENTS.md forbids committing personal phone numbers
+- Replaced everywhere with `+919999900000`; the 99999 prefix is not an assignable Indian mobile range so the fixture cannot ring anyone. Three masking assertions updated to the new last four digits
+- `.env` deliberately still holds the real number — it is git-ignored and is the legitimate place for the live dial target
+- DISCLOSED to the user: four commits carry the number in public git history (`f4153f6`, `8052a86`, `836ccd6`, `72b9c1d`). User decision: **leave history as-is**
+- DISPATCH BOARD SHIPPED — the loop is closed. An approved decision now becomes a vendor who is actually coming
+- Dispatch is the only object in the domain that creates an obligation to pay someone, so it is the most guarded: everything before it is reversible, and a vendor who has been told to attend cannot be un-told
+- Refusals it exists for: cannot be created against a pending or rejected approval; one approval releases exactly one dispatch, enforced by a UNIQUE constraint on `approval_id` rather than an application check that would be a race; cannot skip a lifecycle step or move a job that already finished; cancelling must record why
+- The vendor, incident and quoted amount are read from rows, never the request body, so nothing a caller sends can redirect a dispatch to a vendor who was never called
+- The quoted amount is carried forward exactly as spoken and never parsed — a dollar figure with a caveat has no correct numeric reading — and is dropped entirely when the answer failed validation. The audit records that a price existed, never the price
+- Releasing is deliberately a SECOND action, separate from approving. Approving records that a person agreed to a cost; releasing is what sends someone. One click doing both would mean a vendor travels the instant a box is ticked
+- New: `domain/dispatch.entity.ts`, `application/dispatch.port.ts`, `application/dispatch.use-cases.ts`, `interfaces/dispatch.controller.ts`, both repositories, migration `0008_dispatches.sql`, plus the Angular feature slice and the `/dispatch` route. Sidebar item enabled
+- `DispatchInvariantError` maps to HTTP 409, not 400: the request was well-formed and the caller is not at fault — the state said no
+- NEW TOOL: `scripts/apply-migration.mjs`. Prefers `.vercel/.env.production` over `.env`, because `.env` points at localhost and the deployed database lives in Vercel — applying to production is now explicit rather than an accident of file order
+- Migration 0008 APPLIED to the deployed Neon database
+- Verification: lint clean, strict typecheck clean, **404 tests** (269 API + 133 app + 2 tokens), production build, detector zero, token checker clean, deployed; live `GET /api/v1/dispatches` returns an empty board and an unknown approval is refused with 404
+- Next: Vendors (load-bearing for the refusal story), then Technicians, then Analytics
 - Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)

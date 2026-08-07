@@ -11,7 +11,7 @@ Last updated **2026-08-07**. If you are picking this up cold, read this file, th
 | Live | https://fieldrelay-pi.vercel.app — sign-in pre-filled, one click |
 | Repo | https://github.com/AtchayamG/FieldRelay |
 | Upstream PR | **[#107 — open and mergeable](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107)** |
-| Verification | lint clean, strict typecheck clean, **385 tests** (253 API + 130 app + 2 tokens), production build passes |
+| Verification | lint clean, strict typecheck clean, **404 tests** (269 API + 133 app + 2 tokens), production build passes |
 | Design detector | `npx impeccable detect apps/fieldrelay-app/src` reports **zero** |
 | Deadline | 2026-09-14 23:45 SGT |
 
@@ -53,16 +53,28 @@ There is a general rule in both: **a zero is not the absence of a number, it is 
 
 ## Where the work stands
 
-### Built (7 of 15 designed routes)
+### Built (8 of 15 designed routes)
 
-Sign-in · Mission Control · Incidents list/detail/create · Calls queue/detail · Approvals · Settings
+Sign-in · Mission Control · Incidents list/detail/create · Calls queue/detail · Approvals · **Dispatch Board** · Settings
 
-### Not built — the 4 the user has asked for next, in priority order
+**The loop is now closed end to end:** incident → call → validated answer → human approval → released dispatch. That is the story the demo narrates, and every step of it now exists.
 
-1. **Dispatch Board** — highest value. Closes the loop the demo narrates: an approved outcome becomes an assigned job. Needs a backend endpoint.
-2. **Vendors** — the authorised contact list. Load-bearing for the refusal story, because "will not dial a number no operator provisioned" is currently only visible in config.
-3. **Technicians** — internal roster.
-4. **Analytics** — must report only measured figures. See the performance-panel defect above; do not repeat it.
+### Not built — remaining, in priority order
+
+1. **Vendors** — the authorised contact list. Load-bearing for the refusal story, because "will not dial a number no operator provisioned" is currently only visible in config.
+2. **Technicians** — internal roster.
+3. **Analytics** — must report only measured figures. See the performance-panel defect above; do not repeat it.
+
+### Dispatch, and why it is built the way it is
+
+Dispatch is the only object in the domain that creates an obligation to pay someone. Everything before it is reversible; a vendor who has been told to attend cannot be un-told. Read `domain/dispatch.entity.ts` before changing anything here.
+
+- It **cannot exist** against a pending or rejected approval.
+- **One approval releases exactly one dispatch**, enforced by a `UNIQUE` constraint on `approval_id`. An application-level check would be a race; both exist, and the lookup only turns a repeat into a no-op instead of a database error.
+- The **vendor is read from the call task**, never the request body. Nothing a caller sends can redirect a job to a vendor who was never called.
+- The **quoted amount is never parsed.** It is carried as spoken, dropped entirely if the answer failed validation, and never written to the audit trail — only whether one existed.
+- **Releasing is a separate action from approving.** Approving records agreement to a cost; releasing sends someone. One click doing both would mean a vendor travels the instant a box is ticked.
+- `DispatchInvariantError` is a **409, not a 400** — the request was well-formed, the state said no.
 
 ### Agreed sequence (user-approved 2026-08-07)
 
