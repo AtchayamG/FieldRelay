@@ -84,6 +84,20 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'technicians',
+        loadComponent: () =>
+          import('./features/insights/presentation/technicians.component').then(
+            (m) => m.TechniciansComponent
+          )
+      },
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import('./features/insights/presentation/analytics.component').then(
+            (m) => m.AnalyticsComponent
+          )
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/presentation/settings.component').then(

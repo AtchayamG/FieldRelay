@@ -18,6 +18,9 @@ import { DecideApprovalUseCase } from './application/decide-approval.use-case';
 import { DispatchController } from './interfaces/dispatch.controller';
 import { VendorController } from './interfaces/vendor.controller';
 import { ListVendorsUseCase } from './application/list-vendors.use-case';
+import { InsightsController } from './interfaces/insights.controller';
+import { GetAnalyticsUseCase } from './application/get-analytics.use-case';
+import { ListTechniciansUseCase } from './application/list-technicians.use-case';
 import {
   AdvanceDispatchUseCase,
   ListDispatchesUseCase,
@@ -102,6 +105,7 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
     ApprovalController,
     DispatchController,
     VendorController,
+    InsightsController,
     MissionControlController
   ],
   providers: [
@@ -164,6 +168,16 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
       useFactory: (contacts: ContactAuthorizationPort, dialTargets: DialTargetResolverPort) =>
         new ListVendorsUseCase(contacts, dialTargets),
       inject: [CONTACT_AUTH_PORT, DIAL_TARGET_PORT]
+    },
+    {
+      provide: GetAnalyticsUseCase,
+      useFactory: (transactions: TransactionPort) => new GetAnalyticsUseCase(transactions),
+      inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: ListTechniciansUseCase,
+      useFactory: (transactions: TransactionPort) => new ListTechniciansUseCase(transactions),
+      inject: [TRANSACTION_PORT]
     },
     {
       provide: GetMissionControlUseCase,
