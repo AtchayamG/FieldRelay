@@ -132,4 +132,16 @@
 - Verification: lint clean, strict typecheck clean, **385 tests** (253 API + 130 app + 2 tokens), production build passes, detector zero, deployed and live at https://fieldrelay-pi.vercel.app
 - Next, in order: rebuild remaining existing screens onto the tray construction → Dispatch Board → Vendors → Technicians → Analytics → polish → record the demo
 - STILL THE LARGEST GAP: the demo video, a full quarter of the official judging criteria, remains unrecorded
+
+## 2026-08-07 (later) — light theme repair
+
+- USER-REPORTED: the app name was invisible in the light-theme header, and retired neon purple was still showing in places. Both confirmed and fixed
+- ROOT CAUSE 1 (wordmark): the logo referenced `--fr-color-text-primary` and `--fr-color-text-tertiary`, neither of which exists in this system, each with a hardcoded near-white `var()` fallback. The fallback did its job silently and painted white text on a white header. Now reads `--fr-color-text` and `--fr-color-muted`
+- ROOT CAUSE 2 (purple): only the DARK token block was converted in the first Machined Graphite pass. The light block still carried `#6D28D9` primary, `#8B5CF6` primary-bright and blue-tinted neutrals `#F4F7FC`/`#DCE5F2`, so light mode kept rendering the retired identity
+- Light theme now the counterpart of dark: warm graphite neutrals, no purple, shadows tinted to the canvas hue, and the coloured accent glow on `--fr-shadow-primary` removed. Nothing in either theme glows
+- Last purple removed from `manifest.webmanifest` (`theme_color` was still `#7C3AED`)
+- ACTION COLOUR CHANGED: `--fr-color-primary` is now ink (`#1A1B1F` light, `#EDEBE8` dark) rather than bronze. It fills every primary button through one token, and a bronze fill was spending the signal amber on "New Incident" — a control always present and never urgent, which destroys the rationing rule that makes the accent mean anything. `--fr-semantic-ai-action` now reads from signal directly
+- NEW TOOL: `scripts/check-tokens.mjs` finds referenced-but-undefined CSS custom properties and flags those masked by a `var()` fallback. Written because a fallback hides a typo rather than surfacing it. Currently 66 defined, 57 referenced, all resolving
+- Verified visually on the live deployment in both themes, not just in fixtures
+- Verification: lint clean, strict typecheck clean, 130 app tests, detector zero, token checker clean, deployed and live
 - Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)

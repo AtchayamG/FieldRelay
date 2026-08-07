@@ -43,6 +43,40 @@ Applying landing-page rules to a dense ops console is exactly the mistake these 
 
 **The signal colour is rationed.** It marks live state and nothing else. If amber appears on a screen more than twice, something is wrong.
 
+### Action colour is ink, not signal
+
+`--fr-color-primary` fills every primary button in the app and is deliberately **ink** — `#1A1B1F` light, `#EDEBE8` dark.
+
+It was briefly bronze, which spent the signal amber on "New Incident": a control that is always present and never urgent. That quietly destroys the rationing rule, because once the accent appears on furniture it stops meaning anything when it appears on state. Ink also gives the strongest available contrast on the control users look for most.
+
+`--fr-semantic-ai-action` reads from `--fr-color-signal` directly, not from primary — pointing it at primary would render it ink and indistinguishable from ordinary UI.
+
+### Light theme is the counterpart, not a different product
+
+Both themes are warm graphite. The light palette was originally missed — only the dark block was converted in the first pass — leaving `#6D28D9` purple and blue-tinted neutrals behind. A blue-grey light theme beside a warm-graphite dark theme reads as two applications.
+
+| | Light | Dark |
+|---|---|---|
+| Canvas | `#F4F3F1` | `#0B0C0E` |
+| Surface | `#FCFBFA` | `#121317` |
+| Text | `#16171A` | `#F2F0ED` |
+| Signal | `#B5761F` | `#E8A33D` |
+| Action | `#1A1B1F` | `#EDEBE8` |
+
+Shadows in both are tinted to the canvas hue. **Nothing glows** — there is no coloured accent shadow anywhere.
+
+### Never give `var()` a fallback for a token you own
+
+The header wordmark was invisible in light theme because it referenced `--fr-color-text-primary`, which does not exist in this system, with a hardcoded near-white fallback. The fallback did exactly its job and painted white text on a white header; the typo never surfaced.
+
+A `var()` fallback hides a mistake instead of revealing it. Reference the token bare, and run the checker:
+
+```bash
+node scripts/check-tokens.mjs
+```
+
+It reports every referenced-but-undefined custom property and flags the ones masked by a fallback. Currently 66 defined, 57 referenced, all resolving.
+
 ## The logo
 
 **Signal and Gate.** An incident (filled dot) sends a call outward as two arcs; the call stops against a solid bar. The mark is the product thesis: it goes out, it comes back, nothing passes without a person.
