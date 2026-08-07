@@ -91,11 +91,34 @@ This is the most sensitive rule in the codebase.
 | Area | State |
 |---|---|
 | Routes built | Sign-in, Mission Control, Incidents (list/detail/create), Calls (queue/detail), Settings, **Approvals** |
-| Routes designed but not built | Dispatch, Technicians, Vendor Detail, Customers, Analytics, Audit & Consent, Knowledge Base |
-| Persistence | PostgreSQL, migrations 0001–0005, in-memory unit of work for tests only |
-| Mission Control | Still demo-adapter data, not API-backed |
-| Deployment | Dockerfiles for API and web, `docker-compose.judge.yml`, nginx same-origin proxy with CSP |
-| Tests | 258 total: API 205, app 53 (plus 2 design-token tests) |
+| Routes designed but not built | **Dispatch Board, Vendors, Technicians, Analytics** (next four, in that priority order), plus Customers, Audit & Consent, Knowledge Base, Vendor Detail |
+| Persistence | PostgreSQL, migrations 0001–0007, in-memory unit of work for tests only |
+| Mission Control | **API-backed and live.** Real counts, real activity feed, guardrail panel reported from live config, orchestration derived from the latest call task |
+| Deployment | Vercel (static SPA + whole NestJS API in one serverless function, same origin) + Neon. Dockerfiles and `docker-compose.judge.yml` also maintained |
+| Tests | **385 total: API 253, app 130, design tokens 2** |
+| Design | **Machined Graphite**, committed. See `docs/DESIGN_SYSTEM.md` |
+
+## The design system is now a contract, not a preference
+
+Read `docs/DESIGN_SYSTEM.md` before changing any UI file. The short version:
+
+- The direction is **Machined Graphite** — the console should read as instrumentation, not as SaaS.
+- The logo is **Signal and Gate** (`shared/components/logo/logo.component.ts`). Do not reintroduce a glyph-in-a-rounded-tile.
+- **Geist and Geist Mono only.** Inter is banned; it is the most recognisable typographic tell of generated UI.
+- `--fr-color-signal` is **rationed**. It marks live state and nothing else. More than about two appearances on a screen is a bug.
+- Anything a person could read aloud on a phone call — an ID, an amount, a number — is set in mono. This is semantic, not decorative.
+- Panels use the tray construction: `--fr-tray-radius` outside, `--fr-tray-radius-inner` for anything nested inside them, so curves stay concentric.
+- One easing curve for the whole product: `--fr-ease`. Never `linear`, `ease-in-out`, or anything elastic.
+
+**Enforcement is mechanical.** After any UI change:
+
+```bash
+npx impeccable detect apps/fieldrelay-app/src --no-config
+```
+
+It needs no API key and no LLM. It must report zero. The first run found 12 findings and 11 were the same one: `side-tab`, a thick coloured border down one edge of a card. Do not add another.
+
+Twelve design skills are installed under `.agents/skills/` and `.claude/skills/`. **Two of the three are written for landing pages** — taste-skill's own first line excludes dashboards and data tables. `docs/DESIGN_SYSTEM.md` records which rules we take and which we refuse; applying macro-whitespace and hero typography to a dense ops console is the mistake those skills warn about.
 
 ## Traps that have already caught someone
 
@@ -104,6 +127,10 @@ This is the most sensitive rule in the codebase.
 - **Line endings.** `.gitattributes` now pins them. A Linux tool inspecting a Windows checkout once reported all 156 files as modified when the tree was clean.
 - **Installing toolchain packages silently.** `winget install ... --silent` for nvm-windows removed the existing Node installation and left nothing behind. Do not silently install toolchain managers on this machine.
 - **Free calls are metered and finite.** They are also what the judges will use. Never place a call to test a code change; the demo adapter and the recorded proof exist for that.
+- **Trusting fixtures instead of the deployment.** Two defects shipped to production and were only found by querying the live app. The Orchestration panel rendered a hardcoded `INC-2026-9041 Pipeline` badge over an empty body; the performance panel reported `SLA Compliance (0%)` for a rate nothing had ever measured. Both looked fine in tests. **Query the live API before believing a screen is correct.**
+- **Rendering a struct default as a figure.** A zero is not the absence of a number, it is a claim. If a rate has no denominator yet, say which measurement it is waiting on — do not draw an empty bar labelled `0%`.
+- **Using a paid service when a free one is installed.** Narration was once generated on paid Higgsfield credits when edge-tts and ffmpeg were already on the machine and the user had said "the installed TTS voices". Check what exists locally first; `scripts/generate-narration.py` is now the only supported path.
+- **PowerShell and non-ASCII.** Writing em dashes or box-drawing characters through a PowerShell heredoc has mangled UTF-8 twice. Use the file-writing tools for anything non-ASCII.
 
 ## Required handoff
 

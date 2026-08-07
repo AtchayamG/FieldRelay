@@ -32,6 +32,26 @@ Read `docs/00_MASTER_BLUEPRINT.md` first, then **`docs/SYSTEM_STATE_FOR_AGENTS.m
 - Run focused tests and report commands/results. Treat generated demo data as fictional and deterministic.
 - Do not publish, deploy to production, open the upstream submission PR, or submit Devpost without explicit user approval.
 
+## Non-negotiable design rules
+
+The visual direction is committed. `docs/DESIGN_SYSTEM.md` is the contract; read it before changing any UI file.
+
+- **The detector must stay at zero.** Run `npx impeccable detect apps/fieldrelay-app/src --no-config` after any UI change. No API key needed. A finding is a defect, not an opinion.
+- **No side-tab borders.** A thick coloured border down one edge of a card is the most recognisable tell of generated UI. Carry state in a labelled dot or in the text.
+- **Geist and Geist Mono only.** Inter is banned. Anything a person could read aloud on a call — an ID, an amount, a number — is mono.
+- **`--fr-color-signal` is rationed** to live state. Do not use it for decoration or for primary buttons.
+- **Nested panels use `--fr-tray-radius-inner`**, so curves stay concentric with the tray around them.
+- **One easing curve**, `--fr-ease`. Never `linear`, `ease-in-out`, or anything elastic.
+- **Never animate `width`, `height`, `padding`, or `margin`.** Transform and opacity only.
+
+## Never render an unmeasured value as a figure
+
+A zero is not the absence of a number, it is a claim. `SLA Compliance (0%)` shipped to production and told every judge the system meets its SLA zero percent of the time; nothing had ever measured it.
+
+If a value has no denominator yet, state which measurement it is waiting on. This is the same principle as the call-safety rules: the product's whole argument is that it does not assert things it cannot support.
+
+**Check the deployment, not the fixtures.** Two defects passed every test and were only caught by querying the live API. Before believing a screen is correct, sign in against production and look at what the endpoint actually returns.
+
 ## Documentation is part of every step, not the end of the task
 
 Update the shared agent docs when each step completes, not once at the finish. A step is not done until they reflect it:
@@ -39,6 +59,7 @@ Update the shared agent docs when each step completes, not once at the finish. A
 - `docs/SYSTEM_STATE_FOR_AGENTS.md` — what now exists, and any new trap or boundary another agent could get wrong
 - `docs/taskstatus.md` — a dated line recording the outcome and its verification
 - `docs/handover.md` — current state, highest-priority next task, live blockers
+- `docs/DESIGN_SYSTEM.md` — any change to the visual contract, plus the detector baseline
 - `docs/agent-runs/` — a run record for a substantial slice
 
 ## Required handoff
