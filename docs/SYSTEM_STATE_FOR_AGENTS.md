@@ -6,7 +6,7 @@
 
 FieldRelay is a working property-maintenance operations console. An operator can create and triage incidents, place an authorized CALL-E call, validate its structured answer, stop for human approval when the answer creates risk or cost, release an approved dispatch, and inspect vendors, technicians, analytics, settings, and audit activity. Every navigation route is implemented; none is a disabled promise.
 
-The public deployment is `https://fieldrelay-pi.vercel.app`. It is still on the pre-audit build until the user approves a deployment. Do not infer production state from local fixtures.
+The public deployment is `https://fieldrelay-pi.vercel.app`. Merge `96034ff` was deployed on 2026-08-10 and verified live. Do not infer later production state from local fixtures.
 
 ## Verified baseline
 
@@ -62,7 +62,7 @@ docker compose -f docker-compose.judge.yml up -d --build
 
 Call `CALL-2042-0003` rang and was answered but produced silence. Four metered calls have been spent. Do not place another call until the provider record is inspected. The CALL-E CLI currently needs the user to complete refreshed authorization.
 
-Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` values on 2026-08-10. The audited code still must be deployed before this closes the callback gap. See `docs/OPEN_ISSUE_SILENT_CALL.md`.
+Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` values and the hardened adapter was deployed on 2026-08-10. New calls now carry the callback URL; the historical stuck call remains unchanged. See `docs/OPEN_ISSUE_SILENT_CALL.md`.
 
 ## Submission state
 

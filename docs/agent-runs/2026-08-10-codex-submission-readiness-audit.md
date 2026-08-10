@@ -6,7 +6,7 @@
 
 ## Result
 
-FieldRelay is release-quality locally but not yet publicly submission-ready. Draft PR #1 is published; production webhook secrets are configured; deployment, final evidence, provider inspection, and human/legal submission actions remain.
+FieldRelay is merged, CI-green, deployed, and live-verified. Final phone evidence, provider inspection, and human/legal submission actions remain.
 
 ## Findings and decisions
 
@@ -49,6 +49,9 @@ Use `git diff --stat` for the authoritative file list.
 
 - Draft PR #1 is published and replacement CI is green. Its first run found a Linux-only Vitest spy type declaration; the focused correction passes local app typecheck and all 133 app tests.
 - Architecture submission assets (`assets/fieldrelay-architecture.svg` and `.png`) were rendered at 1600×900 and visually inspected; the first blank file-URL capture was rejected and recaptured over loopback.
+- PR #1 merged as `96034ff`; production deployment `dpl_h1CDw1vokp2GeTv5LDhyV1DUwqKP` is READY and aliased to the public URL.
+- Live verification: health 200, anonymous data 401, all nine authenticated routes 200, correct headings/landmarks/no overflow/self-hosted font, zero console messages, observed APIs 200.
+- Five production gallery images were visually inspected and saved under `assets/gallery/`.
 - The initial framework chunk remains large, although feature screens are lazy-loaded.
 - CALL-E provider inspection is blocked until the user completes refreshed authorization. Four calls are already spent; no new call was placed.
 - The current 2:30 demo is a draft and must not be uploaded as final evidence.

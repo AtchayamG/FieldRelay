@@ -105,6 +105,6 @@ Angular · Ionic · TypeScript · NestJS · PostgreSQL · Neon · Vercel · CALL
 - [ ] Public video under 3 minutes on YouTube or Vimeo
 - [ ] CALL-E account email
 - [ ] Age / country / conflict attestations
-- [ ] Screenshots: Mission Control with guardrails, call detail with outcome, Approvals
-- [ ] Architecture diagram
+- [x] Screenshots: Mission Control with guardrails, call detail with outcome, Approvals, Dispatch, Vendors
+- [x] Architecture diagram
 - [ ] Re-read the rules for late changes

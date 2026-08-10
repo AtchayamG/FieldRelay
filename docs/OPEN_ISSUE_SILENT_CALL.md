@@ -17,7 +17,7 @@ Do not publish the private number, transcript, recording, or raw provider payloa
 
 The deployed build gave CALL-E no callback destination. This explains the stuck local status, but not the silent audio.
 
-**Code and environment prepared:** live mode now refuses to boot unless it receives an HTTPS webhook URL, a token of at least 24 characters, and an exact URL-token match. The adapter always sends the URL. Matching encrypted sensitive production values were configured on 2026-08-10; deployment and live verification remain.
+**Fault A closed for future calls:** live mode refuses to boot unless it receives an HTTPS webhook URL, a token of at least 24 characters, and an exact URL-token match. Matching encrypted production values and the hardened adapter were deployed and verified on 2026-08-10. This cannot retroactively update `CALL-2042-0003`.
 
 Configure without printing the token:
 
@@ -38,8 +38,8 @@ The local adapter now rejects an empty composed speaking task before it resolves
 
 ## Next steps, in order
 
-1. Retry the CALL-E broker exchange and inspect `CALL-2042-0003`: browser authorization succeeded, but two exchanges returned provider-side HTTP 502. No new call first.
-2. Merge and deploy the audited branch; production webhook values are already configured.
+1. Complete the newest pending CALL-E broker authorization/exchange and inspect `CALL-2042-0003`. The prior authorized exchange returned provider-side HTTP 502 twice; a later retry timed out and generated a new pending session. No new call first.
+2. Fault A needs no further code or deployment work; confirm only through the next authorized supervised call after Fault B is understood.
 3. Re-run the read-only production audit.
 4. Only if the provider evidence gives a concrete correction, authorize one final supervised call and film genuine handset footage.
 
