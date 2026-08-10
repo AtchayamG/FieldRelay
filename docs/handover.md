@@ -17,6 +17,17 @@ Last updated **2026-08-07**. If you are picking this up cold, read this file, th
 
 15 PostgreSQL-dependent API tests skip without a local database. Run one to exercise them; they have caught a real defect before.
 
+## READ THIS FIRST — the one open blocker
+
+**A live call connects, rings, is answered, and then nobody speaks.** See `docs/OPEN_ISSUE_SILENT_CALL.md`. It blocks the demo video's strongest segment and it is the highest-priority item in the project.
+
+Two faults, deliberately separated in that document:
+
+- **Fault A, confirmed and ours:** `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` are **not set in Vercel production**, so no `webhook_url` is sent and CALL-E can never report a terminal event. Every live call is stuck at `queued` forever. Easy fix, do it regardless.
+- **Fault B, undiagnosed:** the agent said nothing on the call. **Nobody has read the CALL-E dashboard for `CALL-2042-0003` yet.** That is step one and it separates "we sent a bad request" from "their agent failed".
+
+**Do not place another test call before reading that dashboard.** Four calls are spent from a finite allowance reserved for judges.
+
 ## Read the real judging criteria before prioritising anything
 
 This matters more than any internal scorecard. The hackathon judges on **four equal criteria**:
