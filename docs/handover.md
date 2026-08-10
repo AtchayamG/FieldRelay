@@ -27,6 +27,7 @@ The audited application is merged, CI-green, deployed, and verified live. It is 
 - ESLint, strict typecheck, production build, token check, detector zero.
 - `pnpm audit --prod`: no known vulnerabilities.
 - Gitleaks full history: no leaks.
+- GitHub action runtimes upgraded to the current Node 24 majors; the deprecated Node 20 action-runtime warning is removed.
 - Judge Docker image build and `/health` + `/` smoke tests pass.
 - Local responsive browser audit passes all top-level routes.
 - Live read-only audit returned 200 for all routes/deep links and exposed the production gaps above.

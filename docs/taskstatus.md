@@ -246,3 +246,4 @@
 - Final `main` CI run 31403892709 passed for `f51613c`
 - Refreshed CALL-E broker authorization succeeded. Read-only production lookup recovered the REST provider id; authenticated `get_call_run` returned `run_id not found` because the official MCP surface accepts only MCP run ids and exposes no REST-call lookup. No call was placed and no private call data was printed or persisted
 - Silent-call diagnosis is now externally blocked on CALL-E support/read-only REST-call lookup; added this concrete interoperability gap to the feedback-prize draft
+- Removed the post-green CI deprecation warning by upgrading the official action majors to `actions/checkout@v7`, `actions/setup-node@v7`, and `pnpm/action-setup@v6`; exact package-manager version remains owned solely by `packageManager`

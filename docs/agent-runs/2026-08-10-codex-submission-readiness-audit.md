@@ -44,6 +44,7 @@ Use `git diff --stat` for the authoritative file list.
 - Local Playwright at 390x844: all nine top-level app routes have an H1, no horizontal overflow, one main landmark, and no console errors.
 - Live read-only Playwright: all routes/deep links 200 with no failed requests; findings above reproduced before local fixes.
 - `node scripts/build-demo-video.mjs` without handset footage — expected fail-closed result.
+- Post-push CI run 31404445843 — pass; its only annotation identified Node 20 action runtimes, subsequently upgraded to the official Node 24 majors.
 
 ## Known limitations and risks
 

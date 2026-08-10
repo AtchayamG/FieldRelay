@@ -70,6 +70,7 @@ Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_T
 - The local 2:30 video is a **draft still-image cut**. Its phone segment is a placeholder and its old Approvals frame misses the human gate. `scripts/build-demo-video.mjs` now refuses to create the final filename without genuine `assets/demo/phone-call.mp4`; `--draft` is explicit.
 - The repository is public but has no license. License selection is a user/legal decision.
 - PR #1 is merged; its replacement CI and post-gallery `main` run 31403892709 pass. The first run exposed a Linux-only Vitest spy typing error; the focused correction also passes local app typecheck and all 133 app tests.
+- CI uses the current Node 24-based action majors (`checkout@v7`, `setup-node@v7`, `pnpm/action-setup@v6`); do not reintroduce Node 20 action runtimes that GitHub must compatibility-force.
 
 ## UI contract
 
