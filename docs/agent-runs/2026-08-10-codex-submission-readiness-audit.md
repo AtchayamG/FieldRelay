@@ -53,7 +53,7 @@ Use `git diff --stat` for the authoritative file list.
 - Live verification: health 200, anonymous data 401, all nine authenticated routes 200, correct headings/landmarks/no overflow/self-hosted font, zero console messages, observed APIs 200.
 - Five production gallery images were visually inspected and saved under `assets/gallery/`.
 - The initial framework chunk remains large, although feature screens are lazy-loaded.
-- CALL-E provider inspection is blocked until the user completes refreshed authorization. Four calls are already spent; no new call was placed.
+- Refreshed CALL-E authorization succeeds. Production persisted a REST `call_id`, but the authenticated MCP server exposes only `get_call_run(run_id)` and returns `run_id not found`; provider inspection is externally blocked on CALL-E support/tooling. Four calls are already spent; no new call was placed.
 - The current 2:30 demo is a draft and must not be uploaded as final evidence.
 - The official Devpost overview/rules disagree on AM/PM; operate to 2026-09-14 11:45 AM SGT.
 - Public demo credentials plus live mode create budget/recipient risk. Prefer demo mode except during supervised judging.
@@ -64,4 +64,4 @@ Disposable browser/contact-sheet outputs remain under ignored `.tmp/`/Playwright
 
 ## Exact next task
 
-Push the CI correction, confirm CI green, merge/deploy, and repeat the live audit. Retry the CALL-E broker exchange later; browser authorization succeeded but the provider returned HTTP 502 twice. Do not consider a final supervised call until the provider record is inspected.
+Escalate the REST call id to CALL-E for read-only inspection or request a CLI/MCP lookup that accepts REST call ids. Do not consider a final supervised call until the provider record identifies a concrete correction.

@@ -60,7 +60,7 @@ docker compose -f docker-compose.judge.yml up -d --build
 
 ## Open production issue
 
-Call `CALL-2042-0003` rang and was answered but produced silence. Four metered calls have been spent. Do not place another call until the provider record is inspected. The CALL-E CLI currently needs the user to complete refreshed authorization.
+Call `CALL-2042-0003` rang and was answered but produced silence. Four metered calls have been spent. Do not place another call until the provider record is inspected. Refreshed CLI authorization now works, but the authenticated MCP server accepts only MCP `run_id`s; the persisted REST `call_id` returns `run_id not found`. Provider inspection therefore requires CALL-E support or a new read-only REST-call lookup.
 
 Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` values and the hardened adapter was deployed on 2026-08-10. New calls now carry the callback URL; the historical stuck call remains unchanged. See `docs/OPEN_ISSUE_SILENT_CALL.md`.
 
@@ -69,7 +69,7 @@ Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_T
 - Upstream community contribution [CALLE-AI/awesome-phone-call-agents#107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) is approved and merged.
 - The local 2:30 video is a **draft still-image cut**. Its phone segment is a placeholder and its old Approvals frame misses the human gate. `scripts/build-demo-video.mjs` now refuses to create the final filename without genuine `assets/demo/phone-call.mp4`; `--draft` is explicit.
 - The repository is public but has no license. License selection is a user/legal decision.
-- Draft PR #1 is open and its replacement CI run passes. The first run exposed a Linux-only Vitest spy typing error; the focused correction also passes local app typecheck and all 133 app tests.
+- PR #1 is merged; its replacement CI and post-gallery `main` run 31403892709 pass. The first run exposed a Linux-only Vitest spy typing error; the focused correction also passes local app typecheck and all 133 app tests.
 
 ## UI contract
 

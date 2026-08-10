@@ -1,6 +1,6 @@
 # Open issue — the live call connects but nobody speaks
 
-**Status: OPEN.** Raised 2026-08-10; blocks genuine phone footage for the final demo.
+**Status: EXTERNALLY BLOCKED.** Raised 2026-08-10; blocks genuine phone footage for the final demo.
 
 ## Observed
 
@@ -36,12 +36,19 @@ The local adapter now rejects an empty composed speaking task before it resolves
 2. The `en-IN` locale did not select a usable voice; compare with the earlier successful call before changing it.
 3. A provider-side transient affected this call.
 
+## Provider inspection result — 2026-08-10
+
+The refreshed broker authorization completed successfully and the CALL-E CLI token is usable. Production correlates this task to REST provider id `call_FGQ5pBxDDlbwBhOdSu5LFQ`.
+
+The authenticated MCP catalogue exposes `plan_call`, `run_call`, and the read-only `get_call_run`. It does not expose a REST-call lookup. Passing the persisted REST `call_id` to `get_call_run` safely returns `FAILED` with `message: run_id not found.` This is a namespace/API-surface mismatch, not evidence that the telephone call itself failed: the phone rang and the recording exists.
+
+No phone number, transcript, recording, credential, or raw payload was printed or persisted during the investigation. No call was placed.
+
 ## Next steps, in order
 
-1. Complete the newest pending CALL-E broker authorization/exchange and inspect `CALL-2042-0003`. The prior authorized exchange returned provider-side HTTP 502 twice; a later retry timed out and generated a new pending session. No new call first.
+1. Ask CALL-E support to inspect REST call `call_FGQ5pBxDDlbwBhOdSu5LFQ`, or add an authenticated read-only tool that accepts REST `call_id`.
 2. Fault A needs no further code or deployment work; confirm only through the next authorized supervised call after Fault B is understood.
-3. Re-run the read-only production audit.
-4. Only if the provider evidence gives a concrete correction, authorize one final supervised call and film genuine handset footage.
+3. Only if provider evidence gives a concrete correction, authorize one final supervised call and film genuine handset footage.
 
 ## Safety rules
 

@@ -243,3 +243,6 @@
 - PR #1 merged to `main` as `96034ff`; Vercel production deployment `dpl_h1CDw1vokp2GeTv5LDhyV1DUwqKP` is READY and aliased to the public URL
 - Live verification: health 200, anonymous incidents 401, all nine signed-in routes 200 with one main/H1/no overflow/self-hosted Geist, zero console warnings/errors, and every observed API request 200
 - Five production gallery screenshots visually inspected and promoted to `assets/gallery/`: Mission Control, structured call outcome, human approval, dispatch, and vendor authorization boundaries
+- Final `main` CI run 31403892709 passed for `f51613c`
+- Refreshed CALL-E broker authorization succeeded. Read-only production lookup recovered the REST provider id; authenticated `get_call_run` returned `run_id not found` because the official MCP surface accepts only MCP run ids and exposes no REST-call lookup. No call was placed and no private call data was printed or persisted
+- Silent-call diagnosis is now externally blocked on CALL-E support/read-only REST-call lookup; added this concrete interoperability gap to the feedback-prize draft

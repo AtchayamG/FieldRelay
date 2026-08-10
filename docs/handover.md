@@ -1,6 +1,6 @@
 # Handover
 
-**Updated:** 2026-08-10 on branch `codex/submission-readiness-audit`.
+**Updated:** 2026-08-10 on `main` at `f51613c`.
 
 ## Result
 
@@ -33,15 +33,14 @@ The audited application is merged, CI-green, deployed, and verified live. It is 
 
 ## Remaining blockers, in order
 
-1. **CALL-E provider inspection.** A new broker authorization session is pending after the previous authorized exchange returned 502/timed out. No call may be placed first.
-2. **Final phone evidence.** Only after provider inspection identifies a concrete correction, capture one supervised genuine call clip.
-3. **CALL-E investigation.** Complete the refreshed CLI authorization and inspect `CALL-2042-0003`. Do not place another call before reading its status/transcript.
-4. **Final demo.** Capture genuine phone footage only after the silent-call cause is understood; recapture the human approval gate; rebuild and review the under-three-minute video; upload publicly.
-5. **Submission assets.** Architecture PNG/SVG and five production gallery screenshots are complete.
-6. **Human/legal:** choose a repository license, provide CALL-E account email, complete eligibility/conflict attestations, submit the feedback survey, and approve the final Devpost submission.
+1. **CALL-E provider inspection is externally blocked.** Broker authentication is healthy, but the official CLI can query only MCP `run_id`s. The historical REST `call_id` returns `run_id not found`; no provider error/transcript is exposed through the supported diagnostic surface. Do not redial.
+2. **Provider escalation.** Ask CALL-E support to inspect REST call `call_FGQ5pBxDDlbwBhOdSu5LFQ` or expose a read-only REST-call lookup in the authenticated CLI/MCP server.
+3. **Final phone evidence.** Only after provider evidence identifies a concrete correction, capture one supervised genuine call clip.
+4. **Final demo.** Insert genuine phone footage, recapture the human approval gate, rebuild and review the under-three-minute video, then upload publicly.
+5. **Human/legal:** choose a repository license, provide CALL-E account email, complete eligibility/conflict attestations, submit the feedback survey, and approve the final Devpost submission.
 
 The official deadline pages conflict between 11:45 AM and 11:45 PM SGT on 2026-09-14. Treat **11:45 AM SGT** as the safe deadline.
 
 ## Exact next task
 
-Complete the pending CALL-E broker authorization/exchange and inspect the historical silent call. Do not place another call first.
+Escalate the persisted REST call id to CALL-E for read-only provider inspection. Do not place another call until a concrete failure cause and correction are known.

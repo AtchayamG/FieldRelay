@@ -40,7 +40,7 @@ The specific gap: there is no way to ask a question by phone *at scale* and get 
 
 ## What bugs or issues did you run into while using CALL-E?
 
-Seven, ordered by what they cost.
+Eight, ordered by what they cost.
 
 ### 1. A client timeout caused a duplicate real call, and the docs gave no way to anticipate it
 
@@ -91,6 +91,12 @@ We needed bounds on an integer field (`earliest_eta_hours` — `-5` is a valid i
 Not knowing which, we enforced the bounds locally and **stripped them before transmission** — defensive, and slightly absurd, since it means our validation is deliberately stricter than the schema we send you.
 
 **Fix:** document the supported keyword subset explicitly, and state what happens to an unrecognised keyword. "Unknown keywords are ignored" is a perfectly good answer; not knowing is the problem.
+
+### 8. Authenticated CLI diagnostics cannot inspect calls created through the REST API
+
+Our production integration correctly persisted the REST `call_id`. When one call connected with silent audio, we refreshed broker authorization and used the official CLI for a read-only investigation. The MCP catalogue exposed only `get_call_run(run_id)`. Passing the REST `call_id` returned `run_id not found`, and there was no list/search/get-by-`call_id` tool. The call therefore cannot be diagnosed through the supported authenticated interface even though it is correlated locally.
+
+**Fix:** expose `get_call(call_id)` and bounded call history/search through the CLI/MCP server, or make REST `call_id` and MCP `run_id` interoperable. Return terminal status, failure code/message, timestamps, and transcript/recording availability with phone numbers redacted. This would let integrators diagnose failures without placing another metered call.
 
 ---
 

@@ -11,10 +11,10 @@
 | Community contribution | PASS | [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) was approved and merged 2026-08-10. |
 | Reproducible judge build | PASS | Docker judge images build; `/health` and `/` return 200. |
 | Automated verification | PASS LOCAL | 438 tests with PostgreSQL, lint/type/build, detector zero, clean prod audit and secret scan. |
-| GitHub CI | PASS | Draft PR #1 replacement run passed after the focused Linux test-spy type fix. |
+| GitHub CI | PASS | PR #1 and post-gallery `main` run 31403892709 passed after the focused Linux test-spy type fix. |
 | Audited production build | PASS | Merge `96034ff` deployed to Vercel Production; health/auth/routes/console/network verified live. |
 | Live webhook completion | PASS FOR NEW CALLS | Encrypted production URL/token are configured and the hardened adapter is deployed. Existing stuck call remains historical. |
-| Silent-call diagnosis | BLOCKED | Inspect `CALL-2042-0003` after refreshed CALL-E authorization. Do not redial first. |
+| Silent-call diagnosis | EXTERNALLY BLOCKED | Authorization now succeeds. Production persisted a REST `call_id`, but the official CLI exposes only MCP `get_call_run(run_id)` and returns `run_id not found`; CALL-E must expose REST-call lookup/support before this historical call can be diagnosed. Do not redial. |
 | Public video under 3 minutes | BLOCKED | Existing 2:30 file is a draft slideshow with placeholder phone evidence and a stale approval frame. |
 | Gallery screenshots | PASS | Five visually inspected production captures in `assets/gallery/`. |
 | Architecture diagram | PASS | Verified 1600×900 PNG and editable SVG in `assets/fieldrelay-architecture.*`. |
