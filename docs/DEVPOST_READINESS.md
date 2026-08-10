@@ -11,13 +11,13 @@
 | Community contribution | PASS | [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) was approved and merged 2026-08-10. |
 | Reproducible judge build | PASS | Docker judge images build; `/health` and `/` return 200. |
 | Automated verification | PASS LOCAL | 438 tests with PostgreSQL, lint/type/build, detector zero, clean prod audit and secret scan. |
-| GitHub CI | IN PROGRESS | Draft PR #1 installs successfully; its Linux-only test-spy type failure is fixed locally and awaits rerun. |
+| GitHub CI | PASS | Draft PR #1 replacement run passed after the focused Linux test-spy type fix. |
 | Audited production build | BLOCKED | Local fixes are not deployed. User approval required before push/deploy. |
 | Live webhook completion | IN PROGRESS | Encrypted production URL/token are configured; audited build still requires deployment and live verification. |
 | Silent-call diagnosis | BLOCKED | Inspect `CALL-2042-0003` after refreshed CALL-E authorization. Do not redial first. |
 | Public video under 3 minutes | BLOCKED | Existing 2:30 file is a draft slideshow with placeholder phone evidence and a stale approval frame. |
 | Gallery screenshots | TODO | Recapture from the audited deployment after release. |
-| Architecture diagram | TODO | Create a concise system/safety-boundary diagram. |
+| Architecture diagram | PASS | Verified 1600×900 PNG and editable SVG in `assets/fieldrelay-architecture.*`. |
 | Project answers | DRAFTED | Refresh `docs/DEVPOST_SUBMISSION_DRAFT.md` after final evidence. |
 | CALL-E feedback prize | DRAFTED | `docs/CALL_E_FEEDBACK_SURVEY.md`; user supplies identity/scores and submits. |
 | CALL-E account email | HUMAN | User supplies at submission. |

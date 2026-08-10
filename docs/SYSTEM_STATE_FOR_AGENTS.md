@@ -69,7 +69,7 @@ Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_T
 - Upstream community contribution [CALLE-AI/awesome-phone-call-agents#107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) is approved and merged.
 - The local 2:30 video is a **draft still-image cut**. Its phone segment is a placeholder and its old Approvals frame misses the human gate. `scripts/build-demo-video.mjs` now refuses to create the final filename without genuine `assets/demo/phone-call.mp4`; `--draft` is explicit.
 - The repository is public but has no license. License selection is a user/legal decision.
-- Draft PR #1 is open. Its first CI run passed install/lint and exposed a Linux-only Vitest spy typing error; the focused correction passes local app typecheck and all 133 app tests and awaits the replacement run.
+- Draft PR #1 is open and its replacement CI run passes. The first run exposed a Linux-only Vitest spy typing error; the focused correction also passes local app typecheck and all 133 app tests.
 
 ## UI contract
 

@@ -47,7 +47,8 @@ Use `git diff --stat` for the authoritative file list.
 
 ## Known limitations and risks
 
-- Draft PR #1 is published. Its first CI run found a Linux-only Vitest spy type declaration; the focused correction passes local app typecheck and all 133 app tests.
+- Draft PR #1 is published and replacement CI is green. Its first run found a Linux-only Vitest spy type declaration; the focused correction passes local app typecheck and all 133 app tests.
+- Architecture submission assets (`assets/fieldrelay-architecture.svg` and `.png`) were rendered at 1600×900 and visually inspected; the first blank file-URL capture was rejected and recaptured over loopback.
 - The initial framework chunk remains large, although feature screens are lazy-loaded.
 - CALL-E provider inspection is blocked until the user completes refreshed authorization. Four calls are already spent; no new call was placed.
 - The current 2:30 demo is a draft and must not be uploaded as final evidence.

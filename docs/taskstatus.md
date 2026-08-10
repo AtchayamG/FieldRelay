@@ -239,3 +239,4 @@
 - Operational continuation: branch pushed and draft PR #1 opened; encrypted sensitive production webhook URL/token configured without printing or persisting the generated token
 - First PR CI progressed past the former pnpm bootstrap failure and exposed a Linux-only Vitest spy type declaration; fixed by asserting against the typed `Router.navigate` member. Local app typecheck and all 133 app tests pass
 - CALL-E browser authorization was received, but the broker exchange returned HTTP 502 twice. No call was placed; provider inspection remains blocked until the broker recovers
+- Replacement PR CI is green. Added and visually verified `assets/fieldrelay-architecture.svg` plus a 1600x900 PNG submission asset showing the actual runtime and refusal boundaries

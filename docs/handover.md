@@ -33,15 +33,15 @@ The application is submission-quality locally: all routes work, the judge Docker
 
 ## Remaining blockers, in order
 
-1. **CI and deploy.** Branch and draft PR #1 are published. The initial run found a Linux-only test-spy type error; its focused fix passes locally and awaits a replacement run before merge/deploy.
+1. **Merge and deploy.** Draft PR #1 is published and its replacement CI run is green.
 2. **Production webhook deployment.** Matching encrypted sensitive webhook URL/token values are configured. The audited application build must now be deployed to enforce and send them.
 3. **CALL-E investigation.** Complete the refreshed CLI authorization and inspect `CALL-2042-0003`. Do not place another call before reading its status/transcript.
 4. **Final demo.** Capture genuine phone footage only after the silent-call cause is understood; recapture the human approval gate; rebuild and review the under-three-minute video; upload publicly.
-5. **Submission assets.** Regenerate gallery screenshots from the audited deployment and create the architecture diagram.
+5. **Submission assets.** Architecture PNG/SVG are complete; regenerate gallery screenshots from the audited deployment.
 6. **Human/legal:** choose a repository license, provide CALL-E account email, complete eligibility/conflict attestations, submit the feedback survey, and approve the final Devpost submission.
 
 The official deadline pages conflict between 11:45 AM and 11:45 PM SGT on 2026-09-14. Treat **11:45 AM SGT** as the safe deadline.
 
 ## Exact next task
 
-Push the Linux CI correction, confirm the replacement run is green, merge/deploy, and repeat the live browser/API audit. Retry the CALL-E broker exchange later; it currently returns provider-side HTTP 502 after successful browser authorization.
+Merge/deploy PR #1 and repeat the live browser/API audit. Retry the CALL-E broker exchange later; it currently returns provider-side HTTP 502 after successful browser authorization.
