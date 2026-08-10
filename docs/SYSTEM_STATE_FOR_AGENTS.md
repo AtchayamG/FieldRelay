@@ -62,14 +62,14 @@ docker compose -f docker-compose.judge.yml up -d --build
 
 Call `CALL-2042-0003` rang and was answered but produced silence. Four metered calls have been spent. Do not place another call until the provider record is inspected. The CALL-E CLI currently needs the user to complete refreshed authorization.
 
-Production also lacks `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN`. The audited code now refuses to start live without them, but the environment must be set and redeployed with explicit user approval. See `docs/OPEN_ISSUE_SILENT_CALL.md`.
+Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` values on 2026-08-10. The audited code still must be deployed before this closes the callback gap. See `docs/OPEN_ISSUE_SILENT_CALL.md`.
 
 ## Submission state
 
 - Upstream community contribution [CALLE-AI/awesome-phone-call-agents#107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) is approved and merged.
 - The local 2:30 video is a **draft still-image cut**. Its phone segment is a placeholder and its old Approvals frame misses the human gate. `scripts/build-demo-video.mjs` now refuses to create the final filename without genuine `assets/demo/phone-call.mp4`; `--draft` is explicit.
 - The repository is public but has no license. License selection is a user/legal decision.
-- CI on `main` currently fails before install because pnpm was configured twice. The workflow is fixed on this branch but cannot be green until pushed.
+- Draft PR #1 is open. Its first CI run passed install/lint and exposed a Linux-only Vitest spy typing error; the focused correction passes local app typecheck and all 133 app tests and awaits the replacement run.
 
 ## UI contract
 

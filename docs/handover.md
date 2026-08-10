@@ -33,8 +33,8 @@ The application is submission-quality locally: all routes work, the judge Docker
 
 ## Remaining blockers, in order
 
-1. **User approval to push/deploy.** The branch is local. Production still serves the previous build and current GitHub CI is red until this workflow fix is pushed.
-2. **Production webhook configuration.** Add a secret token and matching HTTPS webhook URL, then redeploy. This is a production mutation and was not performed without approval.
+1. **CI and deploy.** Branch and draft PR #1 are published. The initial run found a Linux-only test-spy type error; its focused fix passes locally and awaits a replacement run before merge/deploy.
+2. **Production webhook deployment.** Matching encrypted sensitive webhook URL/token values are configured. The audited application build must now be deployed to enforce and send them.
 3. **CALL-E investigation.** Complete the refreshed CLI authorization and inspect `CALL-2042-0003`. Do not place another call before reading its status/transcript.
 4. **Final demo.** Capture genuine phone footage only after the silent-call cause is understood; recapture the human approval gate; rebuild and review the under-three-minute video; upload publicly.
 5. **Submission assets.** Regenerate gallery screenshots from the audited deployment and create the architecture diagram.
@@ -44,4 +44,4 @@ The official deadline pages conflict between 11:45 AM and 11:45 PM SGT on 2026-0
 
 ## Exact next task
 
-After user approval, push this branch, confirm CI green, configure the two production webhook variables without exposing the token, deploy, and repeat the live browser/API audit. Then inspect the CALL-E provider record before authorizing any final metered call.
+Push the Linux CI correction, confirm the replacement run is green, merge/deploy, and repeat the live browser/API audit. Retry the CALL-E broker exchange later; it currently returns provider-side HTTP 502 after successful browser authorization.

@@ -236,3 +236,6 @@
 - Full local verification: **438 tests** with PostgreSQL (303 API + 133 app + 2 tokens), ESLint, strict typecheck, production build, token checker, impeccable detector zero, dependency audit clean, full-history Gitleaks clean
 - Judge Docker images rebuilt; `/health` and `/` return 200. Local 390x844 route audit and read-only live route/deep-link audit completed
 - Remaining: user approval to push/deploy; production webhook values; refreshed CALL-E authorization/provider inspection; genuine final video; gallery/architecture assets; license and Devpost human actions
+- Operational continuation: branch pushed and draft PR #1 opened; encrypted sensitive production webhook URL/token configured without printing or persisting the generated token
+- First PR CI progressed past the former pnpm bootstrap failure and exposed a Linux-only Vitest spy type declaration; fixed by asserting against the typed `Router.navigate` member. Local app typecheck and all 133 app tests pass
+- CALL-E browser authorization was received, but the broker exchange returned HTTP 502 twice. No call was placed; provider inspection remains blocked until the broker recovers

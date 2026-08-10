@@ -6,7 +6,7 @@
 
 ## Result
 
-FieldRelay is release-quality locally but not yet publicly submission-ready. The audited branch passes the full verification stack and fixes concrete live/CI defects. Production deployment, webhook secrets, final evidence, and human/legal submission actions remain intentionally unmodified pending approval.
+FieldRelay is release-quality locally but not yet publicly submission-ready. Draft PR #1 is published; production webhook secrets are configured; deployment, final evidence, provider inspection, and human/legal submission actions remain.
 
 ## Findings and decisions
 
@@ -47,7 +47,7 @@ Use `git diff --stat` for the authoritative file list.
 
 ## Known limitations and risks
 
-- The audited changes are local; CI and production still show the prior state.
+- Draft PR #1 is published. Its first CI run found a Linux-only Vitest spy type declaration; the focused correction passes local app typecheck and all 133 app tests.
 - The initial framework chunk remains large, although feature screens are lazy-loaded.
 - CALL-E provider inspection is blocked until the user completes refreshed authorization. Four calls are already spent; no new call was placed.
 - The current 2:30 demo is a draft and must not be uploaded as final evidence.
@@ -60,4 +60,4 @@ Disposable browser/contact-sheet outputs remain under ignored `.tmp/`/Playwright
 
 ## Exact next task
 
-With explicit user approval: push the branch, confirm CI green, set matching production webhook token/URL securely, deploy, and repeat the live audit. Then inspect the provider record before considering a single final supervised call and genuine video capture.
+Push the CI correction, confirm CI green, merge/deploy, and repeat the live audit. Retry the CALL-E broker exchange later; browser authorization succeeded but the provider returned HTTP 502 twice. Do not consider a final supervised call until the provider record is inspected.

@@ -37,7 +37,7 @@ describe('ApprovalsComponent', () => {
   let component: ApprovalsComponent;
   let api: { list: ReturnType<typeof vi.fn>; decide: ReturnType<typeof vi.fn> };
   let dispatchApi: { release: ReturnType<typeof vi.fn> };
-  let navigate: ReturnType<typeof vi.spyOn>;
+  let router: Router;
 
   beforeEach(async () => {
     api = {
@@ -56,7 +56,8 @@ describe('ApprovalsComponent', () => {
       ]
     }).compileComponents();
 
-    navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     fixture = TestBed.createComponent(ApprovalsComponent);
     component = fixture.componentInstance;
@@ -94,7 +95,7 @@ describe('ApprovalsComponent', () => {
     // The vendor and the amount are read from rows on the server; nothing in
     // this call can redirect the job somewhere else.
     expect(dispatchApi.release).toHaveBeenCalledWith(PENDING.id);
-    expect(navigate).toHaveBeenCalledWith(['/dispatch']);
+    expect(router.navigate).toHaveBeenCalledWith(['/dispatch']);
   });
 
   it('surfaces a refused release rather than pretending the vendor was sent', () => {

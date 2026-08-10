@@ -11,9 +11,9 @@
 | Community contribution | PASS | [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) was approved and merged 2026-08-10. |
 | Reproducible judge build | PASS | Docker judge images build; `/health` and `/` return 200. |
 | Automated verification | PASS LOCAL | 438 tests with PostgreSQL, lint/type/build, detector zero, clean prod audit and secret scan. |
-| GitHub CI | BLOCKED | Current `main` fails before install due duplicate pnpm version. Fixed locally; push required. |
+| GitHub CI | IN PROGRESS | Draft PR #1 installs successfully; its Linux-only test-spy type failure is fixed locally and awaits rerun. |
 | Audited production build | BLOCKED | Local fixes are not deployed. User approval required before push/deploy. |
-| Live webhook completion | BLOCKED | Production lacks `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN`; audited code now fails closed. |
+| Live webhook completion | IN PROGRESS | Encrypted production URL/token are configured; audited build still requires deployment and live verification. |
 | Silent-call diagnosis | BLOCKED | Inspect `CALL-2042-0003` after refreshed CALL-E authorization. Do not redial first. |
 | Public video under 3 minutes | BLOCKED | Existing 2:30 file is a draft slideshow with placeholder phone evidence and a stale approval frame. |
 | Gallery screenshots | TODO | Recapture from the audited deployment after release. |

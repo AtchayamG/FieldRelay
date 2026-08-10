@@ -15,9 +15,9 @@ Do not publish the private number, transcript, recording, or raw provider payloa
 
 ## Fault A — terminal state cannot return (confirmed, ours)
 
-Production lacks `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN`. The deployed build therefore gives CALL-E no callback destination. This explains the stuck local status, but not the silent audio.
+The deployed build gave CALL-E no callback destination. This explains the stuck local status, but not the silent audio.
 
-**Fixed locally on `codex/submission-readiness-audit`:** live mode now refuses to boot unless it receives an HTTPS webhook URL, a token of at least 24 characters, and an exact URL-token match. The adapter always sends the URL. Production still needs an approved environment update and redeploy.
+**Code and environment prepared:** live mode now refuses to boot unless it receives an HTTPS webhook URL, a token of at least 24 characters, and an exact URL-token match. The adapter always sends the URL. Matching encrypted sensitive production values were configured on 2026-08-10; deployment and live verification remain.
 
 Configure without printing the token:
 
@@ -38,8 +38,8 @@ The local adapter now rejects an empty composed speaking task before it resolves
 
 ## Next steps, in order
 
-1. Complete refreshed CALL-E authorization and inspect `CALL-2042-0003`: status, duration, transcript/event history, and runtime error. No new call first.
-2. With user approval, add the two production webhook values and deploy the audited branch.
+1. Retry the CALL-E broker exchange and inspect `CALL-2042-0003`: browser authorization succeeded, but two exchanges returned provider-side HTTP 502. No new call first.
+2. Merge and deploy the audited branch; production webhook values are already configured.
 3. Re-run the read-only production audit.
 4. Only if the provider evidence gives a concrete correction, authorize one final supervised call and film genuine handset footage.
 
