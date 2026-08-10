@@ -61,7 +61,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       </div>
 
       <!-- Detail Content -->
-      <main *ngIf="call" class="detail-content">
+      <section *ngIf="call" class="detail-content" aria-label="Call task detail">
         <!-- Prominent Simulation Banner -->
         <div *ngIf="call.simulated" class="simulated-banner">
           <fr-icon class="banner-icon" name="bolt" [size]="20" [strokeWidth]="2" />
@@ -245,7 +245,7 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
             </dl>
           </section>
         </div>
-      </main>
+      </section>
     </div>
   `,
   styles: [`

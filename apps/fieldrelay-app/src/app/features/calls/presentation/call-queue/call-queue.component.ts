@@ -106,7 +106,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
       </section>
 
       <!-- Main Content Area -->
-      <main class="calls-content">
+      <section class="calls-content" aria-label="Call tasks">
         <!-- Initial Loading State -->
         <div *ngIf="loading && calls.length === 0" class="state-card loading-card">
           <div class="spinner"></div>
@@ -279,7 +279,7 @@ const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
             </button>
           </div>
         </ng-container>
-      </main>
+      </section>
     </div>
   `,
   styles: [`

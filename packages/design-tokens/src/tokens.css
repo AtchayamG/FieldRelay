@@ -3,8 +3,8 @@
   /* Geist, not Inter. Inter is the most recognisable typographic tell of
      generated UI, and Arial/Segoe fallbacks read as an unstyled document.
      The stack degrades to the platform grotesque rather than to Arial. */
-  --fr-font-primary: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --fr-font-technical: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
+  --fr-font-primary: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fr-font-technical: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
 
   --fr-radius-sm: 10px;
   --fr-radius-md: 12px;

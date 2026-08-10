@@ -3,7 +3,8 @@ import { DialTargetResolverPort } from '../../application/dial-target.port';
 import {
   CallAuthorizationError,
   CallProviderConfigurationError,
-  CallProviderError
+  CallProviderError,
+  CallValidationError
 } from '../../application/errors';
 import { toProviderSchema } from '../../application/call-outcome';
 import { CallTask } from '../../domain/call-task.entity';
@@ -39,9 +40,9 @@ const MAX_RESPONSE_BYTES = 64 * 1024;
 export interface CalleApiConfig {
   baseUrl: string;
   apiKey: string;
-  // Absolute HTTPS URL CALL-E posts terminal results to. Optional: without it
-  // the call still runs, but lifecycle updates only arrive via polling.
-  webhookUrl?: string;
+  // Absolute HTTPS URL CALL-E posts terminal results to. FieldRelay has no
+  // polling worker, so live configuration refuses to boot without this path.
+  webhookUrl: string;
   requestTimeoutMs: number;
 }
 
@@ -49,6 +50,7 @@ export function readCalleConfigFromEnv(env: NodeJS.ProcessEnv): CalleApiConfig {
   const baseUrl = (env.CALLE_BASE_URL ?? '').trim().replace(/\/+$/, '');
   const apiKey = (env.CALLE_API_KEY ?? '').trim();
   const webhookUrl = (env.CALLE_WEBHOOK_URL ?? '').trim();
+  const webhookToken = (env.CALLE_WEBHOOK_TOKEN ?? '').trim();
 
   if (!baseUrl) {
     throw new CallProviderConfigurationError(
@@ -72,18 +74,29 @@ export function readCalleConfigFromEnv(env: NodeJS.ProcessEnv): CalleApiConfig {
       `CALLE_API_KEY is required when CALL_E_MODE=live and must be at least ${MIN_API_KEY_LENGTH} characters`
     );
   }
-  if (webhookUrl) {
-    let parsedHook: URL;
-    try {
-      parsedHook = new URL(webhookUrl);
-    } catch {
-      throw new CallProviderConfigurationError('CALLE_WEBHOOK_URL must be an absolute URL');
-    }
-    const hookIsLoopback =
-      parsedHook.hostname === 'localhost' || parsedHook.hostname === '127.0.0.1';
-    if (parsedHook.protocol !== 'https:' && !hookIsLoopback) {
-      throw new CallProviderConfigurationError('CALLE_WEBHOOK_URL must use https');
-    }
+  if (!webhookUrl) {
+    throw new CallProviderConfigurationError('CALLE_WEBHOOK_URL is required when CALL_E_MODE=live');
+  }
+  let parsedHook: URL;
+  try {
+    parsedHook = new URL(webhookUrl);
+  } catch {
+    throw new CallProviderConfigurationError('CALLE_WEBHOOK_URL must be an absolute URL');
+  }
+  const hookIsLoopback =
+    parsedHook.hostname === 'localhost' || parsedHook.hostname === '127.0.0.1';
+  if (parsedHook.protocol !== 'https:' && !hookIsLoopback) {
+    throw new CallProviderConfigurationError('CALLE_WEBHOOK_URL must use https');
+  }
+  if (webhookToken.length < 24) {
+    throw new CallProviderConfigurationError(
+      'CALLE_WEBHOOK_TOKEN is required in live mode and must be at least 24 characters'
+    );
+  }
+  if (parsedHook.searchParams.get('token') !== webhookToken) {
+    throw new CallProviderConfigurationError(
+      'CALLE_WEBHOOK_URL token must match CALLE_WEBHOOK_TOKEN'
+    );
   }
 
   const rawTimeout = Number(env.CALLE_REQUEST_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
@@ -95,7 +108,7 @@ export function readCalleConfigFromEnv(env: NodeJS.ProcessEnv): CalleApiConfig {
   return {
     baseUrl,
     apiKey,
-    webhookUrl: webhookUrl || undefined,
+    webhookUrl,
     requestTimeoutMs
   };
 }
@@ -114,6 +127,11 @@ export class CalleApiAdapter implements CallEPort {
   }
 
   public async startCall(task: CallTask, brief: CallBrief): Promise<CallEResult> {
+    const taskPrompt = `${brief.disclosure}\n\n${brief.goal}`.trim();
+    if (!taskPrompt) {
+      throw new CallValidationError('CALL-E task must contain a disclosure or goal');
+    }
+
     // Resolving the number here, after the task and its idempotency reservation
     // are already durable, keeps the raw number's lifetime to a single call
     // frame. It is never persisted, logged, or returned.
@@ -125,7 +143,7 @@ export class CalleApiAdapter implements CallEPort {
     }
 
     const body = {
-      task: `${brief.disclosure}\n\n${brief.goal}`,
+      task: taskPrompt,
       // `recipients` is an array of recipient objects, each holding a `phones`
       // array — verified against the CALL-E Developer API OpenAPI document
       // (v0.6.0), not inferred from the README prose. FieldRelay authorizes
@@ -147,7 +165,7 @@ export class CalleApiAdapter implements CallEPort {
         call_display_id: task.displayId,
         purpose: task.purpose
       },
-      ...(this.config.webhookUrl ? { webhook_url: this.config.webhookUrl } : {})
+      webhook_url: this.config.webhookUrl
     };
 
     const response = await this.post(CREATE_CALL_PATH, body, task.id);
@@ -178,6 +196,9 @@ export class CalleApiAdapter implements CallEPort {
   private async post(path: string, body: unknown, idempotencyKey: string): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.requestTimeoutMs);
+    // The HTTP request itself owns process liveness. This watchdog must not keep
+    // a worker or a shutting-down server alive on its own.
+    timer.unref();
     try {
       return await this.fetchImpl(`${this.config.baseUrl}${path}`, {
         method: 'POST',

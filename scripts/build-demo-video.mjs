@@ -3,6 +3,7 @@
 //   node scripts/build-demo-video.mjs
 //
 // Output: assets/demo/fieldrelay-demo.mp4  (1920x1080, h264, AAC)
+// Use --draft to intentionally build the still-image placeholder version.
 //
 // Each beat is one narration segment paired with one or more frames. Segment
 // duration drives the cut, so the picture always changes on the sentence rather
@@ -29,6 +30,14 @@ const FRAMES = join(ROOT, 'assets', 'demo', 'frames');
 const NARR = join(ROOT, 'assets', 'demo', 'narration');
 const OUT = join(ROOT, 'assets', 'demo');
 const WORK = join(OUT, '.build');
+const PHONE_CLIP = join(OUT, 'phone-call.mp4');
+const draft = process.argv.includes('--draft');
+
+if (!existsSync(PHONE_CLIP) && !draft) {
+  console.error('  missing assets/demo/phone-call.mp4');
+  console.error('  Final evidence must include genuine handset footage. Use --draft only for review builds.');
+  process.exit(1);
+}
 
 const CANVAS = '0x0C0E13';
 
@@ -71,6 +80,24 @@ for (const [slug, frames] of BEATS) {
   }
   // A little air after each beat so a cut never lands on the last syllable.
   const beatSeconds = duration(audio) + 0.7;
+
+  if (slug === '04-phone-rings' && existsSync(PHONE_CLIP)) {
+    const clip = join(WORK, `clip-${clips.length.toString().padStart(2, '0')}.mp4`);
+    ff([
+      '-stream_loop', '-1', '-i', PHONE_CLIP,
+      '-t', beatSeconds.toFixed(3),
+      '-an',
+      '-vf',
+      `scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=${CANVAS},fps=30,format=yuv420p`,
+      '-c:v', 'libx264', '-preset', 'medium', '-crf', '20',
+      clip
+    ]);
+    clips.push(clip);
+    timeline += beatSeconds;
+    console.log(`  ${slug.padEnd(20)} ${beatSeconds.toFixed(1)}s  genuine phone footage`);
+    continue;
+  }
+
   const per = beatSeconds / frames.length;
 
   frames.forEach((frame, index) => {
@@ -122,7 +149,10 @@ const audioTrack = join(WORK, 'audio.m4a');
 ff(['-f', 'concat', '-safe', '0', '-i', audioList, '-c', 'copy', audioTrack]);
 
 // ---- mux -----------------------------------------------------------------
-const finalPath = join(OUT, 'fieldrelay-demo.mp4');
+const outputName = draft && !existsSync(PHONE_CLIP)
+  ? 'fieldrelay-demo-DRAFT.mp4'
+  : 'fieldrelay-demo.mp4';
+const finalPath = join(OUT, outputName);
 ff([
   '-i', videoTrack,
   '-i', audioTrack,
@@ -133,7 +163,10 @@ ff([
 ]);
 
 const runtime = duration(finalPath);
-console.log(`\n  fieldrelay-demo.mp4   ${runtime.toFixed(1)}s   (narration timeline ${timeline.toFixed(1)}s)`);
+console.log(`\n  ${outputName}   ${runtime.toFixed(1)}s   (narration timeline ${timeline.toFixed(1)}s)`);
+if (draft && !existsSync(PHONE_CLIP)) {
+  console.log('  DRAFT ONLY — placeholder phone segment; do not upload as submission evidence.');
+}
 if (runtime >= 179) {
   console.log('  OVER THE 3:00 DEVPOST LIMIT — trim a beat before uploading.');
 } else {

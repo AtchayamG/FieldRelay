@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">FieldRelay runtime and safety architecture</title>
+  <desc id="desc">An Angular operations console calls a NestJS application. Domain guardrails commit a call task before the CALL-E adapter contacts an authorized phone. Structured webhooks return through validation, human approval, and dispatch.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#05070c" flood-opacity="0.38"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12Z" fill="#5f718f"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12Z" fill="#3b7dff"/>
+    </marker>
+    <style>
+      .sans{font-family:'Geist Variable','Geist',system-ui,sans-serif}.mono{font-family:'Geist Mono Variable','Geist Mono',monospace}
+      .eyebrow{font-size:16px;font-weight:650;letter-spacing:2.4px;fill:#8b9ab3}.heading{font-size:42px;font-weight:650;fill:#f7f8fa}
+      .sub{font-size:20px;fill:#9da9bd}.label{font-size:23px;font-weight:620;fill:#f7f8fa}.body{font-size:17px;fill:#aeb8ca}
+      .tiny{font-size:15px;fill:#7f8ca3}.shell{fill:#171b24;stroke:#30394a;stroke-width:1.5}.core{fill:#11151d;stroke:#252d3b;stroke-width:1}
+      .blue{fill:#142443;stroke:#3b7dff;stroke-width:1.5}.amber{fill:#2b2014;stroke:#c77820;stroke-width:1.5}.green{fill:#13261f;stroke:#28a77b;stroke-width:1.5}
+      .line{fill:none;stroke:#5f718f;stroke-width:2.5;marker-end:url(#arrow)}.live{fill:none;stroke:#3b7dff;stroke-width:3;marker-end:url(#arrowBlue)}
+      .dash{stroke-dasharray:9 8}.pill{fill:#202837;stroke:#3b465a;stroke-width:1}.pilltext{font-size:14px;font-weight:620;letter-spacing:1px;fill:#bdc7d8}
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0c0e13"/>
+  <circle cx="1470" cy="80" r="250" fill="#142443" opacity="0.45"/>
+  <text x="90" y="78" class="sans eyebrow">FIELDRELAY · VERIFIED RUNTIME</text>
+  <text x="90" y="132" class="sans heading">A phone call becomes a governed decision</text>
+  <text x="90" y="174" class="sans sub">CALL-E executes the call. FieldRelay owns authorization, state, validation, approval, and dispatch.</text>
+
+  <!-- Main components -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="260" width="270" height="190" rx="18" class="shell"/>
+    <rect x="97" y="267" width="256" height="176" rx="12" class="core"/>
+    <text x="125" y="316" class="sans label">Operations console</text>
+    <text x="125" y="350" class="sans body">Angular 20 · Ionic</text>
+    <text x="125" y="382" class="sans body">Session-protected routes</text>
+    <rect x="125" y="405" width="143" height="27" rx="13" class="pill"/>
+    <text x="142" y="424" class="mono pilltext">HTTPS / JSON</text>
+
+    <rect x="455" y="235" width="310" height="240" rx="18" class="shell"/>
+    <rect x="462" y="242" width="296" height="226" rx="12" class="core"/>
+    <text x="492" y="292" class="sans label">NestJS application</text>
+    <text x="492" y="327" class="sans body">Use cases + transaction port</text>
+    <text x="492" y="359" class="sans body">Replay-safe callback ingestion</text>
+    <text x="492" y="391" class="sans body">Schema validation + policy</text>
+    <rect x="492" y="421" width="184" height="28" rx="14" class="pill"/>
+    <text x="508" y="440" class="mono pilltext">DEPENDENCIES INWARD</text>
+
+    <rect x="890" y="245" width="270" height="205" rx="18" class="blue"/>
+    <text x="925" y="298" class="sans label">CALL-E adapter</text>
+    <text x="925" y="334" class="sans body">Exact mode: live</text>
+    <text x="925" y="366" class="sans body">One allowlisted target</text>
+    <text x="925" y="398" class="sans body">Task UUID = idempotency key</text>
+    <circle cx="932" cy="423" r="5" fill="#3b7dff"/>
+    <text x="947" y="429" class="mono tiny">provider boundary</text>
+
+    <rect x="1260" y="260" width="250" height="175" rx="18" class="shell"/>
+    <rect x="1267" y="267" width="236" height="161" rx="12" class="core"/>
+    <text x="1300" y="318" class="sans label">Authorized phone</text>
+    <text x="1300" y="354" class="sans body">Disclosure first</text>
+    <text x="1300" y="386" class="sans body">Purpose-bounded contact</text>
+  </g>
+
+  <!-- Connections top -->
+  <path d="M360 350H455" class="line"/>
+  <text x="377" y="334" class="mono tiny">REST</text>
+  <path d="M765 350H890" class="live"/>
+  <text x="793" y="331" class="mono tiny">POST /v1/calls</text>
+  <path d="M1160 350H1260" class="live"/>
+  <text x="1183" y="331" class="mono tiny">PSTN</text>
+
+  <!-- Safety core -->
+  <rect x="90" y="560" width="675" height="230" rx="18" class="amber" filter="url(#shadow)"/>
+  <text x="125" y="610" class="sans eyebrow" fill="#d99a51">BEFORE PROVIDER I/O</text>
+  <text x="125" y="650" class="sans label">Durable safety gate</text>
+  <g class="sans body">
+    <text x="125" y="690">01  Authorized contact + permitted purpose</text>
+    <text x="125" y="725">02  Explicit disclosure + bounded result schema</text>
+    <text x="125" y="760">03  Call task and idempotency reservation committed</text>
+  </g>
+
+  <rect x="890" y="560" width="620" height="230" rx="18" class="green" filter="url(#shadow)"/>
+  <text x="925" y="610" class="sans eyebrow" fill="#63cda7">AFTER STRUCTURED WEBHOOK</text>
+  <text x="925" y="650" class="sans label">Human-accountable outcome</text>
+  <g class="sans body">
+    <text x="925" y="690">01  Replay check + strict structured-result validation</text>
+    <text x="925" y="725">02  Cost / low confidence / partial answer → approval</text>
+    <text x="925" y="760">03  Approved decision → one dispatch; otherwise stop</text>
+  </g>
+
+  <!-- Persistence and callback paths -->
+  <path d="M610 475V560" class="line"/>
+  <text x="626" y="526" class="mono tiny">transaction</text>
+  <path d="M1025 450V518H1210V560" class="live dash"/>
+  <text x="1044" y="507" class="mono tiny">token-authenticated webhook</text>
+  <path d="M890 675H765" class="line"/>
+
+  <!-- Footer invariants -->
+  <rect x="90" y="827" width="1420" height="1" fill="#2d3544"/>
+  <circle cx="105" cy="858" r="5" fill="#d22f3a"/>
+  <text x="120" y="864" class="mono tiny">NO AUTO-REDIAL ON AMBIGUITY</text>
+  <circle cx="490" cy="858" r="5" fill="#c77820"/>
+  <text x="505" y="864" class="mono tiny">NO RAW NUMBER OR TRANSCRIPT PERSISTED</text>
+  <circle cx="980" cy="858" r="5" fill="#28a77b"/>
+  <text x="995" y="864" class="mono tiny">NO COST COMMITMENT WITHOUT A PERSON</text>
+</svg>

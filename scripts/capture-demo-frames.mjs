@@ -40,7 +40,7 @@ const SHOTS = [
   ['04-mission-orchestration', '/mission-control', 1250, 2500],
   ['05-incidents', '/incidents', 0, 2000],
   ['06-calls', '/calls', 0, 2000],
-  ['07-approvals-approved', '/approvals?status=approved', 0, 2500],
+  ['07-approvals-approved', '/approvals', 0, 2500],
   ['08-dispatch', '/dispatch', 0, 2500],
   ['09-vendors', '/vendors', 0, 2500],
   ['10-vendors-revoked', '/vendors', 420, 2500],
@@ -85,6 +85,18 @@ try {
   for (const [slug, path, scrollY, settle] of SHOTS.slice(1)) {
     await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle2', timeout: 60000 });
     await new Promise((r) => setTimeout(r, settle));
+    // Approval status is component state, not a URL query. A query string used
+    // here previously produced an empty Pending screenshot while naming the
+    // file "approved", hiding the video's central human-gate evidence.
+    if (slug === '07-approvals-approved') {
+      await page.evaluate(() => {
+        const button = [...document.querySelectorAll('button')].find(
+          (candidate) => candidate.textContent?.trim() === 'Approved'
+        );
+        button?.click();
+      });
+      await new Promise((r) => setTimeout(r, 1200));
+    }
     if (scrollY > 0) {
       await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), scrollY);
       await new Promise((r) => setTimeout(r, 700));

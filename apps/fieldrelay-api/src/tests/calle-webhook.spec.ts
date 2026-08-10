@@ -220,13 +220,19 @@ describe('selectCallEAdapter', () => {
     expect(selectCallEAdapter({ CALL_E_MODE: '' }).describe().simulated).toBe(true);
     expect(selectCallEAdapter({ CALL_E_MODE: 'demo' }).describe().simulated).toBe(true);
     expect(selectCallEAdapter({ CALL_E_MODE: 'production' }).describe().simulated).toBe(true);
+    expect(selectCallEAdapter({ CALL_E_MODE: 'Live' }).describe().simulated).toBe(true);
+    expect(selectCallEAdapter({ CALL_E_MODE: ' live' }).describe().simulated).toBe(true);
+    expect(selectCallEAdapter({ CALL_E_MODE: 'live ' }).describe().simulated).toBe(true);
   });
 
   it('selects the live adapter when the mode and configuration are both present', () => {
     const adapter = selectCallEAdapter({
       CALL_E_MODE: 'live',
       CALLE_BASE_URL: 'https://api.example.test',
-      CALLE_API_KEY: 'calle_test_key_0123456789'
+      CALLE_API_KEY: 'calle_test_key_0123456789',
+      CALLE_WEBHOOK_URL:
+        'https://fieldrelay.example.test/api/v1/call-e/webhook?token=webhook_test_token_0123456789',
+      CALLE_WEBHOOK_TOKEN: 'webhook_test_token_0123456789'
     });
     expect(adapter.describe()).toEqual({ mode: 'live', simulated: false });
   });

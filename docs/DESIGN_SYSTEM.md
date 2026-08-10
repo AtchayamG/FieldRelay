@@ -122,11 +122,11 @@ It reports every referenced-but-undefined custom property and flags the ones mas
 
 ## Typography
 
-Inter and JetBrains Mono are **retired**. Inter is the single most recognisable typographic tell of generated interfaces. The fallback chain degrades to the platform grotesque, never to Arial.
+Inter and JetBrains Mono are **retired**. Geist Variable and Geist Mono Variable are self-hosted through `@fontsource-variable`, so typography does not depend on Google Fonts or conflict with the production CSP. The fallback chain degrades to the platform grotesque, never to Arial.
 
 ```css
---fr-font-primary: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
---fr-font-technical: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
+--fr-font-primary: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+--fr-font-technical: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
 ```
 
 Anything a person might read aloud on a phone call — an ID, an amount, a number — is set in mono. That is a semantic rule, not a decorative one.
@@ -144,7 +144,7 @@ Enforced by `npx impeccable detect apps/fieldrelay-app/src`.
 - **No rounded-square icon tile above a heading.**
 - **One radius scale**, followed everywhere.
 
-## Detector baseline — 2026-08-07
+## Detector baseline — 2026-08-10
 
 First clean run after the brand change found **12 anti-patterns**, and the shape of them is diagnostic: 11 of 12 are the same tell.
 
@@ -153,7 +153,7 @@ First clean run after the brand change found **12 anti-patterns**, and the shape
 | `side-tab` | 11 | metric-card ×4, mission-control ×3, sidebar, approvals, sign-in, call-detail |
 | `layout-transition` | 1 | sidebar animates `width` |
 
-Both are fixed in the token-and-shell pass, not piecemeal. Re-run the detector after every UI change; it needs no API key and no LLM.
+Both remain fixed. The 2026-08-10 submission audit again reports **zero findings** after the font, landmark, and status-copy changes. Re-run the detector after every UI change; it needs no API key and no LLM.
 
 ## Order of work
 
