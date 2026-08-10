@@ -14,13 +14,13 @@ Both fields are pre-filled, so **Continue as Demo Ops Manager** signs you straig
 
 Suggested path: Mission Control → Incidents → open an incident → Calls & AI Ops → open a call record → Settings.
 
-### Making CALL-E call *your* phone
+### Supervised CALL-E demonstration
 
 **FieldRelay dials exactly one number, and it is always a number somebody deliberately provisioned.** There is no code path that accepts a phone number from a request body, a database row, or a call transcript. That is the point of the product, so it is also the point of this section.
 
-The live demo **ships with a working call target already configured** — a maintainer's phone — so a real call can be placed the moment you sign in, without setting anything up. Settings shows it masked to its last four digits, which is all the API will ever return.
+The hosted environment may be switched between demo and live mode by the maintainer. **Do not place a real call unless the maintainer or a judge has explicitly arranged a supervised test.** The public credentials are for exploring the workflow, not permission to spend the project's metered call allowance or ring the provisioned contact.
 
-**To make the call ring *your* phone instead** (recommended — hearing it is the whole demo):
+For an arranged live judging session, the operator can point the next authorized call at the judge's own phone:
 
 1. Sign in and open **Settings**.
 2. Under **Live call target**, enter:
@@ -29,7 +29,7 @@ The live demo **ships with a working call target already configured** — a main
    - **Language locale** — e.g. `en-US`, `en-IN`, `en-GB`.
    - **Authorized contact** — leave as `CNS-4491`.
 3. **Save call target.** Takes effect on the next call. No redeploy, no restart.
-4. Open an incident and start a vendor-availability call. **Your phone will ring**, an AI agent will ask about a fictional plumbing job, and the validated answer appears on the call record.
+4. Open an incident and start a vendor-availability call only after confirming the session is in live mode. The validated answer appears on the call record after the provider webhook completes.
 
 Your number replaces the previous target rather than adding to it, so only ever one phone can ring. Press **Remove** and the target falls back to whatever the environment provisioned.
 
@@ -68,7 +68,7 @@ Set it wherever your environment lives:
 | Vercel | Project → Settings → Environment Variables → `CALLE_DIAL_TARGETS` |
 | Docker | `docker-compose.judge.yml`, or `-e CALLE_DIAL_TARGETS=...` |
 
-The public demo has this set to a maintainer's number, so calls work out of the box.
+The hosted environment keeps this value private. The API exposes only a masked suffix.
 
 #### 2. Settings → Live call target — the runtime override
 

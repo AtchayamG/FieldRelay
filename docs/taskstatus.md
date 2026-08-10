@@ -223,3 +223,16 @@
 - Calls spent: 4 of a finite allowance reserved for judges
 - UPSTREAM PR #107 IS ALIVE: maintainer `@Ray-56` pushed two commits on 2026-08-10 — `23e2261` "chore: merge main into service-dispatch-call" and `6028053` "chore: sync service-dispatch-call with main". A maintainer syncing a contributor branch with main is normally what happens immediately before a merge. No review comments requesting changes
 - Remaining before submission: open the upstream PR (user approval), record the golden demo, architecture diagram, gallery screenshots, Dispatch route, and the user-only items (CALL-E account email, attestations, video upload, final submit)
+
+## 2026-08-10 — Codex submission-readiness audit
+
+- Created `codex/submission-readiness-audit`; no push, deployment, production mutation, metered call, or submission action performed
+- Upstream community contribution [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) independently verified **approved and merged**
+- Fixed the red GitHub workflow bootstrap: pnpm was pinned in `package.json` and again as a different broad version in `pnpm/action-setup`; the duplicate workflow version is removed
+- Upgraded Angular to patched 20.3.27, aligned DevKit overrides, self-hosted Geist Variable/Mono Variable, and removed the production Google Fonts CSP violation; `pnpm audit --prod` now reports no known vulnerabilities
+- Tightened call safety: only byte-exact `live` selects the real adapter; live boot requires a token-bound HTTPS webhook; `webhook_url` is always sent; empty speaking tasks fail before resolving a number or contacting CALL-E
+- Corrected Mission Control's active incident/call counts to query the full repository using actual domain statuses; replaced the queued-call claim that nothing had dialed; removed nested `main` landmarks
+- Fixed demo frame capture to select Approved and made the final video builder require genuine handset footage; placeholder builds require `--draft` and receive a DRAFT filename
+- Full local verification: **438 tests** with PostgreSQL (303 API + 133 app + 2 tokens), ESLint, strict typecheck, production build, token checker, impeccable detector zero, dependency audit clean, full-history Gitleaks clean
+- Judge Docker images rebuilt; `/health` and `/` return 200. Local 390x844 route audit and read-only live route/deep-link audit completed
+- Remaining: user approval to push/deploy; production webhook values; refreshed CALL-E authorization/provider inspection; genuine final video; gallery/architecture assets; license and Devpost human actions

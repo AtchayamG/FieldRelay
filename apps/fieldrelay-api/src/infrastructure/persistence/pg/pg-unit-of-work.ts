@@ -250,6 +250,14 @@ class PgCallTaskRepository implements CallTaskRepositoryPort {
     return Number(result.rows[0]?.n ?? 0);
   }
 
+  public async countByStatuses(statuses: readonly CallStatus[]): Promise<number> {
+    const result = await this.client.query<{ n: string }>(
+      'SELECT count(*) AS n FROM call_tasks WHERE status = ANY($1::text[])',
+      [statuses]
+    );
+    return Number(result.rows[0]?.n ?? 0);
+  }
+
   public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
     const conditions: string[] = [];
     const params: unknown[] = [];
@@ -789,6 +797,14 @@ class PgIncidentRepository implements IncidentRepositoryPort {
       [id]
     );
     return rows.length > 0 ? toIncident(rows[0]) : null;
+  }
+
+  public async countByStatuses(statuses: readonly IncidentStatus[]): Promise<number> {
+    const result = await this.client.query<{ n: string }>(
+      'SELECT count(*) AS n FROM incidents WHERE status = ANY($1::text[])',
+      [statuses]
+    );
+    return Number(result.rows[0]?.n ?? 0);
   }
 
   public async list(query: ListIncidentsQuery): Promise<IncidentPage> {

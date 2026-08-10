@@ -53,12 +53,12 @@ Mission Control opens with these, reported live from configuration. When a guard
 **Clean Architecture, enforced.** Domain imports nothing — no NestJS, no HTTP, no persistence, no CALL-E types. Dependencies point inward. CALL-E sits behind `CallEPort` with two implementations selected by configuration.
 
 - **Frontend** — Angular 20 / Ionic, standalone components, centralised design tokens, dark and light parity.
-- **API** — NestJS, PostgreSQL, seven migrations, transactional unit of work.
+- **API** — NestJS, PostgreSQL, eight migrations, transactional unit of work.
 - **CALL-E** — the Developer API (`POST /v1/calls`) with bearer auth, a per-task idempotency key, a purpose-derived brief carrying a mandatory disclosure, and a closed `result_schema`.
 - **Ingestion** — a token-authenticated webhook feeding a replay-safe callback pipeline with HMAC-signed provider callbacks, timestamp windows and event deduplication.
 - **Deployment** — Vercel: static SPA plus the whole API in one serverless function on the same origin, Neon PostgreSQL. Session-guarded by default; an anonymous request to any data route returns 401.
 
-**373 tests.** Not coverage theatre — they encode the refusals. There is a test asserting a leaked phone number never reaches storage, and one asserting a quoted amount never appears in the audit trail.
+**438 tests.** Not coverage theatre — they encode the refusals. There is a test asserting a leaked phone number never reaches storage, one asserting a quoted amount never appears in the audit trail, and regression coverage for exact live-mode selection, mandatory webhooks, empty speaking tasks, and PostgreSQL behavior.
 
 ## Challenges we ran into
 
@@ -75,7 +75,7 @@ Mission Control opens with these, reported live from configuration. When a guard
 - **A real call, placed by the application itself** — not by a CLI, not by a person — returning a schema-conforming structured result with FieldRelay's own task IDs round-tripped through provider metadata.
 - **The refusal inventory above**, all of it built and tested rather than described.
 - **HMAC-authenticated, replay-safe webhook ingestion** with timestamp windows and event deduplication.
-- **A live deployment judges can use**, incapable of spending our call balance unless we choose otherwise.
+- **A live deployment judges can use**, with a separate demo adapter and an exact-value live switch so dialing cannot be enabled by a typo.
 
 ## What we learned
 
@@ -85,7 +85,7 @@ Mission Control opens with these, reported live from configuration. When a guard
 
 ## What's next
 
-Honestly: nine of fifteen designed routes are unbuilt. Dispatch is the next one and completes the loop. Mission Control's orchestration panel is illustrative rather than live. There is no automated accessibility or visual-regression testing. The webhook is authenticated by a URL token because CALL-E publishes no signing scheme for it — if one appears, we'll use it.
+Every navigation route is now implemented, including the human approval and dispatch loop. Next we would add automated accessibility and visual-regression testing, reduce the framework entry chunk, and replace URL-token webhook authentication if CALL-E publishes a signing scheme.
 
 ## Built With
 
@@ -101,7 +101,7 @@ Angular · Ionic · TypeScript · NestJS · PostgreSQL · Neon · Vercel · CALL
 
 ## Pre-submission checklist
 
-- [x] Upstream PR to `CALLE-AI/awesome-phone-call-agents` — **open**, [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107), contributed to `skills/` as `service-dispatch-call`
+- [x] Upstream PR to `CALLE-AI/awesome-phone-call-agents` — **approved and merged**, [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107), contributed to `skills/` as `service-dispatch-call`
 - [ ] Public video under 3 minutes on YouTube or Vimeo
 - [ ] CALL-E account email
 - [ ] Age / country / conflict attestations

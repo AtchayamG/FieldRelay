@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { GetAnalyticsUseCase } from '../application/get-analytics.use-case';
 import { ListTechniciansUseCase } from '../application/list-technicians.use-case';
+import { GetMissionControlUseCase } from '../application/get-mission-control.use-case';
 import { Incident } from '../domain/incident.entity';
 import {
   InMemoryDatabase,
@@ -123,5 +124,21 @@ describe('ListTechniciansUseCase', () => {
 
     expect(result.items).toEqual([]);
     expect(result.derivedFromIncidents).toBe(0);
+  });
+});
+
+describe('GetMissionControlUseCase', () => {
+  it('counts every open domain status instead of stale presentation names', async () => {
+    const db = new InMemoryDatabase();
+    seedIncidents(db);
+
+    const result = await new GetMissionControlUseCase(
+      new InMemoryTransactionManager(db),
+      0,
+      'demo',
+      false
+    ).execute();
+
+    expect(result.metrics.activeIncidents).toBe(2);
   });
 });

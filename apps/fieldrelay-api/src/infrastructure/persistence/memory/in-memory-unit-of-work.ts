@@ -34,8 +34,8 @@ import type {
 } from '../../../application/dispatch.port';
 import { Approval } from '../../../domain/approval.entity';
 import { Dispatch } from '../../../domain/dispatch.entity';
-import { CallTask } from '../../../domain/call-task.entity';
-import { Incident } from '../../../domain/incident.entity';
+import { CallStatus, CallTask } from '../../../domain/call-task.entity';
+import { Incident, IncidentStatus } from '../../../domain/incident.entity';
 
 // TEST-ONLY. This adapter is never wired into AppModule: deployment
 // persistence is PostgreSQL from DATABASE_URL, and a volatile fallback would
@@ -180,6 +180,16 @@ class InMemoryCallTaskRepository implements CallTaskRepositoryPort {
     return [...byId.values()].filter((task) => !task.simulated).length;
   }
 
+  public async countByStatuses(statuses: readonly CallStatus[]): Promise<number> {
+    const byId = new Map(
+      [...this.db.callTasks, ...this.inserted, ...this.updated.values()].map((task) => [
+        task.id,
+        task
+      ])
+    );
+    return [...byId.values()].filter((task) => statuses.includes(task.status)).length;
+  }
+
   public async list(query: ListCallTasksQuery): Promise<CallTaskPage> {
     const byId = new Map(
       [...this.db.callTasks, ...this.inserted, ...this.updated.values()].map((task) => [
@@ -247,6 +257,12 @@ class InMemoryIncidentRepository implements IncidentRepositoryPort {
     return (
       this.staged.find((i) => i.id === id) ?? this.db.incidents.find((i) => i.id === id) ?? null
     );
+  }
+
+  public async countByStatuses(statuses: readonly IncidentStatus[]): Promise<number> {
+    return [...this.db.incidents, ...this.staged].filter((incident) =>
+      statuses.includes(incident.status)
+    ).length;
   }
 
   public async list(query: ListIncidentsQuery): Promise<IncidentPage> {

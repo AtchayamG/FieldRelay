@@ -14,8 +14,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@angular-devkit/core": "20.3.18",
-      "@angular-devkit/schematics": "20.3.18",
+      "@angular-devkit/core": "20.3.27",
+      "@angular-devkit/schematics": "20.3.27",
       "@babel/core": ">=7.29.6",
       "esbuild": ">=0.28.1",
       "qs": ">=6.15.2",

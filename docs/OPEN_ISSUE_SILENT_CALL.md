@@ -1,71 +1,50 @@
 # Open issue — the live call connects but nobody speaks
 
-**Status: OPEN.** Blocks the demo video's most important segment. Raised 2026-08-10.
+**Status: OPEN.** Raised 2026-08-10; blocks genuine phone footage for the final demo.
 
-## What happened
+## Observed
 
-`CALL-2042-0003` was placed against the live CALL-E adapter on 2026-08-10 at 13:42 UTC to the provisioned target (contact `CNS-4491`, ending `3923`, region IN, locale `en-IN`).
+Call `CALL-2042-0003` was placed through the live adapter on 2026-08-10 for authorized contact `CNS-4491`.
 
-- The phone **rang**. The integration reached the telephone network.
-- The call was **answered**.
-- **Nothing was said from CALL-E's end.** Dead air.
-- The call **closed itself** after a short period.
-- Recording evidence: 27.8s clip, audio `mean_volume -30.7 dB`, `max_volume -10.1 dB` — that is room tone, not speech.
-- FieldRelay's record for the call is **still `queued`** with no outcome, days later.
+- The phone rang and was answered.
+- CALL-E produced dead air, then the call closed.
+- A 27.8-second recording contains room tone rather than speech.
+- FieldRelay still shows `queued` because the deployed request supplied no webhook URL.
 
-## Two separate faults, do not conflate them
+Do not publish the private number, transcript, recording, or raw provider payload.
 
-### Fault A — no status ever comes back (CONFIRMED, ours, easy)
+## Fault A — terminal state cannot return (confirmed, ours)
 
-`CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` are **not set in Vercel production**. Verified with `npx vercel env ls production`; only `CALLE_DIAL_TARGETS`, `CALL_E_MODE`, `CALLE_API_KEY`, `CALLE_BASE_URL` are present.
+Production lacks `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN`. The deployed build therefore gives CALL-E no callback destination. This explains the stuck local status, but not the silent audio.
 
-In `calle-api.adapter.ts` the webhook URL is spread conditionally:
+**Fixed locally on `codex/submission-readiness-audit`:** live mode now refuses to boot unless it receives an HTTPS webhook URL, a token of at least 24 characters, and an exact URL-token match. The adapter always sends the URL. Production still needs an approved environment update and redeploy.
 
-```ts
-...(this.config.webhookUrl ? { webhook_url: this.config.webhookUrl } : {})
-```
+Configure without printing the token:
 
-With the variable unset, **no `webhook_url` is sent at all**, so CALL-E has nowhere to report the terminal event. The call task can therefore never leave `queued`, no outcome is ever stored, and no approval is ever raised — regardless of how well the call itself goes.
-
-This fully explains the stuck status. **It does not explain the silence.**
-
-**Fix:** set both variables in Vercel production and redeploy.
-
-```
+```text
 CALLE_WEBHOOK_URL=https://fieldrelay-pi.vercel.app/api/v1/call-e/webhook?token=<TOKEN>
-CALLE_WEBHOOK_TOKEN=<TOKEN>
+CALLE_WEBHOOK_TOKEN=<same TOKEN>
 ```
 
-Generate a long random token; the same value goes in both, since the route authenticates on the `token` query parameter (or the `x-calle-webhook-token` header). Do not print it to a terminal.
+## Fault B — the agent said nothing (unresolved)
 
-### Fault B — the agent said nothing (UNDIAGNOSED, possibly theirs)
+The request contract is verified against the published OpenAPI shape: a non-empty disclosed task, one authorized `recipients[].phones[]` target, a supported result schema, correlation-only metadata, and the webhook URL.
 
-The request body we send is believed correct — it was rebuilt against the published OpenAPI document, not the README prose:
+The local adapter now rejects an empty composed speaking task before it resolves a phone number or contacts the provider, with regression coverage. Remaining likely explanations are:
 
-```ts
-{
-  task: `${brief.disclosure}\n\n${brief.goal}`,
-  recipients: [{ phones: [E164], region, locale }],
-  result_schema: toProviderSchema(brief.resultSchema),
-  metadata: { call_task_id, call_display_id, purpose }
-}
-```
+1. The provider record shows an agent/runtime error.
+2. The `en-IN` locale did not select a usable voice; compare with the earlier successful call before changing it.
+3. A provider-side transient affected this call.
 
-`task` carries the disclosure and the goal, so the agent has something to say. Candidate causes, in order of likelihood:
+## Next steps, in order
 
-1. **`locale: 'en-IN'` may not have a usable voice.** The earlier successful call (`call_MzD1ou1AbX1XtYkTnxMCBA`, recorded in `CALL_E_RUNTIME_PROOF.md`) is the control case — check which region/locale it used. If it differs, this is almost certainly the cause. **Try `en-US` first; it is a one-field change in Settings.**
-2. **`brief.goal` or `brief.disclosure` resolved empty** for `vendor_availability`, producing a `task` string of just a newline. Log the composed `task` length locally before sending — do not log its contents.
-3. **A CALL-E-side failure** on the agent runtime. Nothing in our code can cause or fix this.
+1. Complete refreshed CALL-E authorization and inspect `CALL-2042-0003`: status, duration, transcript/event history, and runtime error. No new call first.
+2. With user approval, add the two production webhook values and deploy the audited branch.
+3. Re-run the read-only production audit.
+4. Only if the provider evidence gives a concrete correction, authorize one final supervised call and film genuine handset footage.
 
-## What to do next, in this order
+## Safety rules
 
-1. **Read the CALL-E dashboard for this call.** It should show status, duration, and a transcript. That single step separates "we sent a bad request" from "their agent failed", and nothing else here should be attempted before it. Nobody has looked yet.
-2. **Set the two webhook variables** (Fault A). Independent of Fault B and worth doing regardless.
-3. **Assert `task` is non-empty** in `startCall` before posting, throwing `CallValidationError` if it is. A call that says nothing still costs a call and a person's time.
-4. **Only then place one more test call**, after changing locale to `en-US`.
-
-## Rules that still apply
-
-- **The allowance is finite and reserved for judges.** Four have been spent. Do not place a call to test a code change; the demo adapter exists for that.
-- **Never retry a call that looks stuck.** A client timeout already caused a duplicate dial once, and this call proves a call can complete on CALL-E's side while our record still reads `queued`. Redialling on a stale local status is exactly how it happens again.
-- The current demo video (`assets/demo/fieldrelay-demo.mp4`, 2:30) has a **17.8-second placeholder** at beat 4 for phone footage. It is submittable without it, but that segment is the strongest thirty seconds available and stays empty until this is resolved.
+- Four metered calls have been spent and the remaining allowance is for judging.
+- Never redial because FieldRelay looks stuck. A real call may have occurred even when the local status is ambiguous.
+- Never create synthetic phone footage. The current 2:30 video is a **draft**, with a 17.8-second placeholder and a stale Approvals frame. `scripts/build-demo-video.mjs` now refuses the final filename unless genuine `assets/demo/phone-call.mp4` exists.

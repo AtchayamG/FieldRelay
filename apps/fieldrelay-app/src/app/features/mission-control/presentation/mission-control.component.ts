@@ -136,7 +136,7 @@ import { Observable } from 'rxjs';
               <fr-icon class="card-icon" name="incidents" [size]="18" />
               <h2 class="card-title">Incident Command Queue</h2>
             </div>
-            <span class="badge-count font-mono">{{ data.incidents.length }} Active</span>
+            <span class="badge-count font-mono">{{ data.incidents.length }} Recent</span>
           </div>
 
           <!-- Desktop/Tablet View Table -->

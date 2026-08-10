@@ -1,0 +1,5 @@
+# Exact historical fingerprints for documented test-only signing values. Keeping
+# this at fingerprint granularity means a new secret in the same test file still
+# fails the scan.
+9797594c4ab29c06b6f7ab69ad9bafc07fc846e5:apps/fieldrelay-api/src/tests/session-auth.spec.ts:generic-api-key:10
+c02421c1f097cfd004923fa2ded8450adec430f1:apps/fieldrelay-api/src/tests/http-api.e2e.spec.ts:generic-api-key:34

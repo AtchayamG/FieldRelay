@@ -206,9 +206,9 @@ export function buildOrchestration(state: MissionControlState): OrchestrationSte
     },
     {
       stepIndex: 4,
-      name: dialled ? 'Call placed' : 'Waiting to dial',
+      name: dialled ? 'Call placed' : 'Provider request queued',
       description: !dialled
-        ? 'Reserved and queued. Nothing has been dialled yet.'
+        ? 'CALL-E accepted the task, but FieldRelay has not received a later lifecycle update. This status does not claim whether the phone rang.'
         : call.simulated
           ? 'Placed through the demo adapter. No real line was used.'
           : 'Placed through the live CALL-E adapter on a real line, opening with a disclosure.',

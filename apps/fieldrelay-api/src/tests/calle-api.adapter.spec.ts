@@ -4,7 +4,8 @@ import { DialTarget, DialTargetResolverPort } from '../application/dial-target.p
 import {
   CallAuthorizationError,
   CallProviderConfigurationError,
-  CallProviderError
+  CallProviderError,
+  CallValidationError
 } from '../application/errors';
 import { CallTask } from '../domain/call-task.entity';
 import {
@@ -17,7 +18,8 @@ import { mapCalleStatus } from '../infrastructure/call-e/calle-status';
 const CONFIG: CalleApiConfig = {
   baseUrl: 'https://api.example.test',
   apiKey: 'calle_test_key_0123456789',
-  webhookUrl: 'https://fieldrelay.example.test/api/v1/call-e/webhook?token=abc',
+  webhookUrl:
+    'https://fieldrelay.example.test/api/v1/call-e/webhook?token=webhook_test_token_0123456789',
   requestTimeoutMs: 5000
 };
 
@@ -116,6 +118,24 @@ describe('CalleApiAdapter', () => {
     await expect(adapter.startCall(task(), brief)).rejects.toBeInstanceOf(CallAuthorizationError);
   });
 
+  it('refuses an empty task before resolving a phone number or contacting the provider', async () => {
+    let resolved = false;
+    const targets: DialTargetResolverPort = {
+      async resolve() {
+        resolved = true;
+        return TARGET;
+      }
+    };
+    const adapter = new CalleApiAdapter(CONFIG, targets, async () => {
+      throw new Error('the provider must not be contacted');
+    });
+
+    await expect(
+      adapter.startCall(task(), { ...brief, disclosure: ' ', goal: '\n' })
+    ).rejects.toBeInstanceOf(CallValidationError);
+    expect(resolved).toBe(false);
+  });
+
   it('raises a provider error on a rejected request without echoing the provider body', async () => {
     const adapter = new CalleApiAdapter(CONFIG, new StubDialTargets(TARGET), async () =>
       jsonResponse(422, { error: 'recipient +6512345678 is blocked' })
@@ -155,21 +175,6 @@ describe('CalleApiAdapter', () => {
     });
   });
 
-  it('omits webhook_url when none is configured', async () => {
-    let sent: Record<string, unknown> = {};
-    const adapter = new CalleApiAdapter(
-      { ...CONFIG, webhookUrl: undefined },
-      new StubDialTargets(TARGET),
-      async (_url, init) => {
-        sent = JSON.parse(String(init.body)) as Record<string, unknown>;
-        return jsonResponse(200, { call_id: 'c' });
-      }
-    );
-
-    await adapter.startCall(task(), brief);
-
-    expect(sent).not.toHaveProperty('webhook_url');
-  });
 });
 
 describe('mapCalleStatus', () => {
@@ -198,7 +203,10 @@ describe('mapCalleStatus', () => {
 describe('readCalleConfigFromEnv', () => {
   const valid = {
     CALLE_BASE_URL: 'https://api.example.test/',
-    CALLE_API_KEY: 'calle_test_key_0123456789'
+    CALLE_API_KEY: 'calle_test_key_0123456789',
+    CALLE_WEBHOOK_URL:
+      'https://fieldrelay.example.test/api/v1/call-e/webhook?token=webhook_test_token_0123456789',
+    CALLE_WEBHOOK_TOKEN: 'webhook_test_token_0123456789'
   };
 
   it('accepts a valid configuration and strips the trailing slash', () => {
@@ -211,9 +219,16 @@ describe('readCalleConfigFromEnv', () => {
   it.each([
     ['a missing base URL', { CALLE_API_KEY: valid.CALLE_API_KEY }],
     ['a plaintext base URL', { ...valid, CALLE_BASE_URL: 'http://api.example.test' }],
-    ['a missing API key', { CALLE_BASE_URL: valid.CALLE_BASE_URL }],
+    ['a missing API key', { ...valid, CALLE_API_KEY: undefined }],
     ['a short API key', { ...valid, CALLE_API_KEY: 'short' }],
-    ['a plaintext webhook URL', { ...valid, CALLE_WEBHOOK_URL: 'http://hooks.example.test' }]
+    ['a missing webhook URL', { ...valid, CALLE_WEBHOOK_URL: undefined }],
+    ['a plaintext webhook URL', { ...valid, CALLE_WEBHOOK_URL: 'http://hooks.example.test' }],
+    ['a missing webhook token', { ...valid, CALLE_WEBHOOK_TOKEN: undefined }],
+    ['a short webhook token', { ...valid, CALLE_WEBHOOK_TOKEN: 'short' }],
+    [
+      'a webhook URL whose token does not match',
+      { ...valid, CALLE_WEBHOOK_URL: 'https://hooks.example.test/callback?token=different_token_value_123456' }
+    ]
   ])('refuses %s', (_label, env) => {
     expect(() => readCalleConfigFromEnv(env as NodeJS.ProcessEnv)).toThrow(
       CallProviderConfigurationError

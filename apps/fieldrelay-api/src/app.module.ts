@@ -77,7 +77,7 @@ export function selectCallEAdapter(
   env: NodeJS.ProcessEnv,
   dialTargets: DialTargetResolverPort = new EnvDialTargetResolver()
 ): CallEPort {
-  if ((env.CALL_E_MODE ?? '').trim().toLowerCase() !== 'live') {
+  if (env.CALL_E_MODE !== 'live') {
     return new DemoCallEAdapter();
   }
   // Throws at boot when the live configuration is missing or unsafe, rather
@@ -185,7 +185,7 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
         new GetMissionControlUseCase(
           transactions,
           readPriorCallCount(process.env.CALLE_CALLS_PLACED_ELSEWHERE),
-          (process.env.CALL_E_MODE ?? '').trim().toLowerCase() === 'live' ? 'live' : 'demo',
+          process.env.CALL_E_MODE === 'live' ? 'live' : 'demo',
           runtimeDialTargetChangesAllowed(process.env)
         ),
       inject: [TRANSACTION_PORT]
@@ -224,7 +224,7 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
           // deployment — the CLI and the local proof run — which this database
           // has no record of. Counting them keeps the displayed total honest.
           readPriorCallCount(process.env.CALLE_CALLS_PLACED_ELSEWHERE),
-          (process.env.CALL_E_MODE ?? '').trim().toLowerCase() === 'live' ? 'live' : 'demo'
+          process.env.CALL_E_MODE === 'live' ? 'live' : 'demo'
         ),
       inject: [TRANSACTION_PORT]
     },

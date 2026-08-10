@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { ApprovalsComponent } from './approvals.component';
@@ -37,6 +37,7 @@ describe('ApprovalsComponent', () => {
   let component: ApprovalsComponent;
   let api: { list: ReturnType<typeof vi.fn>; decide: ReturnType<typeof vi.fn> };
   let dispatchApi: { release: ReturnType<typeof vi.fn> };
+  let navigate: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
     api = {
@@ -46,7 +47,6 @@ describe('ApprovalsComponent', () => {
     dispatchApi = {
       release: vi.fn().mockReturnValue(of({ id: 'dsp-1', displayId: 'DSP-2042-0001' }))
     };
-
     await TestBed.configureTestingModule({
       imports: [ApprovalsComponent],
       providers: [
@@ -55,6 +55,8 @@ describe('ApprovalsComponent', () => {
         { provide: DispatchHttpAdapter, useValue: dispatchApi }
       ]
     }).compileComponents();
+
+    navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     fixture = TestBed.createComponent(ApprovalsComponent);
     component = fixture.componentInstance;
@@ -92,6 +94,7 @@ describe('ApprovalsComponent', () => {
     // The vendor and the amount are read from rows on the server; nothing in
     // this call can redirect the job somewhere else.
     expect(dispatchApi.release).toHaveBeenCalledWith(PENDING.id);
+    expect(navigate).toHaveBeenCalledWith(['/dispatch']);
   });
 
   it('surfaces a refused release rather than pretending the vendor was sent', () => {

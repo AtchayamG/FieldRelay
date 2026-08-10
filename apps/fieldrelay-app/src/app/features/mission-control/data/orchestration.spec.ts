@@ -140,16 +140,14 @@ describe('buildOrchestration', () => {
     expect(steps.at(-1)?.name).toBe('Human approval');
   });
 
-  it('does not claim a queued call was placed, and marks only one frontier', () => {
-    // Caught on the live deployment: a queued task rendered "Waiting to dial"
-    // above a description saying it had been placed.
+  it('does not infer what happened on the telephone from a queued provider request', () => {
     const steps = buildOrchestration(
       state({ calls: [call({ status: 'queued', outcome: null })] })
     );
     const dial = steps.find((step) => step.stepIndex === 4);
 
-    expect(dial?.name).toBe('Waiting to dial');
-    expect(dial?.description).not.toMatch(/placed/i);
+    expect(dial?.name).toBe('Provider request queued');
+    expect(dial?.description).toContain('does not claim whether the phone rang');
     expect(dial?.status).toBe('active');
     expect(steps.filter((step) => step.status === 'active')).toHaveLength(1);
   });

@@ -1,5 +1,7 @@
 import { TransactionPort } from './persistence.port';
 import { CallOutcome } from './call-outcome';
+import { IncidentStatus } from '../domain/incident.entity';
+import { CallStatus } from '../domain/call-task.entity';
 
 // A guardrail is a refusal the system enforces, reported as live state rather
 // than as marketing copy. `engaged` means the refusal is currently in force.
@@ -65,8 +67,14 @@ export interface MissionControlState {
   generatedAt: string;
 }
 
-const OPEN_STATUSES = ['reported', 'triaging', 'calling', 'awaiting_approval', 'dispatched'];
-const IN_FLIGHT = ['queued', 'ringing', 'connected'];
+const OPEN_STATUSES: readonly IncidentStatus[] = [
+  'intake',
+  'triage',
+  'calling',
+  'awaiting_approval',
+  'dispatched'
+];
+const IN_FLIGHT: readonly CallStatus[] = ['queued', 'ringing', 'connected'];
 
 // Assembles the operational picture from real persisted state. Nothing here is
 // invented: every number is counted from a row that exists.
@@ -100,13 +108,13 @@ export class GetMissionControlUseCase {
       }
 
       const liveCallCount = await uow.calls.countLiveCalls();
+      const activeIncidentCount = await uow.incidents.countByStatuses(OPEN_STATUSES);
+      const callsInFlightCount = await uow.calls.countByStatuses(IN_FLIGHT);
 
       return {
         metrics: {
-          activeIncidents: incidentPage.items.filter((incident) =>
-            OPEN_STATUSES.includes(incident.status)
-          ).length,
-          callsInFlight: callPage.items.filter((task) => IN_FLIGHT.includes(task.status)).length,
+          activeIncidents: activeIncidentCount,
+          callsInFlight: callsInFlightCount,
           pendingApprovals: await uow.approvals.countPending(),
           realCallsPlaced: liveCallCount + this.priorCallsElsewhere
         },
