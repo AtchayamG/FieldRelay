@@ -95,7 +95,7 @@
 ## 2026-08-16 — YouTube publication and Devpost registration
 
 - Published the approved 2:59.861 FieldRelay walkthrough publicly at `https://youtu.be/tq6L4HOqRXQ` with the approved thumbnail, title, description, and not-made-for-kids audience setting. YouTube copyright checks report no issues; unauthenticated oEmbed metadata resolves successfully.
-- Registered Atchayam Ganesh for `CALL-E: Your Code Is Calling` through the official Devpost connection using the user-confirmed solo profile, eligibility, rules agreement, and registration answers.
+- Registered Atchayam G for `CALL-E: Your Code Is Calling` through the official Devpost connection using the user-confirmed solo profile, eligibility, rules agreement, and registration answers.
 - Official live submission requirements were re-read and the exact create-and-submit payload is ready. Security scan passes with no exposed secrets or tracked credential files. Final Devpost project creation/submission awaits the required explicit confirmation.
 
 ## 2026-08-16 — full-content video framing correction
@@ -385,3 +385,9 @@
   and then appeared silent. The queued state was reconciled on 2026-09-02, and provider inspection
   showed delayed first speech rather than an empty task; the provider-latency fault remains unresolved.
 - Result: the judge-facing application and integration boundary are verified; a fresh end-to-end live call is **not** verified and must not be promised. No new metered call was placed.
+
+## 2026-09-03 — official-name correction and CALL-E request receipt
+
+- Recorded the user's official identity as **Atchayam G**; `G` is the complete last name/surname and must never be expanded to `Ganesh`.
+- Corrected repository-owned participant and mockup references to `Atchayam G`.
+- Verified the Gmail receipt for the CALL-E Additional Calls Request Form. Google Forms confirms the request was received, but the submitted Last Name field is `Ganesh`; the receipt offers no edit-response link. A corrected resubmission is pending explicit user approval.

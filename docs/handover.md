@@ -91,6 +91,9 @@ approximately 23-second first-audio delay. No call was placed during these opera
 2. **Repository license.** No license is currently present; this is not an official CALL-E submission
    requirement and remains a separate user choice.
 3. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
+4. **CALL-E additional-calls surname correction.** The Google Forms receipt confirms the request was
+   received but records Last Name as `Ganesh`. The user's official surname is `G`, and the receipt has
+   no edit-response link. Submit a corrected replacement only after explicit user approval.
 
 The delayed-speech call remains a provider-diagnostics issue. Do not redial. A separate authorized
 live structured result already proves runtime use.
@@ -104,5 +107,6 @@ live structured result already proves runtime use.
 
 ## Exact next task
 
-No implementation or submission task remains. Monitor the CALL-E support reply and additional-call
-allocation; do not place another metered call before the provider answers the first-audio-delay report.
+After explicit user approval, resubmit the CALL-E additional-calls request with First Name `Atchayam`
+and Last Name `G`. Otherwise monitor the CALL-E support reply and allocation; do not place another
+metered call before the provider answers the first-audio-delay report.
