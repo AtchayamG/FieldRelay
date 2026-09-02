@@ -91,12 +91,27 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
               <h1 class="call-display-id font-mono">{{ call.displayId }}</h1>
               <span class="call-uuid font-mono text-muted">{{ call.id }}</span>
             </div>
-            <div class="header-status-badge">
+            <div class="header-actions">
               <app-status-badge [variant]="call.status">
                 {{ call.status }}
               </app-status-badge>
+              <button
+                *ngIf="canReconcile(call)"
+                type="button"
+                class="action-btn secondary-btn"
+                [disabled]="reconciling"
+                (click)="reconcileProviderStatus()"
+              >
+                {{ reconciling ? 'Checking provider…' : 'Check provider status' }}
+              </button>
             </div>
           </div>
+          <p *ngIf="reconciliationMessage" class="reconciliation-message" role="status">
+            {{ reconciliationMessage }}
+          </p>
+          <p *ngIf="reconciliationError" class="reconciliation-error" role="alert">
+            {{ reconciliationError }}
+          </p>
         </div>
 
         <!-- Structured Outcome: what the call actually achieved -->
@@ -254,8 +269,8 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       display: flex;
       flex-direction: column;
       gap: var(--fr-space-lg);
-      max-width: 1200px;
-      margin: 0 auto;
+      max-width: 1400px;
+      margin: 0;
       width: 100%;
       box-sizing: border-box;
     }
@@ -357,6 +372,24 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       font-size: 12px;
       margin-top: 4px;
       display: block;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--fr-space-sm);
+      flex-wrap: wrap;
+    }
+    .reconciliation-message,
+    .reconciliation-error {
+      margin: var(--fr-space-sm) 0 0;
+      font-size: 12px;
+    }
+    .reconciliation-message {
+      color: var(--fr-color-muted);
+    }
+    .reconciliation-error {
+      color: var(--fr-color-danger);
     }
 
     /* Detail Grid */
@@ -605,6 +638,10 @@ import { callApiErrorMessage, callApiStatus } from '../../application/call-api-e
       align-items: center;
       justify-content: center;
     }
+    .action-btn:disabled {
+      cursor: default;
+      opacity: 0.6;
+    }
     .primary-btn {
       background: var(--fr-color-primary);
       color: var(--fr-color-on-accent);
@@ -631,6 +668,9 @@ export class CallDetailComponent implements OnInit {
   errorMessage: string | null = null;
   isNotFound = false;
   isPermissionDenied = false;
+  reconciling = false;
+  reconciliationMessage: string | null = null;
+  reconciliationError: string | null = null;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -666,6 +706,53 @@ export class CallDetailComponent implements OnInit {
         } else {
           this.errorMessage = callApiErrorMessage(err, 'Failed to fetch call task details.');
         }
+      }
+    });
+  }
+
+  canReconcile(call: CallTaskDetail): boolean {
+    return (
+      !call.simulated &&
+      !!call.providerTaskId &&
+      !['completed', 'failed', 'no_answer'].includes(call.status)
+    );
+  }
+
+  reconcileProviderStatus(): void {
+    if (!this.call || !this.canReconcile(this.call) || this.reconciling) return;
+
+    const callTaskId = this.call.id;
+    this.reconciling = true;
+    this.reconciliationMessage = null;
+    this.reconciliationError = null;
+    this.callPort.reconcile(callTaskId).subscribe({
+      next: (result) => {
+        this.reconciling = false;
+        this.reconciliationMessage = result.applied
+          ? `Provider status reconciled as ${result.status}.`
+          : 'Provider has not reported a new terminal status.';
+        this.refreshCallDetail(callTaskId);
+      },
+      error: (err) => {
+        this.reconciling = false;
+        this.reconciliationError = callApiErrorMessage(
+          err,
+          'Unable to check the provider status. No call was placed.'
+        );
+      }
+    });
+  }
+
+  private refreshCallDetail(callTaskId: string): void {
+    this.callPort.getById(callTaskId).subscribe({
+      next: (data) => {
+        this.call = data;
+      },
+      error: (err) => {
+        this.reconciliationError = callApiErrorMessage(
+          err,
+          'Provider status was checked, but the updated task could not be loaded.'
+        );
       }
     });
   }

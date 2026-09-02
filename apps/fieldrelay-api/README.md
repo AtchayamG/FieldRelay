@@ -39,5 +39,8 @@ pnpm --filter fieldrelay-api build
 Set `DATABASE_URL` before the test command to include the PostgreSQL integration
 suite. Without it, the SQL-specific suite is intentionally skipped.
 
-`POST /api/v1/calls` currently uses the visibly simulated demo CALL-E adapter.
-No real phone call is placed and no provider credential is read.
+`CALL_E_MODE` selects the provider. Any value except the exact string `live`
+uses the visibly simulated demo adapter; only exact live mode reads CALL-E
+credentials and can place an authorized call. `POST /api/v1/calls/:id/reconcile`
+is a separate read-only recovery action: it checks one already-created live
+provider task and can never create, retry, or redial a call.

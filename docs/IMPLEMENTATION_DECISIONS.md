@@ -21,6 +21,11 @@ Record approved deviations from the blueprint using: issue, affected module, req
 - **Verified 2026-07-25:** the request and webhook contracts were corrected against the published OpenAPI document (v0.6.0) rather than the README prose — `recipients` is an array, the webhook nests the call at `data.id` under an event-level `id`, and nullable type unions are unsupported. A self-service API key proved the credential and base URL live without placing a call.
 - **Risk:** The API is in beta, so response shapes may change. Mitigated by defensive parsing (unrecognised payload → provider error → non-redialable `outcome_unknown`, never a silent success), bounded request timeouts, a bounded response size, and a status map whose default is `queued` rather than any terminal state.
 - **Consequences:** Phone numbers live only in `CALLE_DIAL_TARGETS` in the deployment environment, resolved inside infrastructure immediately before dialling. The webhook route is the first authenticated boundary in the API. Structured call results are deliberately *not* ingested by this slice; they need a schema-validated path with its own access controls.
+- **Extension verified 2026-09-02:** the same infrastructure adapter implements a separate
+  `CallEReadPort` for `GET /v1/calls/{id}`. A session-protected application use case uses it only to
+  reconcile an already-created non-terminal live task after a lost webhook. Response identity must
+  match; sensitive provider fields are discarded; bounded status/outcome data re-enters through the
+  existing replay-safe callback transaction. The read port exposes no start or retry operation.
 - **Approval owner:** User, 2026-07-25
 
 ## ADR-003 — CALL-E executes through an operator bridge, not from the API process (superseded by ADR-004)

@@ -144,7 +144,14 @@ Enforced by `npx impeccable detect apps/fieldrelay-app/src`.
 - **No rounded-square icon tile above a heading.**
 - **One radius scale**, followed everywhere.
 
-## Detector baseline — 2026-08-10
+## Workspace geometry
+
+Desktop detail pages begin one shell gutter after the sidebar. They must not add a centered,
+narrow wrapper that creates a second false gutter inside the application canvas. Calls queue
+and call detail share a 1400px content cap; detail content is left-anchored (`margin: 0`) so its
+navigation, banner and evidence panels align with the rest of the operations workspace.
+
+## Detector baseline — 2026-08-16
 
 First clean run after the brand change found **12 anti-patterns**, and the shape of them is diagnostic: 11 of 12 are the same tell.
 
@@ -153,7 +160,11 @@ First clean run after the brand change found **12 anti-patterns**, and the shape
 | `side-tab` | 11 | metric-card ×4, mission-control ×3, sidebar, approvals, sign-in, call-detail |
 | `layout-transition` | 1 | sidebar animates `width` |
 
-Both remain fixed. The 2026-08-10 submission audit again reports **zero findings** after the font, landmark, and status-copy changes. Re-run the detector after every UI change; it needs no API key and no LLM.
+Both remain fixed. The 2026-08-16 call-detail alignment correction again reports **zero findings**. Re-run the detector after every UI change; it needs no API key and no LLM.
+
+The 2026-09-02 call-detail provider-status action uses the existing secondary-button language and
+changes no visual contract. Its post-change detector run reports **zero findings**; token resolution
+remains 66 defined / 57 referenced / all resolving.
 
 ## Order of work
 

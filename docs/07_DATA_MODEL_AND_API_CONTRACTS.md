@@ -197,12 +197,16 @@ POST   /api/v1/incidents/:id/resolve
 
 ```text
 GET    /api/v1/calls
+POST   /api/v1/calls
 GET    /api/v1/calls/:id
-POST   /api/v1/calls/:id/cancel
-POST   /api/v1/calls/:id/retry
-GET    /api/v1/calls/:id/transcript
-GET    /api/v1/calls/:id/outcome
+POST   /api/v1/calls/:id/reconcile
 ```
+
+Call detail includes the schema-validated outcome when one exists. Transcripts,
+recordings, raw phone numbers, provider summaries, and evidence prose are not
+exposed or persisted. Reconciliation performs only a provider GET for the
+existing task id and applies a terminal result through the callback transaction;
+there is deliberately no retry or redial endpoint.
 
 ### Approvals
 

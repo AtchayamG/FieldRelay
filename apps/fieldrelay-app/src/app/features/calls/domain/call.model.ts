@@ -48,6 +48,7 @@ export interface CallListResult {
   nextCursor: string | null;
 }
 
+
 export interface ListCallsQuery {
   status?: CallStatus;
   incidentId?: string;

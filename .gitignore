@@ -36,4 +36,5 @@ __pycache__/
 *.pyc
 .vercel
 .env*
-"assets/demo/.build/"  
+assets/demo/.build/
+.devpost-hackathon-state.json

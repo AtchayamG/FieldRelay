@@ -83,6 +83,11 @@ export interface CallTaskDetailDto extends CallTaskResponseDto {
   outcome: CallOutcomeDto | null;
 }
 
+export interface ReconcileCallResponseDto {
+  status: CallStatus;
+  applied: boolean;
+}
+
 // --- Incidents -------------------------------------------------------------
 
 export type IncidentType =

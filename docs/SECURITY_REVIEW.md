@@ -31,16 +31,47 @@
 
 ### Honest limits of this control
 
-The evaluator credentials are published by design so judges can sign in unaided. This is therefore an **access boundary, not an identity system**: it guarantees no route mutates state for an anonymous caller and gives the deployment one place to enforce and revoke sessions, but it does not authenticate a specific human. What actually protects the call budget on a public deployment is `CALL_E_MODE`, which leaves the judge environment structurally incapable of dialling. Real identity, per-tenant isolation and role separation remain open.
+The evaluator credentials are published by design so judges can sign in unaided. This is therefore an **access boundary, not an identity system**: it guarantees no route mutates state for an anonymous caller and gives the deployment one place to enforce and revoke sessions, but it does not authenticate a specific human. `CALL_E_MODE` is the final side-effect gate, but the current public deployment intentionally uses exact live mode. Anyone with the published credentials can therefore request the single provisioned contact for its declared purpose. The allowlist, purpose policy, disclosure, bounded retries and idempotency limit the effect; they do not identify a judge or prevent repeated requests with new idempotency keys. Keep public-live exposure supervised and return the deployment to demo mode when judge-triggered calling is not required. Real identity, per-tenant isolation, role separation and rate limiting remain open.
 
 ### Open controls
 
-- BLOCKED: production CALL-E credentials and authorized test number.
-- TODO: persistence-backed idempotency/deduplication and optimistic locking.
+- DONE: production CALL-E credentials and the authorized target are held server-side; the raw number
+  is never returned, logged, persisted in call records, or committed.
+- DONE: PostgreSQL-backed idempotency reservations commit before provider I/O; webhook deliveries
+  are deduplicated and lifecycle transitions are validated.
 - DONE (demo grade): a global session boundary with signed, expiring tokens — see the 2026-07-26 entry above.
 - TODO: real identity and RBAC beyond the single operator role, per-tenant isolation, rate limiting, and CSP/HSTS.
 - TODO: real contact encryption/token resolution and consent evidence/expiry.
-- TODO: webhook signature, timestamp, replay, and redaction controls.
-- TODO: audit persistence, transcript access controls, retention, and secret scanning in CI.
+- DONE: the generic callback uses HMAC, timestamp freshness and replay protection; the CALL-E route
+  uses its provider token and the same replay-safe processing path.
+- PARTIAL: audit persistence and no-transcript storage are implemented. Automated secret scanning in
+  CI and a formal retention policy remain open.
 
-The current endpoint is a safe demo foundation, not production-ready.
+The current endpoint is a bounded hackathon integration, not a general multi-tenant production
+identity or telephony platform.
+
+## 2026-09-02 — Current public-live posture
+
+- Production was verified in exact live mode with one masked, provisioned `IN · en-IN` contact.
+- Public evaluator credentials are not a judge identity. A signed-in visitor can spend a call only
+  against that provisioned contact and declared purpose, but can submit a new idempotency key.
+- No raw phone number or caller-authored prompt crosses the public API. The application derives the
+  provider brief from the authorized purpose and commits the task/idempotency reservation first.
+- A real attempt reached CALL-E, but provider speech began only after roughly 23 seconds and the
+  recipient attempt failed. Do not promise a prompt greeting or place another diagnostic call before
+  provider guidance.
+- Operational recommendation: use public live mode only during a supervised judging window; use
+  demo mode for unrestricted public browsing.
+
+## 2026-09-02 — Lost-webhook reconciliation boundary
+
+- `POST /api/v1/calls/:callTaskId/reconcile` is session-protected by the global guard.
+- It accepts only a FieldRelay UUID and resolves the provider identifier from persistence; callers
+  cannot supply a phone number or arbitrary provider id.
+- It refuses simulated tasks, missing provider ids, and already-terminal tasks before provider I/O.
+- The infrastructure adapter issues only `GET /v1/calls/{id}` and requires the returned id to match.
+- Phone numbers, transcripts, summaries, evidence, recordings, and provider failure prose are neither
+  returned nor persisted. Only normalized status and the declared structured outcome cross the port.
+- Terminal data is applied through the existing deduplicated callback transaction, including schema
+  validation, approval policy, audit, and lifecycle transition checks.
+- No start/retry/redial dependency is reachable from the reconciliation use case.

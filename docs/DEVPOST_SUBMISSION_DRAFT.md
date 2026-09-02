@@ -102,9 +102,9 @@ Angular · Ionic · TypeScript · NestJS · PostgreSQL · Neon · Vercel · CALL
 ## Pre-submission checklist
 
 - [x] Upstream PR to `CALLE-AI/awesome-phone-call-agents` — **approved and merged**, [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107), contributed to `skills/` as `service-dispatch-call`
-- [ ] Public video under 3 minutes on YouTube or Vimeo
-- [ ] CALL-E account email
-- [ ] Age / country / conflict attestations
+- [x] Public video under 3 minutes: https://youtu.be/tq6L4HOqRXQ
+- [x] CALL-E account email confirmed for direct Devpost transmission; deliberately not persisted here
+- [x] Age / country / conflict attestations explicitly confirmed
 - [x] Screenshots: Mission Control with guardrails, call detail with outcome, Approvals, Dispatch, Vendors
 - [x] Architecture diagram
-- [ ] Re-read the rules for late changes
+- [x] Official live rules and submission requirements re-read on 2026-08-16

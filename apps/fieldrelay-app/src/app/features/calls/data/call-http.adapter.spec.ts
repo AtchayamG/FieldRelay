@@ -123,4 +123,18 @@ describe('CallHttpAdapter', () => {
     const req = httpMock.expectOne('/api/v1/calls/non-existent-id');
     req.flush({ error: { code: 'NOT_FOUND', message: 'Call task not found' } }, { status: 404, statusText: 'Not Found' });
   });
+
+  it('should reconcile an existing provider task without a call-start request', () => {
+    adapter.reconcile(mockCallDto.id).subscribe((result) => {
+      expect(result).toEqual({ status: 'completed', applied: true });
+    });
+
+    const req = httpMock.expectOne(`/api/v1/calls/${mockCallDto.id}/reconcile`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({
+      data: { status: 'completed', applied: true },
+      meta: { requestId: 'req_reconcile', timestamp: new Date().toISOString() }
+    });
+  });
 });

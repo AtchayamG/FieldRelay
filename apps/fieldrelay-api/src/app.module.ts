@@ -43,12 +43,18 @@ import { StartCallUseCase } from './application/start-call.use-case';
 import { ListCallsUseCase } from './application/list-calls.use-case';
 import { GetCallUseCase } from './application/get-call.use-case';
 import { ProcessProviderCallbackUseCase } from './application/process-provider-callback.use-case';
+import { ReconcileProviderCallUseCase } from './application/reconcile-provider-call.use-case';
 import { ReconcileStaleReservationsUseCase } from './application/reconcile-stale-reservations.use-case';
 import { CreateIncidentUseCase } from './application/create-incident.use-case';
 import { ListIncidentsUseCase } from './application/list-incidents.use-case';
 import { GetIncidentUseCase } from './application/get-incident.use-case';
 import { CheckHealthUseCase } from './application/check-health.use-case';
-import { CallEPort, CALL_E_PORT } from './application/call-e.port';
+import {
+  CallEPort,
+  CallEReadPort,
+  CALL_E_PORT,
+  CALL_E_READ_PORT
+} from './application/call-e.port';
 import {
   ContactAuthorizationPort,
   CONTACT_AUTH_PORT
@@ -75,14 +81,17 @@ import {
 // selects the demo adapter, so no environment can start dialling by accident.
 export function selectCallEAdapter(
   env: NodeJS.ProcessEnv,
-  dialTargets: DialTargetResolverPort = new EnvDialTargetResolver()
+  dialTargets?: DialTargetResolverPort
 ): CallEPort {
   if (env.CALL_E_MODE !== 'live') {
     return new DemoCallEAdapter();
   }
   // Throws at boot when the live configuration is missing or unsafe, rather
   // than at the first attempted call.
-  return new CalleApiAdapter(readCalleConfigFromEnv(env), dialTargets);
+  return new CalleApiAdapter(
+    readCalleConfigFromEnv(env),
+    dialTargets ?? new EnvDialTargetResolver(env.CALLE_DIAL_TARGETS ?? '')
+  );
 }
 
 // Off unless a deployment explicitly turns it on, so the published demo
@@ -121,8 +130,10 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
         new IssueSessionUseCase(
           {
             // Published evaluator credentials: judges must be able to sign in
-            // without being handed a secret out of band. What protects the call
-            // budget on a public deployment is CALL_E_MODE, not this password.
+            // without being handed a secret out of band. This password is an
+            // anonymous-session boundary, not proof that the caller is a judge.
+            // Live deployments remain callable only for the provisioned contact
+            // and declared purposes, but still need supervised exposure.
             email: process.env.DEMO_OPERATOR_EMAIL ?? 'ops.demo@fieldrelay.io',
             password: process.env.DEMO_OPERATOR_PASSWORD ?? 'DemoOps2026!'
           },
@@ -160,6 +171,7 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
         selectCallEAdapter(process.env, dialTargets),
       inject: [DIAL_TARGET_PORT]
     },
+    { provide: CALL_E_READ_PORT, useExisting: CALL_E_PORT },
     { provide: CONTACT_AUTH_PORT, useClass: DemoContactRepository },
     {
       // Reads the authorization boundary for display. It asks the dial-target
@@ -260,6 +272,15 @@ export function runtimeDialTargetChangesAllowed(env: NodeJS.ProcessEnv): boolean
       useFactory: (transactions: TransactionPort) =>
         new ProcessProviderCallbackUseCase(transactions),
       inject: [TRANSACTION_PORT]
+    },
+    {
+      provide: ReconcileProviderCallUseCase,
+      useFactory: (
+        provider: CallEReadPort,
+        transactions: TransactionPort,
+        callbacks: ProcessProviderCallbackUseCase
+      ) => new ReconcileProviderCallUseCase(provider, transactions, callbacks),
+      inject: [CALL_E_READ_PORT, TRANSACTION_PORT, ProcessProviderCallbackUseCase]
     },
     {
       provide: ReconcileStaleReservationsUseCase,

@@ -1,4 +1,11 @@
-import { CallBrief, CallEDescriptor, CallEPort, CallEResult } from '../../application/call-e.port';
+import {
+  CallBrief,
+  CallEDescriptor,
+  CallEPort,
+  CallEReadPort,
+  CallEReadResult,
+  CallEResult
+} from '../../application/call-e.port';
 import { DialTargetResolverPort } from '../../application/dial-target.port';
 import {
   CallAuthorizationError,
@@ -115,7 +122,7 @@ export function readCalleConfigFromEnv(env: NodeJS.ProcessEnv): CalleApiConfig {
 
 type FetchLike = (input: string, init: RequestInit) => Promise<Response>;
 
-export class CalleApiAdapter implements CallEPort {
+export class CalleApiAdapter implements CallEPort, CallEReadPort {
   constructor(
     private readonly config: CalleApiConfig,
     private readonly dialTargets: DialTargetResolverPort,
@@ -193,6 +200,45 @@ export class CalleApiAdapter implements CallEPort {
     };
   }
 
+  public async getCall(providerTaskId: string): Promise<CallEReadResult> {
+    if (
+      typeof providerTaskId !== 'string' ||
+      providerTaskId.trim().length === 0 ||
+      providerTaskId.length > 128
+    ) {
+      throw new CallValidationError('providerTaskId must be a non-empty string of at most 128 characters');
+    }
+
+    const cleanId = providerTaskId.trim();
+    const response = await this.get(`${CREATE_CALL_PATH}/${encodeURIComponent(cleanId)}`);
+    const payload = await this.readJson(response);
+    if (!response.ok) {
+      throw new CallProviderError(
+        `CALL-E rejected the call lookup with HTTP ${response.status}`
+      );
+    }
+
+    const record = asRecord(payload);
+    const returnedId = readCallId(payload);
+    if (!record || !returnedId || returnedId !== cleanId) {
+      throw new CallProviderError('CALL-E returned an invalid call lookup response');
+    }
+
+    return {
+      providerTaskId: returnedId,
+      status: mapCalleStatus(record.status),
+      ...(record.structured_result !== undefined
+        ? {
+            outcome: {
+              structuredResult: record.structured_result,
+              taskCompleted: record.task_completed === true,
+              confidence: record.completion_confidence
+            }
+          }
+        : {})
+    };
+  }
+
   private async post(path: string, body: unknown, idempotencyKey: string): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.requestTimeoutMs);
@@ -216,6 +262,24 @@ export class CalleApiAdapter implements CallEPort {
     } catch (error) {
       const reason = error instanceof Error && error.name === 'AbortError' ? 'timed out' : 'failed';
       throw new CallProviderError(`CALL-E request ${reason}`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private async get(path: string): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.config.requestTimeoutMs);
+    timer.unref();
+    try {
+      return await this.fetchImpl(`${this.config.baseUrl}${path}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${this.config.apiKey}` },
+        signal: controller.signal
+      });
+    } catch (error) {
+      const reason = error instanceof Error && error.name === 'AbortError' ? 'timed out' : 'failed';
+      throw new CallProviderError(`CALL-E lookup ${reason}`);
     } finally {
       clearTimeout(timer);
     }

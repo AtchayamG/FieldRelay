@@ -6,7 +6,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthController } from '../interfaces/auth.controller';
 import { SessionGuard } from '../interfaces/session.guard';
 import { IssueSessionUseCase } from '../application/issue-session.use-case';
-import { CallEPort } from '../application/call-e.port';
+import { CallEPort, CallEReadPort } from '../application/call-e.port';
 import { CheckHealthUseCase } from '../application/check-health.use-case';
 import { ContactAuthorizationPort } from '../application/contact-authorization.port';
 import { CreateIncidentUseCase } from '../application/create-incident.use-case';
@@ -17,6 +17,7 @@ import { GetCallUseCase } from '../application/get-call.use-case';
 import { StartCallUseCase } from '../application/start-call.use-case';
 import { ProcessProviderCallbackUseCase } from '../application/process-provider-callback.use-case';
 import { ReconcileStaleReservationsUseCase } from '../application/reconcile-stale-reservations.use-case';
+import { ReconcileProviderCallUseCase } from '../application/reconcile-provider-call.use-case';
 import {
   InMemoryDatabase,
   InMemoryTransactionManager
@@ -40,6 +41,7 @@ describe('FieldRelay HTTP API', () => {
   let app: INestApplication;
   let baseUrl: string;
   let provider: jest.Mocked<CallEPort>;
+  let readProvider: jest.Mocked<CallEReadPort>;
   const signingSecret = 'e2e_test_signing_secret_123456';
   const webhookToken = 'e2e_calle_webhook_token_abcdefghijkl';
   const authSecret = 'e2e-auth-signing-secret-at-least-32-chars';
@@ -59,6 +61,10 @@ describe('FieldRelay HTTP API', () => {
       status: 'queued',
       simulated: true
     });
+    readProvider = {
+      getCall: jest.fn()
+    };
+    const callbacks = new ProcessProviderCallbackUseCase(transactions);
     const contacts: ContactAuthorizationPort = {
       list: jest.fn().mockResolvedValue([]),
       resolve: jest.fn().mockResolvedValue({
@@ -107,7 +113,11 @@ describe('FieldRelay HTTP API', () => {
         },
         {
           provide: ProcessProviderCallbackUseCase,
-          useValue: new ProcessProviderCallbackUseCase(transactions)
+          useValue: callbacks
+        },
+        {
+          provide: ReconcileProviderCallUseCase,
+          useValue: new ReconcileProviderCallUseCase(readProvider, transactions, callbacks)
         },
         {
           provide: ReconcileStaleReservationsUseCase,
@@ -170,7 +180,11 @@ describe('FieldRelay HTTP API', () => {
     for (const [path, init] of [
       ['/api/v1/incidents', { method: 'POST', body: JSON.stringify(incidentBody) }],
       ['/api/v1/incidents', {}],
-      ['/api/v1/calls', {}]
+      ['/api/v1/calls', {}],
+      [
+        '/api/v1/calls/11111111-1111-4111-8111-111111111111/reconcile',
+        { method: 'POST', body: '{}' }
+      ]
     ] as const) {
       const response = await anonymous(path, init);
       expect(response.status).toBe(401);
@@ -307,6 +321,15 @@ describe('FieldRelay HTTP API', () => {
       id: first.body.data.callTaskId,
       providerTaskId: 'demo_provider_task'
     });
+
+    const reconciliation = await postJson<{ error: { code: string } }>(
+      `/api/v1/calls/${first.body.data.callTaskId}/reconcile`,
+      {},
+      'unused-for-reconciliation'
+    );
+    expect(reconciliation.response.status).toBe(400);
+    expect(reconciliation.body.error.code).toBe('VALIDATION_FAILED');
+    expect(readProvider.getCall).not.toHaveBeenCalled();
   });
 
   it('accepts valid provider callbacks, replays exact delivery, and rejects conflicts & bad signatures', async () => {

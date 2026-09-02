@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import type {
   ApiResponse,
   CallListDto,
+  ReconcileCallResponseDto,
   CallTaskDetailDto,
   CallTaskResponseDto
 } from '@fieldrelay/contracts';
@@ -63,6 +64,12 @@ export class CallHttpAdapter implements CallPort {
             : null
         }))
       );
+  }
+
+  reconcile(id: string): Observable<ReconcileCallResponseDto> {
+    return this.http
+      .post<ApiResponse<ReconcileCallResponseDto>>(`${this.baseUrl}/${id}/reconcile`, {})
+      .pipe(map((response) => response.data));
   }
 
   private mapDtoToEntity(dto: CallTaskResponseDto): CallTask {

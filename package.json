@@ -2,7 +2,7 @@
   "name": "fieldrelay-workspace",
   "private": true,
   "engines": {
-    "node": ">=22.12"
+    "node": "24.x"
   },
   "//packageManager": "Pinned so corepack resolves the same pnpm everywhere. A newer pnpm stops reading pnpm.overrides from package.json and refuses the frozen lockfile, which broke the Docker build.",
   "packageManager": "pnpm@10.34.4",

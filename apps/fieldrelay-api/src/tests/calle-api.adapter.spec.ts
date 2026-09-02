@@ -175,6 +175,47 @@ describe('CalleApiAdapter', () => {
     });
   });
 
+  it('reads a terminal call without retaining transcripts, phones or summaries', async () => {
+    let capturedUrl = '';
+    let capturedInit: RequestInit | undefined;
+    const adapter = new CalleApiAdapter(CONFIG, new StubDialTargets(TARGET), async (url, init) => {
+      capturedUrl = url;
+      capturedInit = init;
+      return jsonResponse(200, {
+        id: 'call_abc123',
+        status: 'completed',
+        task_completed: false,
+        completion_confidence: { score: 0.2, label: 'low' },
+        structured_result: { available: 'unknown' },
+        summary: 'sensitive provider summary',
+        recipients: [{ phones: ['provider-sensitive-value'], attempts: [{ transcript_turns: [] }] }]
+      });
+    });
+
+    await expect(adapter.getCall('call_abc123')).resolves.toEqual({
+      providerTaskId: 'call_abc123',
+      status: 'completed',
+      outcome: {
+        structuredResult: { available: 'unknown' },
+        taskCompleted: false,
+        confidence: { score: 0.2, label: 'low' }
+      }
+    });
+    expect(capturedUrl).toBe('https://api.example.test/v1/calls/call_abc123');
+    expect(capturedInit?.method).toBe('GET');
+    expect(capturedInit?.body).toBeUndefined();
+  });
+
+  it('rejects a mismatched call lookup identity', async () => {
+    const adapter = new CalleApiAdapter(CONFIG, new StubDialTargets(TARGET), async () =>
+      jsonResponse(200, { id: 'different_call', status: 'completed' })
+    );
+
+    await expect(adapter.getCall('call_abc123')).rejects.toThrow(
+      'CALL-E returned an invalid call lookup response'
+    );
+  });
+
 });
 
 describe('mapCalleStatus', () => {

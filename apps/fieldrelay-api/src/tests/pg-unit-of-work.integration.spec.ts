@@ -16,6 +16,12 @@ import { CallTask } from '../domain/call-task.entity';
 //     pnpm --filter fieldrelay-api test
 const describeIfDatabase = process.env.DATABASE_URL ? describe : describe.skip;
 
+// A pooled remote database can legitimately take longer than Jest's five-second
+// default while waking or establishing TLS. Local PostgreSQL remains fast, but
+// the integration contract should not fail solely because the configured test
+// database is remote.
+jest.setTimeout(20_000);
+
 describeIfDatabase('PgTransactionManager (integration)', () => {
   // Namespaced per run so parallel runs and the seeded demo rows never collide.
   const propertyId = `TEST-${randomUUID().slice(0, 8)}`;

@@ -31,9 +31,11 @@ export interface IssueSessionOutput {
 // give the deployment one place to enforce a session. Real identity, roles and
 // per-tenant isolation are separate work (security doc 08).
 //
-// What actually protects the call budget on a public deployment is CALL_E_MODE,
-// which keeps the judge environment incapable of dialling regardless of who
-// signs in.
+// CALL_E_MODE is the final side-effect gate: only the exact value `live` can
+// dial. When a public deployment intentionally uses that value, anyone with the
+// published evaluator credentials can request the one provisioned contact and
+// declared purpose. That deployment therefore requires supervised exposure;
+// this session is not a call-budget control.
 export class IssueSessionUseCase {
   constructor(
     private readonly credentials: DemoCredentials,

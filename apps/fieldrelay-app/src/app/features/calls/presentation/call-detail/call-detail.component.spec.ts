@@ -13,6 +13,7 @@ describe('CallDetailComponent', () => {
   let mockCallPort: {
     list: ReturnType<typeof vi.fn>;
     getById: ReturnType<typeof vi.fn>;
+    reconcile: ReturnType<typeof vi.fn>;
   };
 
   const mockCallSimulated: CallTaskDetail = {
@@ -52,7 +53,8 @@ describe('CallDetailComponent', () => {
   beforeEach(async () => {
     mockCallPort = {
       list: vi.fn(),
-      getById: vi.fn().mockReturnValue(of(mockCallSimulated))
+      getById: vi.fn().mockReturnValue(of(mockCallSimulated)),
+      reconcile: vi.fn().mockReturnValue(of({ status: 'completed', applied: true }))
     };
 
     await TestBed.configureTestingModule({
@@ -218,5 +220,33 @@ describe('CallDetailComponent', () => {
     expect(buttonTexts.some((t: string) => t.includes('redial'))).toBe(false);
     expect(buttonTexts.some((t: string) => t.includes('retry call'))).toBe(false);
     expect(buttonTexts.some((t: string) => t.includes('start call'))).toBe(false);
+  });
+
+  it('offers read-only reconciliation for an existing non-terminal live call', () => {
+    const liveQueued: CallTaskDetail = {
+      ...mockCallSimulated,
+      simulated: false,
+      status: 'queued',
+      providerTaskId: 'call_existing_1'
+    };
+    const reconciled: CallTaskDetail = { ...liveQueued, status: 'completed' };
+    mockCallPort.getById
+      .mockReturnValueOnce(of(liveQueued))
+      .mockReturnValueOnce(of(reconciled));
+    fixture.detectChanges();
+
+    const button = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button')
+    ).find((candidate) => candidate.textContent?.includes('Check provider status'));
+    expect(button).toBeTruthy();
+    button?.click();
+    fixture.detectChanges();
+
+    expect(mockCallPort.reconcile).toHaveBeenCalledWith(liveQueued.id);
+    expect(mockCallPort.getById).toHaveBeenCalledTimes(2);
+    expect(component.call?.status).toBe('completed');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Provider status reconciled as completed.'
+    );
   });
 });

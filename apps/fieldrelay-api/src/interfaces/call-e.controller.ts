@@ -14,6 +14,7 @@ import {
 import type { Request, Response } from 'express';
 import { StartCallUseCase } from '../application/start-call.use-case';
 import { GetCallUseCase } from '../application/get-call.use-case';
+import { ReconcileProviderCallUseCase } from '../application/reconcile-provider-call.use-case';
 import { ListCallsUseCase } from '../application/list-calls.use-case';
 import {
   StartCallRequestDto,
@@ -21,6 +22,7 @@ import {
   CallListDto,
   CallTaskResponseDto,
   CallTaskDetailDto,
+  ReconcileCallResponseDto,
   ApiResponse
 } from '@fieldrelay/contracts';
 import { requestIdOf } from './request-context';
@@ -34,7 +36,8 @@ export class CallEController {
   constructor(
     private readonly startCallUseCase: StartCallUseCase,
     private readonly listCallsUseCase: ListCallsUseCase,
-    private readonly getCallUseCase: GetCallUseCase
+    private readonly getCallUseCase: GetCallUseCase,
+    private readonly reconcileProviderCallUseCase: ReconcileProviderCallUseCase
   ) {}
 
   @Post()
@@ -117,6 +120,17 @@ export class CallEController {
             }
           : null
       },
+      requestIdOf(request)
+    );
+  }
+
+  @Post(':callTaskId/reconcile')
+  async reconcile(
+    @Req() request: Request,
+    @Param('callTaskId') callTaskId: string
+  ): Promise<ApiResponse<ReconcileCallResponseDto>> {
+    return envelope(
+      await this.reconcileProviderCallUseCase.execute(callTaskId),
       requestIdOf(request)
     );
   }

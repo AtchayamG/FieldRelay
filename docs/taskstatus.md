@@ -1,5 +1,90 @@
 # Task Status
 
+## 2026-09-02 — production and CALL-E record recheck
+
+- User approved deploying the reconciliation update while retaining exact live mode. Remote-built
+  Vercel deployment `dpl_6cUXecjxzyhRHYw7LnnQqsXSS1cy` is Ready and serves the custom production
+  alias. A local-prebuilt attempt omitted Nest serverless dependencies; it was immediately rolled
+  back to the healthy prior deployment, then replaced by the successful remote build. Health was
+  verified at each recovery boundary.
+- Applied reconciliation exactly once to historical `CALL-2042-0003`. Production now reports
+  `completed`, non-simulated, bounded outcome present, `taskCompleted: false`, confidence high, and
+  schema validation passed. This made no call and performed no retry or redial.
+- In-app production verification confirms the visible reconciled call detail, live adapter, masked
+  configured `IN · en-IN` target, and no browser-console errors.
+
+- Read today's relevant CALL-E monthly-usage email and matched its call identifier against the
+  authenticated CALL-E dashboard. The August 10 attempt was billed at USD 0.05 for 45 seconds in IN.
+- Provider conversation detail proves the FieldRelay task reached the voice runtime, but the first bot
+  speech began only around 23 seconds after connection. The earlier “silent call” report is therefore
+  a confirmed excessive voice-start delay, not an empty prompt. No new call was placed.
+- Production demo sign-in works. Mission Control plus incidents, calls, dispatch, approvals,
+  technicians, vendors, analytics, and settings loaded without application-error states. Exact live
+  mode and the masked authorized `IN · en-IN` target remain configured.
+- Vercel reports production Ready. The latest `main` CI run at `4ead8ab` passes, as do the preceding
+  four `main`/merge runs. CALL-E's public create-call contract exposes no documented greeting-delay
+  control, so a fresh judge call is not yet guaranteed to speak promptly.
+- Current local release gate: lint, strict typecheck, production build, token checker, impeccable
+  detector, and 430 non-database tests pass (293 API + 135 app + 2 design tokens). The 15 PostgreSQL
+  integration tests could not be rerun because Docker Desktop is stopped; their last database-backed
+  run remains 15/15 passing on 2026-08-16 and the verified production/CI revision is unchanged.
+- Added a Clean Architecture read port and authenticated call-detail reconciliation action for
+  webhook loss. It reads only an existing CALL-E task, rejects mismatched identities and simulated or
+  already-terminal tasks, and applies bounded status/outcome data through the established replay-safe
+  callback transaction. It cannot start or retry a call. Focused verification: 293 API tests and 135
+  app tests pass; lint, strict typecheck, production build, token check, and impeccable detector pass.
+- Corrected stale security documentation and code comments that had described the public evaluator
+  deployment as incapable of dialling. Production is intentionally live, so published evaluator
+  credentials are not a call-budget control; the current boundary is one provisioned contact,
+  declared purpose, bounded retries, durable idempotency, and supervised public-live exposure.
+- Release security recheck reports no known production dependency vulnerabilities and no
+  high-confidence credential pattern in the working tree. Corrected the demo-render ignore rule so
+  generated build frames cannot be added accidentally.
+- Production-target `vercel build --prod` passes and produced a deployable local output without
+  publishing. Pinned the root engine to Node `24.x`, matching CI and Vercel's supported LTS runtime,
+  instead of allowing an unreviewed future major upgrade.
+
+## 2026-08-16 — Devpost submission verified
+
+- Created FieldRelay project `1387409`, uploaded the approved thumbnail, synchronized the final narrative, technology stack, live demo, public repository, merged CALL-E PR, and YouTube video, then submitted to `CALL-E: Your Code Is Calling` with the user-confirmed custom answers and legal declarations.
+- Devpost returned submission ID `1140281`, status `Submitted`, at `2026-08-16T08:08:47.215-04:00`. Required live readback confirms state `published`, video `https://youtu.be/tq6L4HOqRXQ`, hackathon `call-e`, and public project `https://devpost.com/software/fieldrelay`.
+- Post-submit QA removed an internal draft heading/checklist and corrected text-transfer punctuation from the public story. A second live readback confirms the clean story and unchanged hackathon submission timestamp.
+
+## 2026-08-16 — YouTube publication and Devpost registration
+
+- Published the approved 2:59.861 FieldRelay walkthrough publicly at `https://youtu.be/tq6L4HOqRXQ` with the approved thumbnail, title, description, and not-made-for-kids audience setting. YouTube copyright checks report no issues; unauthenticated oEmbed metadata resolves successfully.
+- Registered Atchayam Ganesh for `CALL-E: Your Code Is Calling` through the official Devpost connection using the user-confirmed solo profile, eligibility, rules agreement, and registration answers.
+- Official live submission requirements were re-read and the exact create-and-submit payload is ready. Security scan passes with no exposed secrets or tracked credential files. Final Devpost project creation/submission awaits the required explicit confirmation.
+
+## 2026-08-16 — full-content video framing correction
+
+- Corrected the over-cropped walkthrough after frame-level user review. Removed screenshot zoom, pan, and horizontal shifts that hid useful application content.
+- Dense application pages and the architecture flow now use full-frame containment. Sparse pages use conservative top-aligned framing that trims only empty bottom workspace; controls, navigation, lifecycle columns, cards, metrics, and architecture lower panels remain visible.
+- Verification: Remotion lint/type pass; eight representative stills and a nine-frame contact sheet visually reviewed; H.264/AAC 1920×1080 at 30 fps; 179.861 seconds; 15,577,376 bytes; audio mean -22.4 dB and peak -5.2 dB. Video SHA-256 `6d5c91a16beebe9b6a259e2f57d0ce34a33a342989cfb2c87b4a064fc86c4c9b`. Thumbnail remains unchanged.
+
+## 2026-08-16 — presentation redesign and thumbnail
+
+- Rebuilt the walkthrough presentation after user review: warm editorial slide backgrounds now surround the authentic dark application, replacing the previous nearly all-black film.
+- Reframed the application scenes on a lighter editorial canvas. This first pass was subsequently superseded by the full-content framing correction above.
+- Created `assets/demo/fieldrelay-thumbnail.png`, a deterministic 1280×720 thumbnail inspired by Sahaaya's successful editorial composition and built from real FieldRelay call/approval screens. Generative footage was intentionally unnecessary.
+- Verification: Remotion lint/type pass; eight representative stills plus nine-frame contact sheet reviewed; H.264/AAC 1920×1080 at 30 fps; 179.861 seconds; 27,973,217 bytes; audio mean -22.4 dB and peak -5.2 dB. Video SHA-256 `af4c075ddbc59f2151c7b617faf639481afab941236d573e0425452ffa709415`; thumbnail SHA-256 `24e98e98b9505c79736d376721549766ee25bb294444af11e019f948c4995970`.
+
+## 2026-08-16 — detailed Devpost walkthrough correction
+
+- Replaced the short evidence-reel framing with a 2:59.861 narrated walkthrough that explains FieldRelay's idea and the complete working application: evaluator session, incidents, Calls & AI Ops, live-mode behavior, call detail, verified historical live structured outcome, human approval, dispatch, vendors, analytics, architecture, and public/upstream proof.
+- Corrected the approval scene after visual QA found an empty queue: the film now shows the real approved `$35` quote, `0.82` confidence, operator decision, and release control.
+- Truthfulness remains explicit: the evaluator adapter is simulated; live CALL-E behavior is explained; the separately labelled result is historical verified live evidence; no new call was placed.
+- Verification: Remotion lint/type pass; H.264/AAC 1920×1080 at 30 fps; 179.861 seconds; 14,301,850 bytes; mean audio -22.4 dB, peak -5.2 dB; stills and nine-frame contact sheet visually reviewed; SHA-256 `a2e637a4322fb4f339724c438736ae9f1de47ce857741807fe097f247eed940a`.
+
+## 2026-08-16 — submission release audit, call-detail alignment and final-video rebuild
+
+- Corrected the desktop call-detail geometry: the page now shares the call queue's 1400px cap and is left-anchored in the shell canvas, reducing the sidebar-to-content gap from roughly 310px to the intended 48px gutter at 1920×1080.
+- Fixed adapter-selection isolation so demo mode returns before any dial-target resolver is constructed; exact `CALL_E_MODE === 'live'` remains unchanged and live target parsing now uses only the supplied environment.
+- Made PostgreSQL integration timing tolerant of a pooled remote TLS connection without weakening assertions.
+- Captured a 41-second 1920×1080 production walkthrough with zero console warnings/errors during the successful run and 200 responses across auth, usage, Mission Control, calls, call detail, approvals, dispatches and vendors.
+- Built an original 2:15 landscape Remotion submission candidate from the deployed-app capture, archived verified CALL-E result and architecture evidence. The evaluator call is visibly simulated; the historic live result is separately labelled; no new call was placed and no third-party music is used.
+- Verification: 438/438 tests with PostgreSQL (303 API + 133 app + 2 tokens), ESLint, strict typecheck, production build, token checker, and impeccable detector zero. Video lint/type check, H.264/AAC encode, nine-frame contact-sheet review, media probe, loudness scan and SHA-256 verification pass. Final asset: `assets/demo/fieldrelay-demo.mp4`, 2:15.061, 8.14 MB.
+
 ## 2026-07-24
 
 - Blueprint package: Complete and audited
@@ -247,3 +332,14 @@
 - Refreshed CALL-E broker authorization succeeded. Read-only production lookup recovered the REST provider id; authenticated `get_call_run` returned `run_id not found` because the official MCP surface accepts only MCP run ids and exposes no REST-call lookup. No call was placed and no private call data was printed or persisted
 - Silent-call diagnosis is now externally blocked on CALL-E support/read-only REST-call lookup; added this concrete interoperability gap to the feedback-prize draft
 - Removed the post-green CI deprecation warning by upgrading the official action majors to `actions/checkout@v7`, `actions/setup-node@v7`, and `pnpm/action-setup@v6`; exact package-manager version remains owned solely by `packageManager`
+
+## 2026-08-16 — post-submission live-call readiness recheck
+
+- Production health and published demo sign-in return 200. Authenticated read-only checks confirm `mode: live`, one configured/callable authorized contact, runtime target changes enabled, and the token-protected webhook route rejects an unsigned request with 401.
+- The official CALL-E CLI token is usable and the authenticated tool catalogue exposes `plan_call`, `run_call`, and `get_call_run`.
+- Re-ran the full local gate without placing a phone call: 303 API tests against the remote PostgreSQL database, 133 app tests, 2 token tests, ESLint, strict typecheck, production build, and impeccable detector zero all pass.
+- This did **not** close the live-call blocker at the time. Historical proof recorded one successful
+  live structured result, while production call `CALL-2042-0003` remained `queued`; the phone rang
+  and then appeared silent. The queued state was reconciled on 2026-09-02, and provider inspection
+  showed delayed first speech rather than an empty task; the provider-latency fault remains unresolved.
+- Result: the judge-facing application and integration boundary are verified; a fresh end-to-end live call is **not** verified and must not be promised. No new metered call was placed.

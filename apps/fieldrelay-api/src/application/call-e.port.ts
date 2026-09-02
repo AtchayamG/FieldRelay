@@ -1,12 +1,23 @@
 import { CallTask, ProviderCallStatus } from '../domain/call-task.entity';
 
 export const CALL_E_PORT = Symbol('CALL_E_PORT');
+export const CALL_E_READ_PORT = Symbol('CALL_E_READ_PORT');
 
 export interface CallEResult {
   providerTaskId: string;
   status: ProviderCallStatus;
   // true only for the demo adapter; a live adapter must return false.
   simulated: boolean;
+}
+
+export interface CallEReadResult {
+  providerTaskId: string;
+  status: ProviderCallStatus;
+  outcome?: {
+    structuredResult: unknown;
+    taskCompleted: boolean;
+    confidence: unknown;
+  };
 }
 
 // What the provider is told to achieve on the call, and the shape its answer
@@ -29,4 +40,10 @@ export interface CallEDescriptor {
 export interface CallEPort {
   describe(): CallEDescriptor;
   startCall(task: CallTask, brief: CallBrief): Promise<CallEResult>;
+}
+
+// Read-only provider lookup for reconciling an existing task when a webhook
+// was delayed or lost. This port cannot create or retry a call.
+export interface CallEReadPort {
+  getCall(providerTaskId: string): Promise<CallEReadResult>;
 }

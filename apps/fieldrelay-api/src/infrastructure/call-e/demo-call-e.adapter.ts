@@ -4,6 +4,8 @@ import {
   CallBrief,
   CallEDescriptor,
   CallEPort,
+  CallEReadPort,
+  CallEReadResult,
   CallEResult
 } from '../../application/call-e.port';
 import { CallTask } from '../../domain/call-task.entity';
@@ -13,7 +15,7 @@ import { CallTask } from '../../domain/call-task.entity';
 // takes the same brief as the live adapter so the two stay contract-identical
 // and the brief is built on every path, including the default one.
 @Injectable()
-export class DemoCallEAdapter implements CallEPort {
+export class DemoCallEAdapter implements CallEPort, CallEReadPort {
   public describe(): CallEDescriptor {
     return { mode: 'demo', simulated: true };
   }
@@ -24,5 +26,9 @@ export class DemoCallEAdapter implements CallEPort {
       status: 'queued',
       simulated: true
     };
+  }
+
+  async getCall(_providerTaskId: string): Promise<CallEReadResult> {
+    throw new Error('Demo calls have no live provider record');
   }
 }
