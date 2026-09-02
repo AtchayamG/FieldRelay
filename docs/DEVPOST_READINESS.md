@@ -20,7 +20,9 @@
 | Gallery screenshots | PASS | Five visually inspected production captures in `assets/gallery/`. |
 | Architecture diagram | PASS | Verified 1600×900 PNG and editable SVG in `assets/fieldrelay-architecture.*`. |
 | Project answers | READY | Final narrative and required custom answers are assembled in `docs/DEVPOST_SUBMISSION_DRAFT.md` and `devpost-submission.md`. |
-| Public description/runtime parity | ACTION REQUIRED | The live Devpost page still says the public evaluator uses the simulated adapter. Production is intentionally in exact live mode for judges, so this sentence must be replaced with the approved live-mode disclosure before relying on the page as current. |
+| Public description/runtime parity | PASS VERIFIED | The public story and judge testing instructions now state that production is intentionally in exact live mode, bounded to the single provisioned authorized target. The saved public page was read back on 2026-09-03. |
+| Additional CALL-E calls | REQUESTED | The official form recorded the request for 200 calls and emailed a response receipt on 2026-09-03. Allocation is external and may take 1-5 business days. |
+| Provider latency support | SENT | CALL-E support received the provider task id and verified approximately 23-second first-audio-delay report on 2026-09-03. Awaiting their response; no redial was performed. |
 | CALL-E feedback prize | DRAFTED | `docs/CALL_E_FEEDBACK_SURVEY.md`; user supplies identity/scores and submits. |
 | CALL-E account email | PASS CONFIRMED | User confirmed the address for direct transmission to Devpost; it is not persisted in the repository. |
 | Repository license | HUMAN | Repository currently has no license; user chooses. |
@@ -48,4 +50,4 @@ Target **Most Practical Use Case**. FieldRelay's differentiated proof is not “
 4. A real dispatch outcome, not a disconnected call demo.
 5. Reusable community contribution, now merged upstream.
 
-The four judging criteria are equally weighted: Real World Impact, Quality/reusability, Technical Implementation, and Product Experience/Demo. The application and public film cover all four. The project is already submitted. Remaining work is pushing the audited post-submission reconciliation commit, correcting the stale simulated-evaluator sentence on Devpost, provider support on delayed first audio, and the optional license/feedback decisions.
+The four judging criteria are equally weighted: Real World Impact, Quality/reusability, Technical Implementation, and Product Experience/Demo. The application and public film cover all four. The project is submitted, the audited release is public, Devpost matches production, and the extra-call and provider-latency requests have been sent. Only external replies and the optional license/feedback decisions remain; neither is required to keep the current submission valid.

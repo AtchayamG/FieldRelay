@@ -1,5 +1,13 @@
 # Task Status
 
+- 2026-09-03 external release closeout: corrected both the public Devpost story and judge testing
+  instructions so they truthfully state that production is intentionally in exact live mode and
+  bounded to the single provisioned, authorized target. Read back the public project page and
+  confirmed the new wording plus the existing submitted status. Submitted the official CALL-E
+  Additional Calls Request Form for 200 calls; the form displayed `Your response has been recorded`
+  and Gmail received the response receipt. Sent CALL-E support the verified provider task id and
+  23-second first-audio-delay report; Gmail displayed `Message sent`. No call was placed.
+
 - 2026-09-03 release closeout: committed and pushed `1e50946` (`chore: patch qs audit
   advisory`). GitHub Actions run `33678645033` passed the frozen install, lint, strict typecheck,
   PostgreSQL migration and full test suite, production build, design-token verification, and

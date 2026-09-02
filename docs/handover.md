@@ -27,6 +27,12 @@ is Ready and now serves `https://fieldrelay-pi.vercel.app`. A fresh in-app evalu
 Mission Control, the call queue loads, every principal authenticated API returns 200, the bounded
 live target remains configured, and reconciled live call `CALL-2042-0003` remains completed.
 
+The public Devpost story and judge testing instructions now match exact live-mode production, and
+the saved public page was read back successfully. The official additional-calls form recorded the
+request for 200 CALL-E calls and emailed a response receipt. A concise support report for provider
+task `call_FGQ5pBxDDlbwBhOdSu5LFQ` was sent from the confirmed CALL-E account describing the verified
+approximately 23-second first-audio delay. No call was placed during these operations.
+
 ## Changes in this slice
 
 - Call detail starts at the normal 48px shell gutter rather than leaving a large desktop dead zone.
@@ -82,12 +88,9 @@ live target remains configured, and reconciled live call `CALL-2042-0003` remain
    prompt, but only after about 23 seconds of apparent dead air in a 45-second call. Historical proof
    contains a separate successful structured live result. Do not state that a fresh judge call is
    guaranteed until CALL-E explains or mitigates this voice-start delay.
-2. **Devpost/runtime wording mismatch.** The public page says the evaluator uses the simulated
-   adapter, but production is intentionally in exact live mode for judges. Replace that one sentence
-   with a truthful live-mode disclosure after explicit approval to edit the public submission.
-3. **Repository license.** No license is currently present; this is not an official CALL-E submission
+2. **Repository license.** No license is currently present; this is not an official CALL-E submission
    requirement and remains a separate user choice.
-4. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
+3. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
 
 The delayed-speech call remains a provider-diagnostics issue. Do not redial. A separate authorized
 live structured result already proves runtime use.
@@ -101,6 +104,5 @@ live structured result already proves runtime use.
 
 ## Exact next task
 
-Push the approved public sync to `origin/main`, then correct the stale public Devpost adapter
-sentence and submit the extra CALL-E credit/support requests with action-time confirmation for the
-specific browser-side transmissions. Do not place another metered call before the provider answers.
+No implementation or submission task remains. Monitor the CALL-E support reply and additional-call
+allocation; do not place another metered call before the provider answers the first-audio-delay report.
