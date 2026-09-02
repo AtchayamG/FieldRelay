@@ -1,5 +1,14 @@
 # Task Status
 
+- 2026-09-02 final public sync check: user approved pushing the release work and keeping
+  production in exact live mode for judges. Public `/health` and `/api/v1/auth/session` return 200;
+  in-app browser sign-in reaches Mission Control, though cold start can leave the button on
+  `Verifying Session...` long enough to look stuck. Authenticated production reads for dial-target
+  settings, calls, incidents, approvals, dispatches, vendors, and analytics all return 200. Settings
+  report one configured callable target in `IN` / `en-IN`, runtime target changes allowed, and the
+  live adapter remains selected. CALL-E PR #107 remains approved and merged. No real call was placed;
+  provider voice-start latency remains the only live-call risk.
+
 - 2026-09-02 public-release parity audit: the five latest `AtchayamG/FieldRelay` GitHub Actions runs
   are green; public `origin/main` remains at `4ead8ab`, while deployed release commit `423d60e` is
   local and awaits push approval. CALL-E contribution PR #107 is now authoritatively `APPROVED` and

@@ -1,0 +1,119 @@
+1
+00:00:00,050 --> 00:00:08,683
+FieldRelay is a field-operations console for property maintenance teams, connecting a reported incident, vendor coordination, and a human-authorized dispatch.
+
+2
+00:00:08,683 --> 00:00:11,460
+This is the deployed FieldRelay application.
+
+3
+00:00:11,460 --> 00:00:19,258
+Evaluators enter with the demo operations account and can explore the working product without credentials or the risk of calling a real person.
+
+4
+00:00:19,258 --> 00:00:27,997
+Mission Control shows active incidents, recent call tasks, approvals needing attention, dispatch progress, and the call-safety boundaries active in the environment.
+
+5
+00:00:27,997 --> 00:00:33,926
+When a tenant reports a problem, the operator records its location, category, priority, and description.
+
+6
+00:00:33,926 --> 00:00:38,705
+FieldRelay assigns a durable identifier and keeps the status visible.
+
+7
+00:00:38,705 --> 00:00:46,012
+Calls and AI Operations then shows each coordination task and its lifecycle instead of hiding phone work in another tool.
+
+8
+00:00:46,012 --> 00:00:51,935
+Before CALL-E can be contacted, FieldRelay verifies that the contact is authorized for the requested purpose.
+
+9
+00:00:51,935 --> 00:00:59,646
+It commits the call task and idempotency reservation before any provider request, so a retry cannot silently create duplicate calls.
+
+10
+00:00:59,646 --> 00:01:06,161
+Only the exact live configuration enables dialing, and the destination number stays inside server-side infrastructure.
+
+11
+00:01:06,161 --> 00:01:11,106
+The public evaluator environment uses a simulated call adapter and labels it clearly.
+
+12
+00:01:11,106 --> 00:01:14,303
+This lets judges inspect the complete application safely.
+
+13
+00:01:14,303 --> 00:01:25,486
+In live mode, CALL-E places the authorized call, gives the disclosure, refers to the incident only by its operational identifier, asks bounded questions, and returns structured data to FieldRelay.
+
+14
+00:01:25,486 --> 00:01:37,411
+The call-detail screen explains the complete lifecycle: incident, authorized contact, purpose, execution mode, provider state, timeout, attempt count, idempotency key, and audit identity.
+
+15
+00:01:37,411 --> 00:01:40,486
+FieldRelay accepts only declared answer fields.
+
+16
+00:01:40,486 --> 00:01:48,119
+This verified live result returned availability yes, a quoted amount of thirty-five dollars, and confidence of zero point eight two.
+
+17
+00:01:48,119 --> 00:01:50,685
+Transcripts and recordings are not stored.
+
+18
+00:01:50,685 --> 00:01:54,988
+A quoted cost creates a human decision, not an automatic purchase.
+
+19
+00:01:54,988 --> 00:01:59,170
+The approval queue shows the evidence, reason, amount, and confidence.
+
+20
+00:01:59,170 --> 00:02:02,997
+An operator can release, keep pending, or reject the work.
+
+21
+00:02:02,997 --> 00:02:10,011
+Once approved, the dispatch board tracks the assignment through scheduled, en route, on site, and completed states.
+
+22
+00:02:10,011 --> 00:02:12,689
+Vendor authorization is equally visible.
+
+23
+00:02:12,689 --> 00:02:20,542
+Operators review permitted call purposes, regional and language boundaries, contact status, and can revoke authorization without erasing history.
+
+24
+00:02:20,542 --> 00:02:24,336
+Technicians, analytics, and settings complete the operational picture.
+
+25
+00:02:24,336 --> 00:02:29,867
+Unmeasured values are described as awaiting evidence instead of being presented as misleading zeroes.
+
+26
+00:02:29,867 --> 00:02:34,789
+Under the interface, domain rules control the application and infrastructure adapters.
+
+27
+00:02:34,789 --> 00:02:37,146
+CALL-E is one bounded integration.
+
+28
+00:02:37,146 --> 00:02:45,077
+Ambiguous outcomes remain unknown and are never automatically redialed; phone numbers and provider payloads never enter the product record.
+
+29
+00:02:45,077 --> 00:02:52,511
+FieldRelay turns phone coordination into structured, reviewable operations while keeping people in control of cost and dispatch.
+
+30
+00:02:52,511 --> 00:02:59,502
+The application is live, the source is public, and its reusable CALL-E service-dispatch skill is already merged upstream.

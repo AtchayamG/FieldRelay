@@ -11,8 +11,8 @@
 | Community contribution | PASS | [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) was approved and merged 2026-08-10. |
 | Reproducible judge build | PASS | Docker judge images build; `/health` and `/` return 200. |
 | Automated verification | PASS LOCAL | Current 430 non-database tests, lint/type/build, token check and detector zero pass. The last database-backed gate passed all 438 then-current tests on 2026-08-16; Docker is currently stopped, so the 15 SQL tests are skipped in the September rerun. |
-| GitHub CI | PASS | The five latest public `main` runs were green on 2026-09-02; the current remote source revision is `4ead8ab`. |
-| Audited production build | PASS | Vercel deployment `dpl_6cUXecjxzyhRHYw7LnnQqsXSS1cy` serves the audited reconciliation build at the production alias; `/health` returned 200 after deployment and again during the public-submission audit. Local release commit `423d60e` awaits approval to push. |
+| GitHub CI | PASS | The latest public `main` runs were green on 2026-09-02; the current remote source revision is `4ead8ab` before the approved final sync push. |
+| Audited production build | PASS | Vercel deployment `dpl_6cUXecjxzyhRHYw7LnnQqsXSS1cy` serves the audited reconciliation build at the production alias; `/health` returned 200 after deployment and again during the public-submission audit. Local release commits are approved for public sync. |
 | Live webhook completion | PASS FOR NEW CALLS | Encrypted production URL/token are configured and the hardened adapter is deployed. The historical missing-webhook task was recovered through the read-only reconciliation path. |
 | Delayed-speech diagnosis | EXTERNALLY BLOCKED | Authenticated dashboard and REST reads show a 45-second call, terminal provider result, failed recipient attempt, no failure code/message, and the correct bot task beginning only after the recipient experienced a long connection delay. Provider support must explain or mitigate first-audio latency. Do not redial. |
 | Lost-webhook recovery | PASS DEPLOYED | Session-protected reconciliation reads only an existing provider task, validates identity, strips sensitive material, and reuses the transactional callback path. It cannot place or retry a call. Historical `CALL-2042-0003` reconciled once to `completed` with `taskCompleted: false`. |
@@ -29,6 +29,10 @@
 ## Judge path
 
 Live URL: `https://fieldrelay-pi.vercel.app`. Credentials are pre-filled; click **Continue as Demo Ops Manager**.
+
+September 2 readback: the public API issued a session for the evaluator credentials, and the in-app
+browser reached Mission Control. A cold serverless start can make the button sit on **Verifying
+Session...** long enough to look stuck; wait for the redirect rather than refreshing immediately.
 
 Recommended path: Mission Control → Incidents → incident detail → Calls & AI Ops → call detail → Approvals → Dispatch → Vendors → Analytics.
 

@@ -94,6 +94,14 @@ was immediately rolled back before the remote rebuild; `/health` returned 200 af
 again after the corrected deployment. In-app verification confirmed the live adapter, masked
 configured target, reconciled call detail, and zero browser-console errors.
 
+September 2 final sync check: the public auth API returns 200 for the published evaluator
+credentials, and the in-app browser successfully reached Mission Control from `/auth/sign-in`. A cold
+serverless start can leave the sign-in button showing `Verifying Session...` for several seconds
+before redirect; do not treat that alone as a failed login unless the page surfaces an error or the
+API readback fails. Authenticated production API reads returned 200 for dial-target settings, calls,
+incidents, approvals, dispatches, vendors, and analytics. The app remains in exact live mode with one
+configured callable contact. No real call was placed during this verification.
+
 ## Submission state
 
 - Upstream community contribution [CALLE-AI/awesome-phone-call-agents#107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) is approved and merged.

@@ -1,16 +1,25 @@
 # Handover
 
-**Updated:** 2026-09-02 on local `main` at release commit `423d60e`, one commit ahead of `origin/main`, plus this documentation audit.
+**Updated:** 2026-09-02 on local `main` after the final public sync check. The user approved
+pushing the release work, keeping production in live mode for judges, and completing the remaining
+submission operations.
 
 ## Result
 
-The application is functionally release-ready locally. The full 438-test database-backed gate,
+The application is functionally release-ready locally and the public production deployment is
+healthy. The full 438-test database-backed gate,
 lint, strict typecheck, production build, token checker and impeccable detector pass. A redesigned
 2:59.861 Devpost walkthrough, SRT captions, and 1280×720 thumbnail exist under `assets/demo/`.
 The approved video is public at `https://youtu.be/tq6L4HOqRXQ`, and the connected Devpost account
 is registered for `CALL-E: Your Code Is Calling` with the user's confirmed rules and eligibility.
 Devpost submission `1140281` is verified live at `https://devpost.com/software/fieldrelay`.
 The required CALL-E contribution PR #107 is independently verified `APPROVED` and `MERGED`.
+
+Final September 2 readback confirms `/health` and `/api/v1/auth/session` return 200, in-app browser
+sign-in reaches Mission Control, and authenticated production reads for settings, calls, incidents,
+approvals, dispatches, vendors, and analytics all return 200. Production remains in exact live mode
+with one configured callable target, runtime target changes allowed, and the CALL-E Live Adapter
+visible. No real call was placed during this check.
 
 ## Changes in this slice
 
@@ -48,6 +57,9 @@ The required CALL-E contribution PR #107 is independently verified `APPROVED` an
   and 430 non-database tests pass (293 API + 135 app + 2 design tokens). Docker Desktop is stopped, so the 15 PostgreSQL integration tests
   were skipped after a connectivity-only failed attempt; their last database-backed run passed on
   August 16.
+- September 2 final production readback: public health 200, session issue 200, in-app browser sign-in
+  reaches Mission Control, dial-target/calls/incidents/approvals/dispatches/vendors/analytics
+  endpoints all return 200 with a signed evaluator session.
 - Production dependency audit reports no known vulnerabilities; the working-tree credential-pattern
   scan found no high-confidence secret candidate.
 - `vercel build --prod` succeeds locally without publication. The root runtime is pinned to Node
@@ -61,9 +73,8 @@ The required CALL-E contribution PR #107 is independently verified `APPROVED` an
    prompt, but only after about 23 seconds of apparent dead air in a 45-second call. Historical proof
    contains a separate successful structured live result. Do not state that a fresh judge call is
    guaranteed until CALL-E explains or mitigates this voice-start delay.
-2. **Public-source synchronization.** Release commit `423d60e` exactly records the deployed code but
-   remains one commit ahead of `origin/main`; pushing it is an external publication that awaits user
-   approval.
+2. **Public-source synchronization.** User approval is now granted. Push the local release/docs/media
+   sync to `origin/main` and watch the resulting CI before treating the public source as current.
 3. **Devpost/runtime wording mismatch.** The public page says the evaluator uses the simulated
    adapter, but production is intentionally in exact live mode for judges. Replace that one sentence
    with a truthful live-mode disclosure after explicit approval to edit the public submission.
@@ -83,6 +94,6 @@ live structured result already proves runtime use.
 
 ## Exact next task
 
-Obtain approval to push release commit `423d60e`, correct the stale public Devpost adapter sentence,
-and send CALL-E support the persisted REST call id with the evidence-backed startup-delay report. Do
-not place another metered call before the provider answers.
+Push the approved public sync to `origin/main`, then correct the stale public Devpost adapter
+sentence and submit the extra CALL-E credit/support requests with action-time confirmation for the
+specific browser-side transmissions. Do not place another metered call before the provider answers.
