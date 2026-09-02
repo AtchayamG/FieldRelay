@@ -1,5 +1,12 @@
 # Task Status
 
+- 2026-09-02 CI dependency audit repair: after pushing the final public sync, GitHub Actions run
+  `33654938337` passed lint, typecheck, database migration, tests, build, and design-token
+  verification, then failed `pnpm audit --prod` on a newly reported moderate `qs` advisory under
+  Express. Tightened the existing package-manager override from `>=6.15.2` to `>=6.16.0`, refreshed
+  `pnpm-lock.yaml`, and verified local `pnpm audit --prod` now reports no known vulnerabilities and
+  `pnpm install --frozen-lockfile` accepts the lockfile.
+
 - 2026-09-02 final public sync check: user approved pushing the release work and keeping
   production in exact live mode for judges. Public `/health` and `/api/v1/auth/session` return 200;
   in-app browser sign-in reaches Mission Control, though cold start can leave the button on

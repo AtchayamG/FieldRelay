@@ -18,7 +18,7 @@
       "@angular-devkit/schematics": "20.3.27",
       "@babel/core": ">=7.29.6",
       "esbuild": ">=0.28.1",
-      "qs": ">=6.15.2",
+      "qs": ">=6.16.0",
       "http-proxy-middleware": ">=3.0.7",
       "picomatch": ">=4.0.4",
       "piscina": ">=4.9.3",

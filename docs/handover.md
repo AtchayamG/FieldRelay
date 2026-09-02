@@ -60,6 +60,10 @@ visible. No real call was placed during this check.
 - September 2 final production readback: public health 200, session issue 200, in-app browser sign-in
   reaches Mission Control, dial-target/calls/incidents/approvals/dispatches/vendors/analytics
   endpoints all return 200 with a signed evaluator session.
+- GitHub Actions run `33654938337` passed lint, typecheck, database migration, tests, build, and
+  design-token verification, then failed the production dependency audit on a new moderate `qs`
+  advisory. The existing override is tightened to `>=6.16.0`; local `pnpm audit --prod` now reports
+  no known vulnerabilities and `pnpm install --frozen-lockfile` accepts the refreshed lockfile.
 - Production dependency audit reports no known vulnerabilities; the working-tree credential-pattern
   scan found no high-confidence secret candidate.
 - `vercel build --prod` succeeds locally without publication. The root runtime is pinned to Node
