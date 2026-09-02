@@ -1,5 +1,13 @@
 # Task Status
 
+- 2026-09-02 public-release parity audit: the five latest `AtchayamG/FieldRelay` GitHub Actions runs
+  are green; public `origin/main` remains at `4ead8ab`, while deployed release commit `423d60e` is
+  local and awaits push approval. CALL-E contribution PR #107 is now authoritatively `APPROVED` and
+  `MERGED`. The public Devpost page resolves the correct live app, YouTube video, repository, runtime
+  proof, and merged contribution, but one sentence still describes the evaluator as simulated even
+  though production is intentionally in exact live mode for judges. A public text correction awaits
+  explicit approval. Production `/health` returned 200 during the audit; no call was placed.
+
 ## 2026-09-02 — production and CALL-E record recheck
 
 - User approved deploying the reconciliation update while retaining exact live mode. Remote-built

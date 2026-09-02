@@ -1,6 +1,6 @@
 # Handover
 
-**Updated:** 2026-09-02 on local `main` at `4ead8ab` plus uncommitted audited changes.
+**Updated:** 2026-09-02 on local `main` at release commit `423d60e`, one commit ahead of `origin/main`, plus this documentation audit.
 
 ## Result
 
@@ -10,6 +10,7 @@ lint, strict typecheck, production build, token checker and impeccable detector 
 The approved video is public at `https://youtu.be/tq6L4HOqRXQ`, and the connected Devpost account
 is registered for `CALL-E: Your Code Is Calling` with the user's confirmed rules and eligibility.
 Devpost submission `1140281` is verified live at `https://devpost.com/software/fieldrelay`.
+The required CALL-E contribution PR #107 is independently verified `APPROVED` and `MERGED`.
 
 ## Changes in this slice
 
@@ -60,11 +61,15 @@ Devpost submission `1140281` is verified live at `https://devpost.com/software/f
    prompt, but only after about 23 seconds of apparent dead air in a 45-second call. Historical proof
    contains a separate successful structured live result. Do not state that a fresh judge call is
    guaranteed until CALL-E explains or mitigates this voice-start delay.
-2. **Repository synchronization.** The approved production release was deployed from the audited
-   local tree. Commit and push the release changes so the public source matches production.
-3. **Repository license.** No license is currently present; this is not an official CALL-E submission
+2. **Public-source synchronization.** Release commit `423d60e` exactly records the deployed code but
+   remains one commit ahead of `origin/main`; pushing it is an external publication that awaits user
+   approval.
+3. **Devpost/runtime wording mismatch.** The public page says the evaluator uses the simulated
+   adapter, but production is intentionally in exact live mode for judges. Replace that one sentence
+   with a truthful live-mode disclosure after explicit approval to edit the public submission.
+4. **Repository license.** No license is currently present; this is not an official CALL-E submission
    requirement and remains a separate user choice.
-4. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
+5. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
 
 The delayed-speech call remains a provider-diagnostics issue. Do not redial. A separate authorized
 live structured result already proves runtime use.
@@ -78,7 +83,6 @@ live structured result already proves runtime use.
 
 ## Exact next task
 
-Commit the audited release changes and obtain approval to push them so the public source matches the
-deployed application. Separately obtain approval to send CALL-E support the persisted REST call id
-and ask why first audio began roughly 23 seconds after connection. Do not place another metered call
-before that answer.
+Obtain approval to push release commit `423d60e`, correct the stale public Devpost adapter sentence,
+and send CALL-E support the persisted REST call id with the evidence-backed startup-delay report. Do
+not place another metered call before the provider answers.
