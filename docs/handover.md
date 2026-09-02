@@ -1,6 +1,6 @@
 # Handover
 
-**Updated:** 2026-09-02 on local `main` after the final public sync check. The user approved
+**Updated:** 2026-09-03 on local `main` after the release closeout. The user approved
 pushing the release work, keeping production in live mode for judges, and completing the remaining
 submission operations.
 
@@ -20,6 +20,12 @@ sign-in reaches Mission Control, and authenticated production reads for settings
 approvals, dispatches, vendors, and analytics all return 200. Production remains in exact live mode
 with one configured callable target, runtime target changes allowed, and the CALL-E Live Adapter
 visible. No real call was placed during this check.
+
+September 3 closeout pushed `1e50946`; GitHub Actions run `33678645033` is green across the full
+database-backed gate and production audit. Vercel deployment `dpl_CpbMihM42QgSMSXeNs75xKcYfabD`
+is Ready and now serves `https://fieldrelay-pi.vercel.app`. A fresh in-app evaluator login reaches
+Mission Control, the call queue loads, every principal authenticated API returns 200, the bounded
+live target remains configured, and reconciled live call `CALL-2042-0003` remains completed.
 
 ## Changes in this slice
 
@@ -60,10 +66,9 @@ visible. No real call was placed during this check.
 - September 2 final production readback: public health 200, session issue 200, in-app browser sign-in
   reaches Mission Control, dial-target/calls/incidents/approvals/dispatches/vendors/analytics
   endpoints all return 200 with a signed evaluator session.
-- GitHub Actions run `33654938337` passed lint, typecheck, database migration, tests, build, and
-  design-token verification, then failed the production dependency audit on a new moderate `qs`
-  advisory. The existing override is tightened to `>=6.16.0`; local `pnpm audit --prod` now reports
-  no known vulnerabilities and `pnpm install --frozen-lockfile` accepts the refreshed lockfile.
+- GitHub Actions run `33678645033` passed frozen install, lint, typecheck, database migration, the
+  full database-backed test suite, build, design-token verification, and production dependency
+  audit after the `qs >=6.16.0` override repair.
 - Production dependency audit reports no known vulnerabilities; the working-tree credential-pattern
   scan found no high-confidence secret candidate.
 - `vercel build --prod` succeeds locally without publication. The root runtime is pinned to Node
@@ -77,14 +82,12 @@ visible. No real call was placed during this check.
    prompt, but only after about 23 seconds of apparent dead air in a 45-second call. Historical proof
    contains a separate successful structured live result. Do not state that a fresh judge call is
    guaranteed until CALL-E explains or mitigates this voice-start delay.
-2. **Public-source synchronization.** User approval is now granted. Push the local release/docs/media
-   sync to `origin/main` and watch the resulting CI before treating the public source as current.
-3. **Devpost/runtime wording mismatch.** The public page says the evaluator uses the simulated
+2. **Devpost/runtime wording mismatch.** The public page says the evaluator uses the simulated
    adapter, but production is intentionally in exact live mode for judges. Replace that one sentence
    with a truthful live-mode disclosure after explicit approval to edit the public submission.
-4. **Repository license.** No license is currently present; this is not an official CALL-E submission
+3. **Repository license.** No license is currently present; this is not an official CALL-E submission
    requirement and remains a separate user choice.
-5. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
+4. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
 
 The delayed-speech call remains a provider-diagnostics issue. Do not redial. A separate authorized
 live structured result already proves runtime use.

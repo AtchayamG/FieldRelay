@@ -1,6 +1,6 @@
 # Devpost Readiness
 
-**Verified:** 2026-09-02 against the official overview/rules, provider record, and live/local product.
+**Verified:** 2026-09-03 against the official overview/rules, provider record, and live/local product.
 
 | Requirement | Status | Evidence / next action |
 |---|---|---|
@@ -10,9 +10,9 @@
 | Public source repository | PASS | `https://github.com/AtchayamG/FieldRelay` is public. |
 | Community contribution | PASS | [PR #107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) was approved and merged 2026-08-10. |
 | Reproducible judge build | PASS | Docker judge images build; `/health` and `/` return 200. |
-| Automated verification | PASS LOCAL | Current 430 non-database tests, lint/type/build, token check and detector zero pass. The last database-backed gate passed all 438 then-current tests on 2026-08-16; Docker is currently stopped, so the 15 SQL tests are skipped in the September rerun. |
-| GitHub CI | PASS | The latest public `main` runs were green on 2026-09-02; the current remote source revision is `4ead8ab` before the approved final sync push. |
-| Audited production build | PASS | Vercel deployment `dpl_6cUXecjxzyhRHYw7LnnQqsXSS1cy` serves the audited reconciliation build at the production alias; `/health` returned 200 after deployment and again during the public-submission audit. Local release commits are approved for public sync. |
+| Automated verification | PASS | GitHub Actions run `33678645033` passed the frozen install, lint, strict typecheck, PostgreSQL migration, full database-backed test suite, production build, design-token verification, and production dependency audit. |
+| GitHub CI | PASS | Public `main` is current at release `1e50946`; run `33678645033` is green. |
+| Audited production build | PASS | Vercel deployment `dpl_CpbMihM42QgSMSXeNs75xKcYfabD` is Ready and serves `fieldrelay-pi.vercel.app`; public health and evaluator sign-in return 200. |
 | Live webhook completion | PASS FOR NEW CALLS | Encrypted production URL/token are configured and the hardened adapter is deployed. The historical missing-webhook task was recovered through the read-only reconciliation path. |
 | Delayed-speech diagnosis | EXTERNALLY BLOCKED | Authenticated dashboard and REST reads show a 45-second call, terminal provider result, failed recipient attempt, no failure code/message, and the correct bot task beginning only after the recipient experienced a long connection delay. Provider support must explain or mitigate first-audio latency. Do not redial. |
 | Lost-webhook recovery | PASS DEPLOYED | Session-protected reconciliation reads only an existing provider task, validates identity, strips sensitive material, and reuses the transactional callback path. It cannot place or retry a call. Historical `CALL-2042-0003` reconciled once to `completed` with `taskCompleted: false`. |

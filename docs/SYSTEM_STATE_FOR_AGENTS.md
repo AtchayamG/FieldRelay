@@ -1,12 +1,14 @@
 # System State for Agents
 
-**Updated:** 2026-09-02. Read this after `docs/00_MASTER_BLUEPRINT.md` and `AGENTS.md`. This is current implementation truth; planned mockups are not evidence.
+**Updated:** 2026-09-03. Read this after `docs/00_MASTER_BLUEPRINT.md` and `AGENTS.md`. This is current implementation truth; planned mockups are not evidence.
 
 ## Current product
 
 FieldRelay is a working property-maintenance operations console. An operator can create and triage incidents, place an authorized CALL-E call, validate its structured answer, stop for human approval when the answer creates risk or cost, release an approved dispatch, and inspect vendors, technicians, analytics, settings, and audit activity. Every navigation route is implemented; none is a disabled promise.
 
-The public deployment is `https://fieldrelay-pi.vercel.app`. Merge `96034ff` was deployed on 2026-08-10 and verified live. Do not infer later production state from local fixtures.
+The public deployment is `https://fieldrelay-pi.vercel.app`. Release `1e50946` is served by Vercel
+deployment `dpl_CpbMihM42QgSMSXeNs75xKcYfabD` and was verified live on 2026-09-03. Do not infer
+later production state from local fixtures.
 
 ## Verified baseline
 
@@ -98,9 +100,11 @@ September 2 final sync check: the public auth API returns 200 for the published 
 credentials, and the in-app browser successfully reached Mission Control from `/auth/sign-in`. A cold
 serverless start can leave the sign-in button showing `Verifying Session...` for several seconds
 before redirect; do not treat that alone as a failed login unless the page surfaces an error or the
-API readback fails. Authenticated production API reads returned 200 for dial-target settings, calls,
-incidents, approvals, dispatches, vendors, and analytics. The app remains in exact live mode with one
-configured callable contact. No real call was placed during this verification.
+request fails. September 3 closeout repeated this check against deployment
+`dpl_CpbMihM42QgSMSXeNs75xKcYfabD`: in-app sign-in reached Mission Control, the call queue loaded,
+all principal authenticated APIs returned 200, the masked live target remained configured, and
+non-simulated `CALL-2042-0003` remained completed. GitHub Actions run `33678645033` passed the full
+database-backed gate and production audit. No metered call was placed.
 
 ## Submission state
 

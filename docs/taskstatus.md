@@ -1,5 +1,15 @@
 # Task Status
 
+- 2026-09-03 release closeout: committed and pushed `1e50946` (`chore: patch qs audit
+  advisory`). GitHub Actions run `33678645033` passed the frozen install, lint, strict typecheck,
+  PostgreSQL migration and full test suite, production build, design-token verification, and
+  `pnpm audit --prod`. Vercel production deployment `dpl_CpbMihM42QgSMSXeNs75xKcYfabD` reached
+  Ready and `fieldrelay-pi.vercel.app` was moved to it. Public health and evaluator sign-in return
+  200; the in-app browser reaches Mission Control and loads the call queue. Authenticated reads for
+  dial-target settings, calls, incidents, approvals, dispatches, vendors, and analytics return 200.
+  The configured target remains masked and callable in `IN` / `en-IN`; historical non-simulated
+  `CALL-2042-0003` remains `completed`. No real call was placed.
+
 - 2026-09-02 CI dependency audit repair: after pushing the final public sync, GitHub Actions run
   `33654938337` passed lint, typecheck, database migration, tests, build, and design-token
   verification, then failed `pnpm audit --prod` on a newly reported moderate `qs` advisory under
