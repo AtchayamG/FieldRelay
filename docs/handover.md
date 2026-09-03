@@ -5,8 +5,10 @@ pushing the release work, keeping production in live mode for judges, and comple
 submission operations.
 
 Current local continuation adds a branded bootstrap recovery surface and a guarded incident-owned
-call-launch control. It is verified locally but must be pushed, pass CI, deploy, and be read back in
-production before one user-confirmed evidence call. No call has been placed by this continuation.
+call-launch control. Commits `01b154b` and `e3b1d88` passed full database-backed CI and Vercel
+deployment `dpl_Hd7kg9LgpBYX5GqrFyiJQHmzooPn` is Ready behind the public alias. Fresh in-app
+sign-out/sign-in, live data, and the final disabled-until-acknowledged call confirmation were read
+back successfully with no console warning or error. No call has been placed by this continuation.
 
 ## Result
 
@@ -122,8 +124,6 @@ live structured result already proves runtime use.
 
 ## Exact next task
 
-Push the guarded call-launch and blank-screen recovery slice, require green CI, deploy it, then verify
-the signed-in production flow through the in-app browser without clicking the final live-call button.
 Immediately before one evidence dial, tell the user to be ready and require a fresh confirmation.
 Review the first result before discussing a second call. The optional corrected additional-calls
 resubmission remains separate; always use First Name `Atchayam` and Last Name `G`.

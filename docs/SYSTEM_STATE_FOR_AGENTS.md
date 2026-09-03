@@ -10,6 +10,12 @@ The public deployment is `https://fieldrelay-pi.vercel.app`. Release `1e50946` i
 deployment `dpl_CpbMihM42QgSMSXeNs75xKcYfabD` and was verified live on 2026-09-03. Do not infer
 later production state from local fixtures.
 
+September 3 judge-call release: commits `01b154b` and `e3b1d88` passed full database-backed CI runs
+`33728646497` and `33729216711`. Vercel deployment `dpl_Hd7kg9LgpBYX5GqrFyiJQHmzooPn` is Ready and
+aliased to the public URL. Fresh in-app sign-out/sign-in returned to Mission Control, live data loaded
+with zero console warnings/errors, and incident `INC-2042-0001` reached the final live-call
+confirmation with an unchecked acknowledgement and disabled submit button. No call was placed.
+
 The incident detail `Latest Call` tab now exposes the existing start-call contract through a guarded
 operator flow. It reads the deployment mode plus masked target, binds the request to the incident,
 the configured authorized contact, and `vendor_availability`, fixes retries at zero, generates one

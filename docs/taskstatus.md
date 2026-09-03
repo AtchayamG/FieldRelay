@@ -400,3 +400,5 @@
 - The page blocks a new launch while a task is queued, in flight, failed, unanswered, or outcome-unknown. A completed task remains reviewable and can be followed by a separately prepared and confirmed new task. Provider ambiguity triggers a durable-record refresh and no redial instruction.
 - CALL-E Support logged the approximately 23-second first-speech delay as public issue #295. The issue is open at P2 and needs investigation; the provider cannot promise a mitigation before judging.
 - Local verification: 139/139 app tests, strict typecheck, production build, focused ESLint, token checker (66 defined / 57 referenced), and impeccable detector zero. No call was placed.
+- Commits `01b154b` and `e3b1d88` were pushed to `main`; full database-backed CI runs `33728646497` and `33729216711` passed.
+- Vercel deployment `dpl_Hd7kg9LgpBYX5GqrFyiJQHmzooPn` is Ready and the public alias serves its hashed final bundle plus loading fallback. Fresh in-app sign-out/sign-in, Mission Control data, and the disabled-until-acknowledged live-call confirmation were visually verified with zero console warnings/errors. No call or credit was consumed.

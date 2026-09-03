@@ -49,10 +49,14 @@ with no promised mitigation before judging.
 - Focused ESLint: passed.
 - `node scripts/check-tokens.mjs`: 66 defined, 57 referenced, all resolve.
 - `npx impeccable detect apps/fieldrelay-app/src --no-config`: zero findings.
+- Full database-backed GitHub CI runs `33728646497` and `33729216711`: passed.
+- Vercel deployment `dpl_Hd7kg9LgpBYX5GqrFyiJQHmzooPn`: Ready and assigned to the public alias.
+- Fresh production sign-out/sign-in, Mission Control data load, completed-call follow-up entry, and
+  disabled-until-acknowledged final live confirmation: visually verified with zero console warnings
+  or errors. No submit action was taken.
 
 ## Known limitation and exact next task
 
-CALL-E issue #295 means a new call may again begin with substantial silence. Push and deploy this
-slice, verify the signed-in production confirmation screen without submitting it, then ask the user
-to be ready. Place one evidence call only after their immediate confirmation and inspect its result
-before considering another.
+CALL-E issue #295 means a new call may again begin with substantial silence. Ask the user to be ready,
+place one evidence call only after their immediate confirmation, and inspect its result before
+considering another.
