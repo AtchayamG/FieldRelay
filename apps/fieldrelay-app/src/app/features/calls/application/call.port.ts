@@ -2,9 +2,12 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import type { ReconcileCallResponseDto } from '@fieldrelay/contracts';
 import {
+  CallLaunchContext,
   CallTaskDetail,
   CallListResult,
-  ListCallsQuery
+  ListCallsQuery,
+  StartCallCommand,
+  StartedCall
 } from '../domain/call.model';
 
 @Injectable()
@@ -16,4 +19,6 @@ export abstract class CallPort {
   // Reads an existing live provider task and repairs a missed terminal webhook.
   // It cannot create, retry, or redial a call.
   abstract reconcile(id: string): Observable<ReconcileCallResponseDto>;
+  abstract launchContext(): Observable<CallLaunchContext>;
+  abstract start(command: StartCallCommand, idempotencyKey: string): Observable<StartedCall>;
 }

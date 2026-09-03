@@ -10,6 +10,19 @@ The public deployment is `https://fieldrelay-pi.vercel.app`. Release `1e50946` i
 deployment `dpl_CpbMihM42QgSMSXeNs75xKcYfabD` and was verified live on 2026-09-03. Do not infer
 later production state from local fixtures.
 
+The incident detail `Latest Call` tab now exposes the existing start-call contract through a guarded
+operator flow. It reads the deployment mode plus masked target, binds the request to the incident,
+the configured authorized contact, and `vendor_availability`, fixes retries at zero, generates one
+browser idempotency key per confirmation, and requires a second explicit acknowledgement. A live
+failure refreshes the durable call record and never invites a new-key retry. No phone number is
+accepted from or returned to this screen.
+
+The static application document includes a dark FieldRelay loading surface before Angular starts.
+If bootstrap fails it changes to a recovery message, so a stale or incompatible browser no longer
+shows an unexplained white document. A fresh in-app production session already proved that the
+deployed application and evaluator sign-in were healthy; the reported white external-browser tab
+was isolated to that browser context.
+
 ## Verified baseline
 
 - **438 tests:** API 303, app 133, design tokens 2. The API count includes PostgreSQL integration tests run with `DATABASE_URL` set.
@@ -75,6 +88,12 @@ its first bot turn did not begin until about 23 seconds into a 45-second billed 
 empty task; the unresolved problem is provider voice-start latency. The public create-call contract
 documents no greeting-delay control. Do not place another call until CALL-E explains or mitigates it.
 The MCP server still accepts only MCP `run_id`s; the persisted REST `call_id` returns `run_id not found`.
+
+CALL-E Support replied on 2026-09-03 and logged the first-speech delay as public GitHub issue #295,
+labelled `area:voice-speech`, `priority:p2`, and `status:needs-investigation`. They said recent attacks
+may be related but have not confirmed the cause, and they cannot promise a mitigation before judging.
+Treat this as an open provider risk. One evidence call may be made only after the user is ready and
+confirms at the moment of dial; inspect that result before considering any second call.
 
 Production received encrypted sensitive `CALLE_WEBHOOK_URL` and `CALLE_WEBHOOK_TOKEN` values and the hardened adapter was deployed on 2026-08-10. New calls carry the callback URL. The read-only reconciliation action was deployed on 2026-09-02 and applied once to historical `CALL-2042-0003`; it now shows the provider-reported `completed` call status while honestly preserving `taskCompleted: false`. See `docs/OPEN_ISSUE_SILENT_CALL.md`.
 

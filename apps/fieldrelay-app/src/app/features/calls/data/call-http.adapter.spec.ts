@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { describe, beforeEach, afterEach, it, expect } from 'vitest';
-import type { ApiResponse, CallListDto, CallTaskResponseDto } from '@fieldrelay/contracts';
+import type { ApiResponse, CallListDto, CallStatusResponseDto, CallTaskResponseDto } from '@fieldrelay/contracts';
 import { CallHttpAdapter } from './call-http.adapter';
 import { CallTask } from '../domain/call.model';
 
@@ -136,5 +136,54 @@ describe('CallHttpAdapter', () => {
       data: { status: 'completed', applied: true },
       meta: { requestId: 'req_reconcile', timestamp: new Date().toISOString() }
     });
+  });
+
+  it('should combine deployment mode and masked target into launch context', () => {
+    adapter.launchContext().subscribe((context) => {
+      expect(context).toEqual({
+        mode: 'live',
+        configured: true,
+        contactId: 'CNS-4491',
+        maskedPhone: '•••• 3923'
+      });
+    });
+
+    httpMock.expectOne('/api/v1/call-usage').flush({ data: { mode: 'live' } });
+    httpMock.expectOne('/api/v1/settings/dial-target').flush({
+      data: {
+        configured: true,
+        contactId: 'CNS-4491',
+        maskedPhone: '•••• 3923'
+      }
+    });
+  });
+
+  it('should start one call with the supplied idempotency key', () => {
+    const response: ApiResponse<CallStatusResponseDto> = {
+      data: {
+        callTaskId: mockCallDto.id,
+        displayId: mockCallDto.displayId,
+        providerTaskId: 'provider-new',
+        status: 'queued',
+        simulated: true
+      },
+      meta: { requestId: 'req_start', timestamp: new Date().toISOString() }
+    };
+
+    adapter.start({
+      incidentId: mockCallDto.incidentId,
+      authorizedContactId: 'CNS-4491',
+      purpose: 'vendor_availability',
+      timeoutSeconds: 300,
+      retries: 0
+    }, 'one-safe-key').subscribe((started) => {
+      expect(started.callTaskId).toBe(mockCallDto.id);
+    });
+
+    const req = httpMock.expectOne('/api/v1/calls');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.headers.get('Idempotency-Key')).toBe('one-safe-key');
+    expect(req.request.body).toEqual(expect.objectContaining({ retries: 0 }));
+    req.flush(response);
   });
 });

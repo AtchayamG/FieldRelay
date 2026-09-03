@@ -4,6 +4,10 @@
 pushing the release work, keeping production in live mode for judges, and completing the remaining
 submission operations.
 
+Current local continuation adds a branded bootstrap recovery surface and a guarded incident-owned
+call-launch control. It is verified locally but must be pushed, pass CI, deploy, and be read back in
+production before one user-confirmed evidence call. No call has been placed by this continuation.
+
 ## Result
 
 The application is functionally release-ready locally and the public production deployment is
@@ -34,6 +38,15 @@ task `call_FGQ5pBxDDlbwBhOdSu5LFQ` was sent from the confirmed CALL-E account de
 approximately 23-second first-audio delay. No call was placed during these operations.
 
 ## Changes in this slice
+
+- CALL-E Support logged the first-speech delay as public GitHub issue #295. It remains open, P2,
+  needs investigation, and has no promised mitigation before judging.
+- The incident Latest Call tab now reads mode and masked target, requires a two-step acknowledgement,
+  and sends the existing safe API one incident-owned, zero-retry, idempotent request. The browser
+  never receives or accepts a raw number.
+- The static HTML now renders a branded loading panel before Angular bootstrap and an actionable
+  recovery message if bootstrap rejects, preventing the unexplained white page shown in one stale
+  external-browser session.
 
 - Call detail starts at the normal 48px shell gutter rather than leaving a large desktop dead zone.
 - Demo adapter selection returns before constructing live dial infrastructure; the exact
@@ -87,7 +100,8 @@ approximately 23-second first-audio delay. No call was placed during these opera
    inspection on 2026-09-02 found that the most recent live call did speak the correct FieldRelay
    prompt, but only after about 23 seconds of apparent dead air in a 45-second call. Historical proof
    contains a separate successful structured live result. Do not state that a fresh judge call is
-   guaranteed until CALL-E explains or mitigates this voice-start delay.
+   guaranteed until CALL-E explains or mitigates this voice-start delay. Support issue #295 records
+   the defect and has no promised mitigation before judging.
 2. **Repository license.** No license is currently present; this is not an official CALL-E submission
    requirement and remains a separate user choice.
 3. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
@@ -107,6 +121,8 @@ live structured result already proves runtime use.
 
 ## Exact next task
 
-After explicit user approval, resubmit the CALL-E additional-calls request with First Name `Atchayam`
-and Last Name `G`. Otherwise monitor the CALL-E support reply and allocation; do not place another
-metered call before the provider answers the first-audio-delay report.
+Push the guarded call-launch and blank-screen recovery slice, require green CI, deploy it, then verify
+the signed-in production flow through the in-app browser without clicking the final live-call button.
+Immediately before one evidence dial, tell the user to be ready and require a fresh confirmation.
+Review the first result before discussing a second call. The optional corrected additional-calls
+resubmission remains separate; always use First Name `Atchayam` and Last Name `G`.

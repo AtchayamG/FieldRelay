@@ -55,3 +55,26 @@ export interface ListCallsQuery {
   cursor?: string;
   limit?: number;
 }
+
+export interface StartCallCommand {
+  incidentId: string;
+  authorizedContactId: string;
+  purpose: 'vendor_availability';
+  timeoutSeconds: number;
+  retries: number;
+}
+
+export interface StartedCall {
+  callTaskId: string;
+  displayId: string;
+  providerTaskId: string;
+  status: CallStatus;
+  simulated: boolean;
+}
+
+export interface CallLaunchContext {
+  mode: 'demo' | 'live';
+  configured: boolean;
+  contactId: string | null;
+  maskedPhone: string | null;
+}

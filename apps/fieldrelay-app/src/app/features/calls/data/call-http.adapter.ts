@@ -1,20 +1,34 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, forkJoin, map } from 'rxjs';
 import type {
   ApiResponse,
   CallListDto,
+  CallStatusResponseDto,
   ReconcileCallResponseDto,
   CallTaskDetailDto,
   CallTaskResponseDto
 } from '@fieldrelay/contracts';
 import { CallPort } from '../application/call.port';
 import {
+  CallLaunchContext,
   CallTask,
   CallTaskDetail,
   CallListResult,
-  ListCallsQuery
+  ListCallsQuery,
+  StartCallCommand,
+  StartedCall
 } from '../domain/call.model';
+
+interface CallUsageDto {
+  mode: 'demo' | 'live';
+}
+
+interface DialTargetDto {
+  configured: boolean;
+  contactId: string | null;
+  maskedPhone: string | null;
+}
 
 @Injectable()
 export class CallHttpAdapter implements CallPort {
@@ -69,6 +83,28 @@ export class CallHttpAdapter implements CallPort {
   reconcile(id: string): Observable<ReconcileCallResponseDto> {
     return this.http
       .post<ApiResponse<ReconcileCallResponseDto>>(`${this.baseUrl}/${id}/reconcile`, {})
+      .pipe(map((response) => response.data));
+  }
+
+  launchContext(): Observable<CallLaunchContext> {
+    return forkJoin({
+      usage: this.http.get<ApiResponse<CallUsageDto>>('/api/v1/call-usage'),
+      target: this.http.get<ApiResponse<DialTargetDto>>('/api/v1/settings/dial-target')
+    }).pipe(
+      map(({ usage, target }) => ({
+        mode: usage.data.mode,
+        configured: target.data.configured,
+        contactId: target.data.contactId,
+        maskedPhone: target.data.maskedPhone
+      }))
+    );
+  }
+
+  start(command: StartCallCommand, idempotencyKey: string): Observable<StartedCall> {
+    return this.http
+      .post<ApiResponse<CallStatusResponseDto>>(this.baseUrl, command, {
+        headers: new HttpHeaders({ 'Idempotency-Key': idempotencyKey })
+      })
       .pipe(map((response) => response.data));
   }
 

@@ -21,4 +21,13 @@ bootstrapApplication(AppComponent, {
       animated: true
     })
   ]
-}).catch((err) => console.error(err));
+}).catch((err) => {
+  console.error(err);
+  const root = document.querySelector('app-root');
+  const message = root?.querySelector('.bootstrap-status__panel span');
+  const heading = root?.querySelector('.bootstrap-status__panel strong');
+  if (heading) heading.textContent = 'FieldRelay could not start';
+  if (message) {
+    message.textContent = 'Reload this page. If the problem continues, open the application in a private browser window.';
+  }
+});

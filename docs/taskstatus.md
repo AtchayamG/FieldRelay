@@ -391,3 +391,12 @@
 - Recorded the user's official identity as **Atchayam G**; `G` is the complete last name/surname and must never be expanded to `Ganesh`.
 - Corrected repository-owned participant and mockup references to `Atchayam G`.
 - Verified the Gmail receipt for the CALL-E Additional Calls Request Form. Google Forms confirms the request was received, but the submitted Last Name field is `Ganesh`; the receipt offers no edit-response link. A corrected resubmission is pending explicit user approval.
+
+## 2026-09-03 — blank-screen recovery and judge call-launch path
+
+- Confirmed production health, HTML, hashed JavaScript and CSS assets, and evaluator sign-in in a fresh in-app browser session. The reported all-white page is isolated to the external browser context, not a failed deployment.
+- Added a static Cobalt Ops loading/recovery surface so JavaScript delay or bootstrap failure can no longer appear as an unexplained blank white document.
+- Added the missing guarded call-start UI to an incident's Latest Call tab. It displays live versus simulated mode, only the masked provisioned target, and the authorized contact; requires preparation plus explicit acknowledgement; fixes the purpose and retry policy; and preserves one idempotency key for the submission.
+- The page shows an existing call task instead of offering a second call. Provider ambiguity triggers a durable-record refresh and no redial instruction.
+- CALL-E Support logged the approximately 23-second first-speech delay as public issue #295. The issue is open at P2 and needs investigation; the provider cannot promise a mitigation before judging.
+- Local verification: 138/138 app tests, strict typecheck, production build, focused ESLint, token checker (66 defined / 57 referenced), and impeccable detector zero. No call was placed.

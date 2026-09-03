@@ -166,6 +166,12 @@ The 2026-09-02 call-detail provider-status action uses the existing secondary-bu
 changes no visual contract. Its post-change detector run reports **zero findings**; token resolution
 remains 66 defined / 57 referenced / all resolving.
 
+The 2026-09-03 incident call-launch control follows the same dense tray language: three compact
+readiness facts, a separate confirmation tray, warning colour only for the real metered side effect,
+and cobalt only for the operator action. The pre-Angular loading surface uses the same Cobalt Ops
+canvas and surface values because design tokens are not available until the bundle loads. Detector
+and token checks remain at zero findings and full resolution.
+
 ## Order of work
 
 1. Logo, tokens, fonts, favicon — **done**

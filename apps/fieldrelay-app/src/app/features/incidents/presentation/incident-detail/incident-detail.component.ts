@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { IncidentPort } from '../../application/incident.port';
 import { IncidentHttpAdapter } from '../../data/incident-http.adapter';
 import { Incident } from '../../domain/incident.model';
@@ -11,6 +11,10 @@ import {
   incidentApiErrorMessage,
   incidentApiStatus
 } from '../../application/incident-api-error';
+import { CallPort } from '../../../calls/application/call.port';
+import { CallHttpAdapter } from '../../../calls/data/call-http.adapter';
+import { CallLaunchContext, CallTask } from '../../../calls/domain/call.model';
+import { callApiErrorMessage } from '../../../calls/application/call-api-error';
 
 type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
 
@@ -19,7 +23,8 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
   standalone: true,
   imports: [CommonModule, RouterModule, StatusBadgeComponent, IconComponent],
   providers: [
-    { provide: IncidentPort, useClass: IncidentHttpAdapter }
+    { provide: IncidentPort, useClass: IncidentHttpAdapter },
+    { provide: CallPort, useClass: CallHttpAdapter }
   ],
   template: `
     <div class="incident-detail-page">
@@ -134,7 +139,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
             type="button"
             class="tab-btn"
             [class.active]="activeTab === 'calls'"
-            (click)="activeTab = 'calls'"
+            (click)="openCallTab()"
           >
             Latest Call
           </button>
@@ -243,15 +248,112 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
           </div>
         </section>
 
-        <!-- Tab 4: Latest Call (Truthful Unavailable State) -->
+        <!-- Tab 4: Latest Call and guarded call launch -->
         <section class="tab-content ops-card" *ngIf="activeTab === 'calls'">
-          <div class="empty-tab-panel">
+          <div class="empty-tab-panel" *ngIf="callPanelLoading">
+            <div class="pulse-loader compact-loader"></div>
+            <h3>Checking Call Readiness</h3>
+            <p>Loading the incident call record and authorized live target.</p>
+          </div>
+
+          <div class="call-record" *ngIf="!callPanelLoading && latestCall">
+            <div>
+              <span class="detail-label">Latest call task</span>
+              <h3 class="font-mono">{{ latestCall.displayId }}</h3>
+              <p>
+                {{ latestCall.simulated ? 'Simulated' : 'Live' }} CALL-E task,
+                currently {{ formatStatus(latestCall.status) }}.
+              </p>
+            </div>
+            <a class="action-btn secondary-action" [routerLink]="['/calls', latestCall.id]">
+              Review call evidence
+            </a>
+          </div>
+
+          <div class="empty-tab-panel" *ngIf="!callPanelLoading && !latestCall && !callPrepared">
             <fr-icon class="tab-icon" name="phone" [size]="40" [strokeWidth]="1.4" />
             <h3>No Call Record</h3>
             <p>
               No authorized phone call workflow has been dispatched for this incident yet.
             </p>
-            <span class="unavailable-badge font-mono">No Call Dispatched</span>
+            <p class="call-context-error" *ngIf="callContextError">{{ callContextError }}</p>
+            <div class="launch-facts" *ngIf="callContext">
+              <span>
+                <strong>Execution</strong>
+                <span class="font-mono">{{ callContext.mode === 'live' ? 'LIVE' : 'SIMULATED' }}</span>
+              </span>
+              <span>
+                <strong>Authorized contact</strong>
+                <span class="font-mono">{{ callContext.contactId || 'Not configured' }}</span>
+              </span>
+              <span>
+                <strong>Target</strong>
+                <span class="font-mono">{{ callContext.maskedPhone || 'Not configured' }}</span>
+              </span>
+            </div>
+            <button
+              type="button"
+              class="action-btn"
+              [disabled]="!canPrepareCall"
+              (click)="prepareCall()"
+            >
+              <fr-icon name="shield" [size]="15" />
+              Review authorized call
+            </button>
+          </div>
+
+          <div class="call-confirmation" *ngIf="!callPanelLoading && !latestCall && callPrepared">
+            <div class="confirmation-heading">
+              <fr-icon name="shield" [size]="22" />
+              <div>
+                <h3>{{ callContext?.mode === 'live' ? 'Confirm one live CALL-E call' : 'Confirm simulated CALL-E task' }}</h3>
+                <p>
+                  The task is bound to this incident, contact
+                  <span class="font-mono">{{ callContext?.contactId }}</span>, and the permitted purpose
+                  <span class="font-mono">vendor_availability</span>.
+                </p>
+              </div>
+            </div>
+
+            <p class="live-warning" *ngIf="callContext?.mode === 'live'">
+              <fr-icon name="alert" [size]="16" />
+              This action places one real, metered phone call to the provisioned target
+              {{ callContext?.maskedPhone }}. Closing the page will not cancel a call already submitted.
+            </p>
+            <p class="demo-notice" *ngIf="callContext?.mode === 'demo'">
+              Demo mode creates an auditable simulated task. It cannot reach a telephone network.
+            </p>
+
+            <label class="confirmation-check">
+              <input
+                type="checkbox"
+                [checked]="callConfirmed"
+                (change)="callConfirmed = $any($event.target).checked"
+              />
+              <span>
+                I understand this will create exactly one
+                {{ callContext?.mode === 'live' ? 'real metered call' : 'simulated call task' }}.
+              </span>
+            </label>
+
+            <p class="call-context-error" *ngIf="callStartError">{{ callStartError }}</p>
+
+            <div class="call-actions">
+              <button type="button" class="secondary-btn" [disabled]="callStarting" (click)="cancelCallPreparation()">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="action-btn"
+                [disabled]="!callConfirmed || callStarting"
+                (click)="startAuthorizedCall()"
+              >
+                <fr-icon name="phone-active" [size]="15" />
+                {{ callStarting
+                  ? 'Submitting call...'
+                  : (callContext?.mode === 'live' ? 'Place one live call' : 'Run simulated call') }}
+              </button>
+            </div>
           </div>
         </section>
 
@@ -293,6 +395,11 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       border-top-color: var(--fr-color-primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
+    }
+    .compact-loader {
+      width: 30px;
+      height: 30px;
+      border-width: 3px;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
@@ -385,6 +492,10 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       gap: 6px;
     }
     .secondary-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    .action-btn:disabled {
       cursor: not-allowed;
       opacity: 0.5;
     }
@@ -561,12 +672,130 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       font-size: 13px;
       font-weight: 700;
       text-decoration: none;
+      border: none;
+      cursor: pointer;
+      gap: 7px;
+    }
+    .secondary-action {
+      background: var(--fr-color-surface2);
+      color: var(--fr-color-primary-bright);
+      border: 1px solid var(--fr-color-border);
+    }
+    .call-record, .call-confirmation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--fr-space-lg);
+      background: var(--fr-color-surface2);
+      border: 1px solid var(--fr-color-border);
+      border-radius: var(--fr-tray-radius-inner);
+      padding: var(--fr-space-lg);
+    }
+    .call-record h3, .call-confirmation h3 {
+      margin: 4px 0;
+      color: var(--fr-color-text);
+    }
+    .call-record p, .call-confirmation p {
+      color: var(--fr-color-muted);
+      line-height: 1.5;
+    }
+    .launch-facts {
+      width: min(720px, 100%);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid var(--fr-color-border);
+      border-radius: var(--fr-tray-radius-inner);
+      overflow: hidden;
+      text-align: left;
+    }
+    .launch-facts > span {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: var(--fr-space-sm) var(--fr-space-md);
+    }
+    .launch-facts > span + span {
+      border-left: 1px solid var(--fr-color-border);
+    }
+    .launch-facts strong {
+      color: var(--fr-color-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .call-confirmation {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .confirmation-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--fr-space-sm);
+    }
+    .confirmation-heading > fr-icon {
+      color: var(--fr-color-primary-bright);
+      flex: 0 0 auto;
+    }
+    .live-warning, .demo-notice, .call-context-error {
+      padding: var(--fr-space-sm) var(--fr-space-md);
+      border-radius: var(--fr-radius-md);
+    }
+    .live-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: var(--fr-color-warning-soft);
+      color: var(--fr-color-warning) !important;
+      border: 1px solid var(--fr-color-warning);
+    }
+    .demo-notice {
+      background: var(--fr-color-primary-soft);
+      color: var(--fr-color-primary-bright) !important;
+      border: 1px solid var(--fr-color-primary);
+    }
+    .call-context-error {
+      background: var(--fr-color-danger-soft);
+      color: var(--fr-color-danger);
+      border: 1px solid var(--fr-color-danger);
+    }
+    .confirmation-check {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--fr-space-sm);
+      color: var(--fr-color-text);
+      font-size: 13px;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+    .confirmation-check input {
+      margin-top: 2px;
+      accent-color: var(--fr-color-primary);
+    }
+    .call-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--fr-space-sm);
+    }
+    @media (max-width: 720px) {
+      .launch-facts {
+        grid-template-columns: 1fr;
+      }
+      .launch-facts > span + span {
+        border-left: none;
+        border-top: 1px solid var(--fr-color-border);
+      }
+      .call-record {
+        align-items: stretch;
+        flex-direction: column;
+      }
     }
   `]
 })
 export class IncidentDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private port = inject(IncidentPort);
+  private callPort = inject(CallPort);
+  private router = inject(Router);
 
   incidentId: string = '';
   incident: Incident | null = null;
@@ -575,6 +804,15 @@ export class IncidentDetailComponent implements OnInit {
   isLoading: boolean = true;
   isNotFound: boolean = false;
   errorMsg: string | null = null;
+  latestCall: CallTask | null = null;
+  callContext: CallLaunchContext | null = null;
+  callPanelLoading = false;
+  callContextError: string | null = null;
+  callStartError: string | null = null;
+  callPrepared = false;
+  callConfirmed = false;
+  callStarting = false;
+  private callIdempotencyKey: string | null = null;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -614,6 +852,96 @@ export class IncidentDetailComponent implements OnInit {
     if (this.incidentId) {
       this.loadIncident(this.incidentId);
     }
+  }
+
+  openCallTab(): void {
+    this.activeTab = 'calls';
+    this.loadCallPanel();
+  }
+
+  loadCallPanel(): void {
+    if (!this.incidentId) return;
+    this.callPanelLoading = true;
+    this.callContextError = null;
+    let pending = 2;
+    const completeOne = () => {
+      pending -= 1;
+      if (pending === 0) this.callPanelLoading = false;
+    };
+
+    this.callPort.list({ incidentId: this.incidentId, limit: 1 }).subscribe({
+      next: (result) => {
+        this.latestCall = result.items[0] ?? null;
+        completeOne();
+      },
+      error: (error) => {
+        this.callContextError = callApiErrorMessage(error, 'Could not load this incident call history.');
+        completeOne();
+      }
+    });
+
+    this.callPort.launchContext().subscribe({
+      next: (context) => {
+        this.callContext = context;
+        completeOne();
+      },
+      error: (error) => {
+        this.callContextError = callApiErrorMessage(error, 'Could not verify the authorized call target.');
+        completeOne();
+      }
+    });
+  }
+
+  get canPrepareCall(): boolean {
+    return Boolean(this.callContext?.configured && this.callContext.contactId);
+  }
+
+  prepareCall(): void {
+    if (!this.canPrepareCall) return;
+    const cryptoApi = globalThis.crypto;
+    if (!cryptoApi?.randomUUID) {
+      this.callStartError = 'This browser cannot create the required idempotency key.';
+      return;
+    }
+    this.callIdempotencyKey = cryptoApi.randomUUID();
+    this.callStartError = null;
+    this.callConfirmed = false;
+    this.callPrepared = true;
+  }
+
+  cancelCallPreparation(): void {
+    this.callPrepared = false;
+    this.callConfirmed = false;
+    this.callStartError = null;
+    this.callIdempotencyKey = null;
+  }
+
+  startAuthorizedCall(): void {
+    const context = this.callContext;
+    if (!this.callConfirmed || !context?.contactId || !this.callIdempotencyKey || this.callStarting) return;
+
+    this.callStarting = true;
+    this.callStartError = null;
+    this.callPort.start({
+      incidentId: this.incidentId,
+      authorizedContactId: context.contactId,
+      purpose: 'vendor_availability',
+      timeoutSeconds: 300,
+      retries: 0
+    }, this.callIdempotencyKey).subscribe({
+      next: (started) => {
+        this.callStarting = false;
+        void this.router.navigate(['/calls', started.callTaskId]);
+      },
+      error: (error) => {
+        this.callStarting = false;
+        this.callStartError = callApiErrorMessage(
+          error,
+          'The provider outcome is unknown. Do not submit another call; review the durable call task instead.'
+        );
+        this.loadCallPanel();
+      }
+    });
   }
 
   formatStatus(status: string): string {
