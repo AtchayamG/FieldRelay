@@ -1,5 +1,13 @@
 # Task Status
 
+- 2026-09-04 publication closeout: with explicit user approval, uploaded and publicly published
+  the verified live-evidence master as `https://youtu.be/34Jy7yKM_Ds`, including the existing
+  thumbnail and synchronized English captions. YouTube copyright and Community Guidelines
+  checks found no issues. Saved the replacement video URL in Devpost submission `1140281`;
+  the public page's iframe points to the new video and the submission remains SUBMITTED (5/5).
+  Public player Settings confirms English captions. Release CI `33755986029` passed all gates
+  for `d9aff25`. No additional call, credit expenditure, or production configuration change.
+
 - 2026-09-03 live evidence call and film refresh: after the user's action-time confirmation, the
   production incident flow created exactly one non-simulated, zero-retry task, `CALL-2042-0004`.
   The phone recording and provider output agree on the bounded result: available `yes`, quoted

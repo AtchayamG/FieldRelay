@@ -145,6 +145,12 @@ database-backed gate and production audit. No metered call was placed.
 
 ## Submission state
 
+- September 4 publication closeout: user-approved replacement video is public at
+  `https://youtu.be/34Jy7yKM_Ds`, with the current thumbnail and English captions. YouTube's
+  publication dialog and public player's English caption track were verified. Devpost submission
+  `1140281` remains submitted and its public iframe now embeds `34Jy7yKM_Ds`. This supersedes
+  the older video URL below. No application configuration or call state changed during publishing.
+
 - Upstream community contribution [CALLE-AI/awesome-phone-call-agents#107](https://github.com/CALLE-AI/awesome-phone-call-agents/pull/107) is approved and merged.
 - `assets/demo/fieldrelay-demo.mp4` is the verified 2:59.861 detailed landscape walkthrough. Its warm editorial presentation canvas surrounds full-content views of the authentic dark application. Dense screens and the architecture diagram are contained without zoom or pan; sparse screens trim only unused bottom space. It explains the complete idea and working product with deployed-app footage, real approval/dispatch/vendor/analytics screens, the archived verified live CALL-E structured result, architecture evidence, and explicit simulated/historical-live labels. `assets/demo/fieldrelay-thumbnail.png` is the matching 1280×720 thumbnail built from real product screens. No new call was placed. The older `fieldrelay-demo-DRAFT.mp4` and its builder remain historical draft artifacts.
 - The public YouTube release is `https://youtu.be/tq6L4HOqRXQ`. FieldRelay is submitted to `CALL-E: Your Code Is Calling` as submission `1140281`; the verified public project is `https://devpost.com/software/fieldrelay`.

@@ -9,7 +9,10 @@ action-time confirmation. Production task `CALL-2042-0004` completed with availa
 ETA `1440` minutes, confidence `0.9`, and retry limit `0`. Provider reconciliation updated the same
 durable task; no second call was placed. The local 2:59.861 film now contains a clearly labelled,
 time-edited excerpt from that call and its matching live result screen. Publishing the replacement
-video and changing Devpost remain pending action-time confirmation.
+video and changing Devpost were approved and completed: the public replacement is
+`https://youtu.be/34Jy7yKM_Ds`. Devpost's public iframe embeds the same id and submission `1140281`
+remains SUBMITTED (5/5). The public YouTube player exposes English captions; thumbnail and checks
+were verified. Release CI `33755986029` passed for `d9aff25`.
 
 ## Result
 
@@ -17,8 +20,8 @@ The application is functionally release-ready locally and the public production 
 healthy. The full 438-test database-backed gate,
 lint, strict typecheck, production build, token checker and impeccable detector pass. A refreshed
 2:59.861 Devpost walkthrough, SRT captions, and 1280×720 thumbnail exist under `assets/demo/`.
-The previous approved video remains public at `https://youtu.be/tq6L4HOqRXQ`; the refreshed local
-master is not yet published. The connected Devpost account
+The previous video remains available at `https://youtu.be/tq6L4HOqRXQ`; the refreshed master is
+public at `https://youtu.be/34Jy7yKM_Ds` and is now embedded on Devpost. The connected Devpost account
 is registered for `CALL-E: Your Code Is Calling` with the user's confirmed rules and eligibility.
 Devpost submission `1140281` is verified live at `https://devpost.com/software/fieldrelay`.
 The required CALL-E contribution PR #107 is independently verified `APPROVED` and `MERGED`.
@@ -129,6 +132,7 @@ The delayed-speech risk remains a provider-diagnostics issue. Do not redial mere
 
 ## Exact next task
 
-Immediately before one evidence dial, tell the user to be ready and require a fresh confirmation.
-Review the first result before discussing a second call. The optional corrected additional-calls
-resubmission remains separate; always use First Name `Atchayam` and Last Name `G`.
+The approved video publication and Devpost replacement are complete. Do not place another call
+for media. Provider issue #295 remains an external risk. The user declined correcting the old
+additional-calls surname submission; leave it unchanged and use First Name `Atchayam` and
+Last Name `G` in future entries. Any broader narrative/media revision is a separate task.
