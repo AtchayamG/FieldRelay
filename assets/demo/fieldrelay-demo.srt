@@ -47,73 +47,77 @@ The public evaluator environment uses a simulated call adapter and labels it cle
 This lets judges inspect the complete application safely.
 
 13
-00:01:14,303 --> 00:01:25,486
-In live mode, CALL-E places the authorized call, gives the disclosure, refers to the incident only by its operational identifier, asks bounded questions, and returns structured data to FieldRelay.
+00:01:14,303 --> 00:01:17,823
+This is an automated assistant calling for the Property Management team.
 
 14
-00:01:25,486 --> 00:01:37,411
-The call-detail screen explains the complete lifecycle: incident, authorized contact, purpose, execution mode, provider state, timeout, attempt count, idempotency key, and audit identity.
+00:01:17,823 --> 00:01:24,703
+This call may be recorded, and you can ask to speak with a person at any time.
 
 15
-00:01:37,411 --> 00:01:40,486
-FieldRelay accepts only declared answer fields.
+00:01:24,703 --> 00:01:30,263
+Could you tell me the earliest technician arrival and the rough cost?
 
 16
-00:01:40,486 --> 00:01:48,119
-This verified live result returned availability yes, a quoted amount of thirty-five dollars, and confidence of zero point eight two.
+00:01:30,263 --> 00:01:38,263
+The earliest technician arrival will be 24 hours, and the cost is 40 dollars.
 
 17
-00:01:48,119 --> 00:01:50,685
-Transcripts and recordings are not stored.
+00:01:38,613 --> 00:01:46,262
+FieldRelay reconciled that same task as completed: forty dollars, a twenty-four-hour arrival, and zero point nine confidence.
 
 18
+00:01:46,262 --> 00:01:50,211
+The application stores validated fields, not the raw conversation.
+
+19
 00:01:50,685 --> 00:01:54,988
 A quoted cost creates a human decision, not an automatic purchase.
 
-19
+20
 00:01:54,988 --> 00:01:59,170
 The approval queue shows the evidence, reason, amount, and confidence.
 
-20
+21
 00:01:59,170 --> 00:02:02,997
 An operator can release, keep pending, or reject the work.
 
-21
+22
 00:02:02,997 --> 00:02:10,011
 Once approved, the dispatch board tracks the assignment through scheduled, en route, on site, and completed states.
 
-22
+23
 00:02:10,011 --> 00:02:12,689
 Vendor authorization is equally visible.
 
-23
+24
 00:02:12,689 --> 00:02:20,542
 Operators review permitted call purposes, regional and language boundaries, contact status, and can revoke authorization without erasing history.
 
-24
+25
 00:02:20,542 --> 00:02:24,336
 Technicians, analytics, and settings complete the operational picture.
 
-25
+26
 00:02:24,336 --> 00:02:29,867
 Unmeasured values are described as awaiting evidence instead of being presented as misleading zeroes.
 
-26
+27
 00:02:29,867 --> 00:02:34,789
 Under the interface, domain rules control the application and infrastructure adapters.
 
-27
+28
 00:02:34,789 --> 00:02:37,146
 CALL-E is one bounded integration.
 
-28
+29
 00:02:37,146 --> 00:02:45,077
 Ambiguous outcomes remain unknown and are never automatically redialed; phone numbers and provider payloads never enter the product record.
 
-29
+30
 00:02:45,077 --> 00:02:52,511
 FieldRelay turns phone coordination into structured, reviewable operations while keeping people in control of cost and dispatch.
 
-30
+31
 00:02:52,511 --> 00:02:59,502
 The application is live, the source is public, and its reusable CALL-E service-dispatch skill is already merged upstream.

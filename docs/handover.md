@@ -4,19 +4,21 @@
 pushing the release work, keeping production in live mode for judges, and completing the remaining
 submission operations.
 
-Current local continuation adds a branded bootstrap recovery surface and a guarded incident-owned
-call-launch control. Commits `01b154b` and `e3b1d88` passed full database-backed CI and Vercel
-deployment `dpl_Hd7kg9LgpBYX5GqrFyiJQHmzooPn` is Ready behind the public alias. Fresh in-app
-sign-out/sign-in, live data, and the final disabled-until-acknowledged call confirmation were read
-back successfully with no console warning or error. No call has been placed by this continuation.
+The guarded incident-owned call-launch control has now been exercised once with the user's explicit
+action-time confirmation. Production task `CALL-2042-0004` completed with available `yes`, `$40`,
+ETA `1440` minutes, confidence `0.9`, and retry limit `0`. Provider reconciliation updated the same
+durable task; no second call was placed. The local 2:59.861 film now contains a clearly labelled,
+time-edited excerpt from that call and its matching live result screen. Publishing the replacement
+video and changing Devpost remain pending action-time confirmation.
 
 ## Result
 
 The application is functionally release-ready locally and the public production deployment is
 healthy. The full 438-test database-backed gate,
-lint, strict typecheck, production build, token checker and impeccable detector pass. A redesigned
+lint, strict typecheck, production build, token checker and impeccable detector pass. A refreshed
 2:59.861 Devpost walkthrough, SRT captions, and 1280×720 thumbnail exist under `assets/demo/`.
-The approved video is public at `https://youtu.be/tq6L4HOqRXQ`, and the connected Devpost account
+The previous approved video remains public at `https://youtu.be/tq6L4HOqRXQ`; the refreshed local
+master is not yet published. The connected Devpost account
 is registered for `CALL-E: Your Code Is Calling` with the user's confirmed rules and eligibility.
 Devpost submission `1140281` is verified live at `https://devpost.com/software/fieldrelay`.
 The required CALL-E contribution PR #107 is independently verified `APPROVED` and `MERGED`.
@@ -71,15 +73,19 @@ approximately 23-second first-audio delay. No call was placed during these opera
 - Security wording now matches production reality: published evaluator credentials do not identify
   a judge, and exact live mode permits bounded calls to the one provisioned contact. Keep live public
   exposure supervised and switch to demo mode when judge-triggered calling is not required.
+- One user-authorized production call now proves the full provider loop. The edited film excerpt
+  contains only the automated-assistant identity, disclosure, bounded question, and ETA/cost answer;
+  it contains no phone number and is explicitly labelled `EDITED FOR TIME`. Raw audio and its local
+  transcription are not committed.
 
 ## Verified
 
 - 438/438 tests with PostgreSQL: 303 API + 133 app + 2 design tokens.
 - ESLint, strict TypeScript, production build, token check and impeccable detector zero.
 - Call-detail visual preview: 48px post-sidebar gutter at 1920×1080.
-- Video: H.264/AAC, 1920×1080, 30 fps, 2:59.861, 15,577,376 bytes.
-- Audio: mean -22.4 dB, peak -5.2 dB; stills and contact sheet visually reviewed.
-- Video SHA-256: `6d5c91a16beebe9b6a259e2f57d0ce34a33a342989cfb2c87b4a064fc86c4c9b`.
+- Refreshed video: H.264/AAC, 1920×1080, 30 fps, 2:59.861, 12,615,620 bytes.
+- Audio: mean -22.2 dB, peak -5.0 dB; representative transition and proof frames reviewed.
+- Video SHA-256: `4d68d0f6b762f9a5510b3edef224f6ae3ade61ba83c6633d649ed26303de89b4`.
 - Thumbnail SHA-256: `24e98e98b9505c79736d376721549766ee25bb294444af11e019f948c4995970`.
 - September 2 rerun: lint, strict typecheck, production build, token checker, impeccable detector,
   and 430 non-database tests pass (293 API + 135 app + 2 design tokens). Docker Desktop is stopped, so the 15 PostgreSQL integration tests
@@ -101,10 +107,9 @@ approximately 23-second first-audio delay. No call was placed during these opera
 1. **Live-call provider startup latency.** The production deployment is in exact live mode, has a
    configured callable contact, and has the hardened webhook configuration. Authenticated provider
    inspection on 2026-09-02 found that the most recent live call did speak the correct FieldRelay
-   prompt, but only after about 23 seconds of apparent dead air in a 45-second call. Historical proof
-   contains a separate successful structured live result. Do not state that a fresh judge call is
-   guaranteed until CALL-E explains or mitigates this voice-start delay. Support issue #295 records
-   the defect and has no promised mitigation before judging.
+   prompt, but only after about 23 seconds of apparent dead air in a 45-second call. The September 3
+   evidence run completed end to end, but identical startup latency for judges is not guaranteed.
+   Support issue #295 remains open and has no promised mitigation before judging.
 2. **Repository license.** No license is currently present; this is not an official CALL-E submission
    requirement and remains a separate user choice.
 3. **Optional feedback survey.** The drafted feedback entry remains a separate optional prize action.
@@ -112,8 +117,8 @@ approximately 23-second first-audio delay. No call was placed during these opera
    received but records Last Name as `Ganesh`. The user's official surname is `G`, and the receipt has
    no edit-response link. Submit a corrected replacement only after explicit user approval.
 
-The delayed-speech call remains a provider-diagnostics issue. Do not redial. A separate authorized
-live structured result already proves runtime use.
+The delayed-speech risk remains a provider-diagnostics issue. Do not redial merely to improve media;
+`CALL-2042-0004` is the current authorized live proof.
 
 ## Cleanup and risks
 

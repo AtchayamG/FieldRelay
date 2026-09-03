@@ -17,22 +17,25 @@ template or source is redistributed.
 |---|---|
 | Runtime | 2:59.861 — below the formal 3:00 maximum |
 | Picture | H.264, 1920×1080, 30 fps |
-| Audio | AAC, 48 kHz stereo, narration only |
-| Loudness check | mean -22.4 dB, peak -5.2 dB |
-| Size | 15,577,376 bytes |
-| SHA-256 | `6d5c91a16beebe9b6a259e2f57d0ce34a33a342989cfb2c87b4a064fc86c4c9b` |
+| Audio | AAC, 48 kHz stereo, narration plus one edited live-call excerpt |
+| Loudness check | mean -22.2 dB, peak -5.0 dB |
+| Size | 12,615,620 bytes |
+| SHA-256 | `4d68d0f6b762f9a5510b3edef224f6ae3ade61ba83c6633d649ed26303de89b4` |
 | Thumbnail | `assets/demo/fieldrelay-thumbnail.png`, 1280×720 |
 
 ## Truthfulness policy
 
 - The opening navigation is footage of the deployed evaluator application, not a mockup.
-- The public evaluator environment and simulated call task are labelled as simulated.
-- Live-mode behavior is explained, not reenacted. No phone call was placed for this film.
-- The `available: yes`, `$35`, `0.82` result is explicitly labelled as a verified historical
-  authorized live result.
-- Approval and dispatch screens show the actual application state that corresponds to that result.
-- No transcript, recording, phone number, credential, real personal data, third-party music, or
-  synthetic stock footage appears.
+- The evaluator session, simulated sample task, and exact-live production adapter are separately labelled.
+- Live-mode behavior is now proven by the authorized production task `CALL-2042-0004`.
+- A 23.96-second excerpt contains the automated-assistant identity, disclosure, bounded question,
+  and ETA/cost answer. It is explicitly labelled `EDITED FOR TIME`; the raw recording is not shipped.
+- The matching live result is available `yes`, `$40`, ETA `1440` minutes, confidence `0.9`.
+- Approval and dispatch screens show the actual application's human-gate and lifecycle behavior using
+  the clearly identifiable deterministic demo record; they are not claimed as downstream state from
+  the new `$40` evidence call.
+- No phone number, credential, raw transcript, full recording, third-party music, or synthetic stock
+  footage appears. The user expressly authorized the short edited evidence excerpt.
 - Presentation cards use a warm editorial canvas; the application alone retains its authentic dark
   theme. Application and architecture frames preserve all judge-relevant content; dense pages use
   full-frame containment and sparse pages use only conservative bottom-space trimming.
@@ -43,8 +46,8 @@ template or source is redistributed.
 2. 0:09–0:29 — deployed evaluator session and Mission Control.
 3. 0:29–0:40 — incident creation and durable operational record.
 4. 0:40–1:05 — Calls & AI Ops, authorization, idempotency, exact live gate, and privacy boundary.
-5. 1:05–1:24 — call-detail lifecycle and audit identity.
-6. 1:24–1:53 — schema-bounded answer plus verified historical live result.
+5. 1:05–1:14 — call-detail lifecycle and audit identity.
+6. 1:14–1:53 — edited real-call audio plus the matching completed production result.
 7. 1:53–2:06 — human approval with reason, amount, confidence, and release control.
 8. 2:06–2:13 — explicit dispatch lifecycle.
 9. 2:13–2:21 — visible and revocable vendor authorization.

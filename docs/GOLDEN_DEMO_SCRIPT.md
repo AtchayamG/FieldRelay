@@ -23,9 +23,10 @@ as simulated and explain what CALL-E does when live mode is deliberately enabled
 
 ### 1:05–1:53 — Reviewable lifecycle and bounded result
 
-Show call detail, including provider state, timeout, attempts, idempotency key, and audit identity.
-Then show the separately labelled verified historical live result: `available: yes`, `$35`,
-confidence `0.82`, and no stored transcript or recording.
+Show call detail, then play the clearly labelled, time-edited evidence excerpt from production task
+`CALL-2042-0004`: automated-assistant identity, disclosure, the bounded ETA/cost question, and its
+answer. Show the matching completed record: `available: yes`, `$40`, ETA `1440` minutes, confidence
+`0.9`, and no raw conversation stored by the application.
 
 ### 1:53–2:29 — Human authority and operational follow-through
 
@@ -43,9 +44,9 @@ application, public source, and merged CALL-E contribution.
 
 - [x] Deployed product visibly functioning.
 - [x] Product idea and workflow explained in detail.
-- [x] Simulated evaluator behavior and historical live evidence cannot be confused.
+- [x] Simulated evaluator behavior and current live evidence cannot be confused.
 - [x] Real approval, dispatch, vendor, analytics, and architecture evidence shown.
-- [x] No credentials, phone numbers, transcripts, recordings, or personal data.
+- [x] No credentials, phone numbers, raw transcript, full recording, or unapproved personal data.
 - [x] Runtime below 3:00; H.264/AAC 1920×1080 output verified.
 - [x] Captions generated.
 - [x] Purpose-built 1280×720 thumbnail generated from real FieldRelay screens.

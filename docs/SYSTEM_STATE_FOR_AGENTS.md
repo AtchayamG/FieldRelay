@@ -16,6 +16,15 @@ aliased to the public URL. Fresh in-app sign-out/sign-in returned to Mission Con
 with zero console warnings/errors, and incident `INC-2042-0001` reached the final live-call
 confirmation with an unchecked acknowledgement and disabled submit button. No call was placed.
 
+September 3 live evidence run: after explicit action-time confirmation, the production UI created
+exactly one new live task, `CALL-2042-0004`. The phone answered and CALL-E delivered the disclosure,
+asked for vendor availability, ETA, and rough cost, and received a bounded answer. The callback
+stored available `yes`, `$40`, ETA `1440` minutes, and confidence `0.9`. The record initially still
+showed `queued` despite its structured outcome; the existing read-only provider-status control
+reconciled that same task to `completed` and version 3 without redialling. Production therefore has
+a fresh end-to-end live proof. Provider startup latency is still an external risk, not an open
+FieldRelay correctness gap.
+
 The incident detail `Latest Call` tab now exposes the existing start-call contract through a guarded
 operator flow. It reads the deployment mode plus masked target, binds the request to the incident,
 the configured authorized contact, and `vendor_availability`, fixes retries at zero, generates one

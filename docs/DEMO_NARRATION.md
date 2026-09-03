@@ -1,7 +1,9 @@
 # Demo Narration
 
 Final narration for `assets/demo/fieldrelay-demo.mp4`. Voice:
-`en-US-AvaMultilingualNeural` at `+13%`, generated with edge-tts. No music is used.
+`en-US-AvaMultilingualNeural` at `+13%`, generated with edge-tts. No music is used. From
+1:14.303 to 1:38.263 the narration is replaced by a user-authorized excerpt from production task
+`CALL-2042-0004`, visibly labelled `EDITED FOR TIME`.
 
 FieldRelay is a field-operations console for property maintenance teams, connecting a reported incident, vendor coordination, and a human-authorized dispatch.
 
@@ -11,9 +13,11 @@ When a tenant reports a problem, the operator records its location, category, pr
 
 Before CALL-E can be contacted, FieldRelay verifies that the contact is authorized for the requested purpose. It commits the call task and idempotency reservation before any provider request, so a retry cannot silently create duplicate calls. Only the exact live configuration enables dialing, and the destination number stays inside server-side infrastructure.
 
-The public evaluator environment uses a simulated call adapter and labels it clearly. This lets judges inspect the complete application safely. In live mode, CALL-E places the authorized call, gives the disclosure, refers to the incident only by its operational identifier, asks bounded questions, and returns structured data to FieldRelay.
+The public evaluator session labels simulated sample records clearly. Production exact-live mode is bounded to the provisioned, authorized contact.
 
-The call-detail screen explains the complete lifecycle: incident, authorized contact, purpose, execution mode, provider state, timeout, attempt count, idempotency key, and audit identity. FieldRelay accepts only declared answer fields. This verified live result returned availability yes, a quoted amount of thirty-five dollars, and confidence of zero point eight two. Transcripts and recordings are not stored.
+[Edited live-call evidence: automated-assistant identity, disclosure, bounded ETA/cost question, and the answer of twenty-four hours and forty dollars.]
+
+FieldRelay reconciled that same task as completed: forty dollars, a twenty-four-hour arrival, and zero point nine confidence. The application stores validated fields, not the raw conversation.
 
 A quoted cost creates a human decision, not an automatic purchase. The approval queue shows the evidence, reason, amount, and confidence. An operator can release, keep pending, or reject the work. Once approved, the dispatch board tracks the assignment through scheduled, en route, on site, and completed states.
 

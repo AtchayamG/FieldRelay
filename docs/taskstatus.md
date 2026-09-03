@@ -1,5 +1,17 @@
 # Task Status
 
+- 2026-09-03 live evidence call and film refresh: after the user's action-time confirmation, the
+  production incident flow created exactly one non-simulated, zero-retry task, `CALL-2042-0004`.
+  The phone recording and provider output agree on the bounded result: available `yes`, quoted
+  amount `$40`, earliest ETA `1440` minutes, confidence `0.9`. Read-only provider reconciliation
+  moved the same durable task from `queued` to `completed`; no redial occurred. Replaced the
+  walkthrough's historical `$35` evidence section with the new production result and a 23.96-second
+  excerpt authorized by the user, visibly labelled `EDITED FOR TIME`. The master remains H.264/AAC,
+  1920x1080, 30 fps, 2:59.861, 12,615,620 bytes; mean audio -22.2 dB, peak -5.0 dB; SHA-256
+  `4d68d0f6b762f9a5510b3edef224f6ae3ade61ba83c6633d649ed26303de89b4`. Raw audio and transcript
+  remain outside the repository. Public YouTube replacement and Devpost link update are pending
+  action-time confirmation.
+
 - 2026-09-03 external release closeout: corrected both the public Devpost story and judge testing
   instructions so they truthfully state that production is intentionally in exact live mode and
   bounded to the single provisioned, authorized target. Read back the public project page and
