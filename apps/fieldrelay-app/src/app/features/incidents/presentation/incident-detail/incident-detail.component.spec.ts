@@ -156,4 +156,34 @@ describe('IncidentDetailComponent', () => {
       expect.any(String)
     );
   });
+
+  it('should offer a new task after completion but not while a call is in flight', () => {
+    component.callContext = {
+      mode: 'live',
+      configured: true,
+      contactId: 'CNS-4491',
+      maskedPhone: '•••• 3923'
+    };
+    component.latestCall = {
+      id: '33333333-3333-4333-a333-333333333333',
+      displayId: 'CALL-2026-0003',
+      incidentId: mockIncident.id,
+      providerTaskId: 'provider-3',
+      purpose: 'vendor_availability',
+      authorizedContactId: 'CNS-4491',
+      status: 'completed',
+      simulated: false,
+      timeoutSeconds: 300,
+      retries: 0,
+      createdAt: '2026-09-03T06:00:00Z',
+      updatedAt: '2026-09-03T06:01:00Z',
+      version: 2
+    };
+
+    expect(component.canPrepareFollowUp).toBe(true);
+    component.latestCall = { ...component.latestCall, status: 'queued' };
+    expect(component.canPrepareFollowUp).toBe(false);
+    component.latestCall = { ...component.latestCall, status: 'outcome_unknown' };
+    expect(component.canPrepareFollowUp).toBe(false);
+  });
 });

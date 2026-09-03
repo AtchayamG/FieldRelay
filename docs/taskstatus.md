@@ -397,6 +397,6 @@
 - Confirmed production health, HTML, hashed JavaScript and CSS assets, and evaluator sign-in in a fresh in-app browser session. The reported all-white page is isolated to the external browser context, not a failed deployment.
 - Added a static Cobalt Ops loading/recovery surface so JavaScript delay or bootstrap failure can no longer appear as an unexplained blank white document.
 - Added the missing guarded call-start UI to an incident's Latest Call tab. It displays live versus simulated mode, only the masked provisioned target, and the authorized contact; requires preparation plus explicit acknowledgement; fixes the purpose and retry policy; and preserves one idempotency key for the submission.
-- The page shows an existing call task instead of offering a second call. Provider ambiguity triggers a durable-record refresh and no redial instruction.
+- The page blocks a new launch while a task is queued, in flight, failed, unanswered, or outcome-unknown. A completed task remains reviewable and can be followed by a separately prepared and confirmed new task. Provider ambiguity triggers a durable-record refresh and no redial instruction.
 - CALL-E Support logged the approximately 23-second first-speech delay as public issue #295. The issue is open at P2 and needs investigation; the provider cannot promise a mitigation before judging.
-- Local verification: 138/138 app tests, strict typecheck, production build, focused ESLint, token checker (66 defined / 57 referenced), and impeccable detector zero. No call was placed.
+- Local verification: 139/139 app tests, strict typecheck, production build, focused ESLint, token checker (66 defined / 57 referenced), and impeccable detector zero. No call was placed.

@@ -256,7 +256,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
             <p>Loading the incident call record and authorized live target.</p>
           </div>
 
-          <div class="call-record" *ngIf="!callPanelLoading && latestCall">
+          <div class="call-record" *ngIf="!callPanelLoading && latestCall && !callPrepared">
             <div>
               <span class="detail-label">Latest call task</span>
               <h3 class="font-mono">{{ latestCall.displayId }}</h3>
@@ -265,9 +265,20 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
                 currently {{ formatStatus(latestCall.status) }}.
               </p>
             </div>
-            <a class="action-btn secondary-action" [routerLink]="['/calls', latestCall.id]">
-              Review call evidence
-            </a>
+            <div class="record-actions">
+              <a class="action-btn secondary-action" [routerLink]="['/calls', latestCall.id]">
+                Review call evidence
+              </a>
+              <button
+                type="button"
+                class="action-btn"
+                *ngIf="canPrepareFollowUp"
+                (click)="prepareCall()"
+              >
+                <fr-icon name="shield" [size]="15" />
+                Review new authorized call
+              </button>
+            </div>
           </div>
 
           <div class="empty-tab-panel" *ngIf="!callPanelLoading && !latestCall && !callPrepared">
@@ -302,7 +313,7 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
             </button>
           </div>
 
-          <div class="call-confirmation" *ngIf="!callPanelLoading && !latestCall && callPrepared">
+          <div class="call-confirmation" *ngIf="!callPanelLoading && callPrepared">
             <div class="confirmation-heading">
               <fr-icon name="shield" [size]="22" />
               <div>
@@ -699,6 +710,12 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       color: var(--fr-color-muted);
       line-height: 1.5;
     }
+    .record-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: var(--fr-space-sm);
+    }
     .launch-facts {
       width: min(720px, 100%);
       display: grid;
@@ -787,6 +804,9 @@ type DetailTab = 'details' | 'commitments' | 'ai' | 'calls' | 'attachments';
       .call-record {
         align-items: stretch;
         flex-direction: column;
+      }
+      .record-actions {
+        justify-content: flex-start;
       }
     }
   `]
@@ -894,6 +914,10 @@ export class IncidentDetailComponent implements OnInit {
 
   get canPrepareCall(): boolean {
     return Boolean(this.callContext?.configured && this.callContext.contactId);
+  }
+
+  get canPrepareFollowUp(): boolean {
+    return Boolean(this.latestCall?.status === 'completed' && this.canPrepareCall);
   }
 
   prepareCall(): void {

@@ -16,6 +16,9 @@ the configured authorized contact, and `vendor_availability`, fixes retries at z
 browser idempotency key per confirmation, and requires a second explicit acknowledgement. A live
 failure refreshes the durable call record and never invites a new-key retry. No phone number is
 accepted from or returned to this screen.
+An existing queued, ringing, connected, failed, no-answer, or unknown-outcome task suppresses a new
+launch. A completed task remains visible and may be followed by a deliberately new task through the
+same two-step confirmation; this is not a retry and receives a new idempotency key.
 
 The static application document includes a dark FieldRelay loading surface before Angular starts.
 If bootstrap fails it changes to a recovery message, so a stale or incompatible browser no longer

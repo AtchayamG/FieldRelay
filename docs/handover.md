@@ -43,7 +43,8 @@ approximately 23-second first-audio delay. No call was placed during these opera
   needs investigation, and has no promised mitigation before judging.
 - The incident Latest Call tab now reads mode and masked target, requires a two-step acknowledgement,
   and sends the existing safe API one incident-owned, zero-retry, idempotent request. The browser
-  never receives or accepts a raw number.
+  never receives or accepts a raw number. Non-terminal and ambiguous tasks block another launch;
+  a completed task may be followed only as a separately prepared, newly confirmed task.
 - The static HTML now renders a branded loading panel before Angular bootstrap and an actionable
   recovery message if bootstrap rejects, preventing the unexplained white page shown in one stale
   external-browser session.

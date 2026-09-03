@@ -36,12 +36,14 @@ with no promised mitigation before judging.
   client-side phone-number field was added.
 - Kept the exact backend live-mode gate unchanged.
 - The UI fixes purpose to `vendor_availability` and retries to zero for the judge path.
-- Existing incident call history suppresses the launch control.
+- Queued, in-flight, failed, unanswered, and outcome-unknown history suppresses the launch control.
+  A completed task can be followed by a distinctly new, separately confirmed task, which is required
+  because all three seeded judge incidents already have historical call records.
 - No live call was placed during implementation or verification.
 
 ## Verification
 
-- `pnpm --filter fieldrelay-app test`: 138 passed.
+- `pnpm --filter fieldrelay-app test`: 139 passed.
 - `pnpm --filter fieldrelay-app typecheck`: passed.
 - `pnpm --filter fieldrelay-app build`: passed.
 - Focused ESLint: passed.
