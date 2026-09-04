@@ -427,3 +427,4 @@
 
 - Reviewed the Devpost Agentic Cinema build-session email and linked Replit/Parallel/Grafana/ClickHouse/IBM public recordings. These are partner workshops for another hackathon, not judging results.
 - Captured the transferable guidance (three-second value proposition, clear front door, specific copy, functional deployed proof, and restrained AI claims) in `docs/agent-runs/2026-09-04-devpost-recording-calibration.md` and the system state. The current FieldRelay video already demonstrates those applicable points, so no risky product or submission edits were made.
+- Submitted the official CALL-E Feedback Survey using the real integration findings in `docs/CALL_E_FEEDBACK_SURVEY.md`; Google Forms visibly confirmed “Your response has been recorded.” No additional call credit was used. The optional Discord repost remains intentionally skipped.

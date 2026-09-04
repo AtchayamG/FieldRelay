@@ -137,6 +137,9 @@ hackathon; their useful presentation advice is recorded in the system state and 
 current public FieldRelay video already applies that advice. Do not change the public submission
 or spend a CALL-E credit based only on these workshops.
 
+The CALL-E Feedback Survey was submitted successfully on 2026-09-04 and confirmed as recorded.
+Its evidence-backed answers remain in `docs/CALL_E_FEEDBACK_SURVEY.md`; do not submit a duplicate.
+
 The approved video publication and Devpost replacement are complete. Do not place another call
 for media. Provider issue #295 remains an external risk. The user declined correcting the old
 additional-calls surname submission; leave it unchanged and use First Name `Atchayam` and

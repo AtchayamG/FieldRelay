@@ -150,6 +150,7 @@ database-backed gate and production audit. No metered call was placed.
 - Reviewed the Devpost email “Build Session Recordings - Agentic Cinema: The Blockbuster Hackathon” and its five public partner recordings (Replit, Parallel, Grafana, ClickHouse, and IBM). These are workshop recordings for a different hackathon, not FieldRelay evidence or judging results.
 - The Replit session's presentation guidance is directly useful: communicate the product's job within the first few seconds; provide a clear marketing “front door” before dropping viewers into functionality; show the core path working and deployed; make copy specific to the user problem; and use only as much AI as the product needs instead of relying on a generic “AI-powered” label.
 - FieldRelay's public video already follows the applicable parts of this guidance: it opens with the operational problem and governed-call promise, uses the authentic deployed application for the working flow, labels simulated versus historical-live evidence, and ends with architecture/guardrails. No product or public-submission change is justified solely by these unrelated workshops.
+- The official CALL-E Feedback Survey was submitted successfully on 2026-09-04 with the evidence-based draft in `docs/CALL_E_FEEDBACK_SURVEY.md`; the form confirmed “Your response has been recorded.” The optional Discord repost was not made.
 
 - September 4 publication closeout: user-approved replacement video is public at
   `https://youtu.be/34Jy7yKM_Ds`, with the current thumbnail and English captions. YouTube's
