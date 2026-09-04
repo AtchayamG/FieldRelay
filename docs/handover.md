@@ -132,6 +132,11 @@ The delayed-speech risk remains a provider-diagnostics issue. Do not redial mere
 
 ## Exact next task
 
+The Devpost partner workshop recordings were reviewed on 2026-09-04. They are for a different
+hackathon; their useful presentation advice is recorded in the system state and run log. The
+current public FieldRelay video already applies that advice. Do not change the public submission
+or spend a CALL-E credit based only on these workshops.
+
 The approved video publication and Devpost replacement are complete. Do not place another call
 for media. Provider issue #295 remains an external risk. The user declined correcting the old
 additional-calls surname submission; leave it unchanged and use First Name `Atchayam` and

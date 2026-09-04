@@ -422,3 +422,8 @@
 - Local verification: 139/139 app tests, strict typecheck, production build, focused ESLint, token checker (66 defined / 57 referenced), and impeccable detector zero. No call was placed.
 - Commits `01b154b` and `e3b1d88` were pushed to `main`; full database-backed CI runs `33728646497` and `33729216711` passed.
 - Vercel deployment `dpl_Hd7kg9LgpBYX5GqrFyiJQHmzooPn` is Ready and the public alias serves its hashed final bundle plus loading fallback. Fresh in-app sign-out/sign-in, Mission Control data, and the disabled-until-acknowledged live-call confirmation were visually verified with zero console warnings/errors. No call or credit was consumed.
+
+## 2026-09-04 — Devpost recording review
+
+- Reviewed the Devpost Agentic Cinema build-session email and linked Replit/Parallel/Grafana/ClickHouse/IBM public recordings. These are partner workshops for another hackathon, not judging results.
+- Captured the transferable guidance (three-second value proposition, clear front door, specific copy, functional deployed proof, and restrained AI claims) in `docs/agent-runs/2026-09-04-devpost-recording-calibration.md` and the system state. The current FieldRelay video already demonstrates those applicable points, so no risky product or submission edits were made.
